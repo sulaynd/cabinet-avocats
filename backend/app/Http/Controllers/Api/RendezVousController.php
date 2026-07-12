@@ -19,7 +19,7 @@ class RendezVousController extends Controller
             // Les demandes non encore confirmées remontent toujours en tête de
             // liste (peu importe leur date), pour qu'elles ne se perdent jamais
             // au milieu des rendez-vous déjà traités.
-            ->orderByRaw("FIELD(statut, 'demande') DESC")
+            ->orderByRaw("CASE WHEN statut = 'demande' THEN 0 ELSE 1 END")
             ->orderBy('date_heure')
             ->paginate($request->per_page ?? 20);
 

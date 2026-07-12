@@ -56,6 +56,6 @@ class Client extends Model implements Authenticatable
 
     public function possedeAccesPortail(): bool
     {
-        return ! empty($this->password);
+        return ! empty($this->password) && $this->portail_active_le !== null;
     }
 }

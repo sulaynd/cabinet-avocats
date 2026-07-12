@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: Tests backend (Laravel)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, dom, fileinfo, mysql, sqlite3, pdo_sqlite
+          coverage: none
+
+      - name: Copier le fichier d'environnement de test
+        working-directory: backend
+        run: cp .env.testing .env
+
+      - name: Installer les dépendances Composer
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Générer la clé d'application
+        working-directory: backend
+        run: php artisan key:generate
+
+      - name: Lancer les migrations (base de test SQLite en mémoire)
+        working-directory: backend
+        run: php artisan migrate --force
+
+      - name: Lancer les tests PHPUnit
+        working-directory: backend
+        run: php artisan test
+
+  frontend:
+    name: Tests frontend (Angular)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Installer les dépendances npm
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lancer les tests unitaires (Chrome headless)
+        working-directory: frontend
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: npm test -- --no-watch --no-progress --browsers=ChromeHeadless
+
+      - name: Vérifier que le build de production passe
+        working-directory: frontend
+        run: npm run build -- --configuration=production
