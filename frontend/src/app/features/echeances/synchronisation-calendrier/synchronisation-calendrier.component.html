@@ -1,0 +1,51 @@
+<div class="panneau-sync">
+  <p class="sync-intro">
+    Abonnez votre agenda personnel (Google Calendar, Outlook, Apple Calendar...) aux échéances
+    du cabinet. Le calendrier se met à jour automatiquement — pas besoin de le réimporter.
+  </p>
+
+  <div *ngIf="!chargement && liens" class="sync-liens">
+    <div class="sync-ligne">
+      <div>
+        <strong>Mon agenda personnel</strong>
+        <p class="sync-note">Audiences, délais et RDV des dossiers dont vous êtes avocat responsable ou assistant traitant.</p>
+      </div>
+      <div class="sync-actions">
+        <a mat-raised-button color="primary" [href]="webcal(liens.personnel)">
+          <mat-icon>event_available</mat-icon> S'abonner
+        </a>
+        <button mat-stroked-button (click)="copier(liens.personnel, 'personnel')">
+          <mat-icon>{{ copie === 'personnel' ? 'check' : 'content_copy' }}</mat-icon>
+          {{ copie === 'personnel' ? 'Copié !' : 'Copier le lien' }}
+        </button>
+        <button mat-button (click)="regenererPersonnel()">Régénérer</button>
+      </div>
+    </div>
+
+    <div class="sync-ligne" *appHasRole="['admin']">
+      <div>
+        <strong>Agenda collectif du cabinet</strong>
+        <p class="sync-note">Toutes les échéances de tous les dossiers, tous intervenants confondus — à partager avec l'agenda commun de l'équipe.</p>
+      </div>
+      <div class="sync-actions" *ngIf="liens.equipe as urlEquipe">
+        <a mat-raised-button color="primary" [href]="webcal(urlEquipe)">
+          <mat-icon>event_available</mat-icon> S'abonner
+        </a>
+        <button mat-stroked-button (click)="copier(urlEquipe, 'equipe')">
+          <mat-icon>{{ copie === 'equipe' ? 'check' : 'content_copy' }}</mat-icon>
+          {{ copie === 'equipe' ? 'Copié !' : 'Copier le lien' }}
+        </button>
+        <button mat-button (click)="regenererEquipe()">Régénérer</button>
+      </div>
+    </div>
+  </div>
+
+  <details class="sync-aide">
+    <summary>Comment m'abonner dans Google Calendar / Outlook ?</summary>
+    <ul>
+      <li><strong>Google Calendar</strong> : bouton "S'abonner" ci-dessus, ou dans Google Calendar → Autres agendas (+) → À partir de l'URL → collez le lien copié.</li>
+      <li><strong>Outlook / Outlook.com</strong> : Ajouter un calendrier → S'abonner depuis le web → collez le lien copié.</li>
+      <li><strong>Apple Calendar (macOS/iOS)</strong> : le bouton "S'abonner" ouvre directement l'app Calendrier via le lien <code>webcal://</code>.</li>
+    </ul>
+  </details>
+</div>

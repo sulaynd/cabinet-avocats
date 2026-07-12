@@ -1,0 +1,44 @@
+<div class="communications-panel">
+  <div class="section-entete">
+    <h3>Historique des communications</h3>
+    <button mat-button (click)="afficherFormulaire = !afficherFormulaire">
+      <mat-icon>{{ afficherFormulaire ? 'close' : 'add' }}</mat-icon>
+      {{ afficherFormulaire ? 'Annuler' : 'Ajouter une communication' }}
+    </button>
+  </div>
+
+  <form *ngIf="afficherFormulaire" [formGroup]="form" (ngSubmit)="enregistrer()" class="form-communication-material">
+    <mat-form-field appearance="outline" class="col-type">
+      <mat-label>Type</mat-label>
+      <mat-select formControlName="type">
+        <mat-option *ngFor="let t of types" [value]="t">{{ t }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="col-objet">
+      <mat-label>Objet</mat-label>
+      <input matInput formControlName="objet" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="champ-pleine-largeur">
+      <mat-label>Détails (facultatif)</mat-label>
+      <textarea matInput formControlName="contenu" rows="2"></textarea>
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+      <mat-icon>save</mat-icon> Enregistrer
+    </button>
+  </form>
+
+  <ul class="liste-communications" *ngIf="communications.length; else aucune">
+    <li *ngFor="let c of communications">
+      <mat-chip>{{ c.type }}</mat-chip>
+      <div class="contenu-communication">
+        <strong>{{ c.objet }}</strong>
+        <p *ngIf="c.contenu">{{ c.contenu }}</p>
+        <span class="meta-communication">{{ c.date_communication | date: 'dd/MM/yyyy HH:mm' }} — {{ c.user?.name }}</span>
+      </div>
+      <button mat-icon-button (click)="supprimer(c.id)" title="Supprimer">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </li>
+  </ul>
+  <ng-template #aucune><p class="vide">Aucune communication enregistrée.</p></ng-template>
+</div>

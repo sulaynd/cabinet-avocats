@@ -1,0 +1,41 @@
+<form [formGroup]="form" (ngSubmit)="soumettre()" class="user-form">
+  <h2>{{ userId ? "Modifier l'utilisateur" : 'Nouvel utilisateur' }}</h2>
+
+  <label>
+    Nom complet
+    <input type="text" formControlName="name" />
+  </label>
+
+  <label>
+    Email
+    <input type="email" formControlName="email" />
+  </label>
+
+  <label>
+    Mot de passe
+    <input type="password" formControlName="password" [placeholder]="userId ? 'Laisser vide pour ne pas changer' : ''" />
+  </label>
+
+  <label>
+    Rôle
+    <select formControlName="role">
+      <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+    </select>
+  </label>
+
+  <label>
+    Téléphone
+    <input type="text" formControlName="phone" />
+  </label>
+
+  <label>
+    Taux horaire par défaut (€/h, facultatif)
+    <input type="number" step="0.01" formControlName="taux_horaire_defaut" placeholder="Utilisé si le dossier ne définit pas son propre taux" />
+  </label>
+
+  <p class="erreur" *ngIf="erreur">{{ erreur }}</p>
+
+  <button type="submit" [disabled]="form.invalid || enregistrement">
+    {{ enregistrement ? 'Enregistrement...' : 'Enregistrer' }}
+  </button>
+</form>

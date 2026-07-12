@@ -1,0 +1,41 @@
+<form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form">
+  <h2>{{ questionnaireId ? 'Modifier le questionnaire' : 'Nouveau questionnaire' }}</h2>
+
+  <label>Nom<input type="text" formControlName="nom" placeholder="Ex: Questionnaire d'accueil — Divorce" /></label>
+  <label>Description (facultatif)<textarea formControlName="description" rows="2"></textarea></label>
+  <label>
+    Type d'affaire ciblé
+    <select formControlName="type_affaire">
+      <option [ngValue]="null">Par défaut (tous types sans questionnaire dédié)</option>
+      <option *ngFor="let t of typesAffaire" [value]="t">{{ t }}</option>
+    </select>
+  </label>
+  <label>
+    <input type="checkbox" formControlName="actif" style="width:auto; display:inline-block; margin-right:6px;" />
+    Questionnaire actif (envoyé automatiquement à l'ouverture d'un dossier concerné)
+  </label>
+
+  <h3>Questions</h3>
+  <div formArrayName="champs">
+    <div *ngFor="let champ of champs.controls; let i = index" [formGroupName]="i" class="ligne-champ-questionnaire">
+      <input type="text" placeholder="Clé (ex: situation_familiale)" formControlName="cle" class="col-cle" />
+      <input type="text" placeholder="Question posée au client" formControlName="label" class="col-label" />
+      <select formControlName="type" class="col-type">
+        <option value="texte">Texte court</option>
+        <option value="zone_texte">Texte long</option>
+        <option value="choix">Choix (options séparées par virgule)</option>
+        <option value="case">Case à cocher</option>
+      </select>
+      <input *ngIf="champ.value.type === 'choix'" type="text" placeholder="Option 1, Option 2..." formControlName="options" class="col-options" />
+      <label class="case-signature"><input type="checkbox" formControlName="requis" /> Requis</label>
+      <button type="button" (click)="supprimerChamp(i)" [disabled]="champs.length === 1">✕</button>
+    </div>
+  </div>
+  <button type="button" class="btn" (click)="ajouterChamp()">+ Ajouter une question</button>
+
+  <div style="margin-top:20px;">
+    <button type="submit" [disabled]="form.invalid || enregistrement">
+      {{ enregistrement ? 'Enregistrement...' : 'Enregistrer' }}
+    </button>
+  </div>
+</form>

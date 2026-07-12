@@ -1,0 +1,126 @@
+<div class="tableau-de-bord" *ngIf="!chargement && stats; else loading">
+  <h2>Tableau de bord</h2>
+
+  <!-- CARTES KPI -->
+  <div class="grille-kpi">
+    <div class="carte-kpi">
+      <mat-icon>payments</mat-icon>
+      <span class="valeur-kpi">{{ stats.ca_total | number: '1.2-2' }} $</span>
+      <span class="libelle-kpi">Chiffre d'affaires total (payé)</span>
+    </div>
+    <div class="carte-kpi">
+      <mat-icon>calendar_month</mat-icon>
+      <span class="valeur-kpi">{{ stats.ca_ce_mois | number: '1.2-2' }} $</span>
+      <span class="libelle-kpi">Ce mois-ci</span>
+    </div>
+    <div class="carte-kpi">
+      <mat-icon>event_note</mat-icon>
+      <span class="valeur-kpi">{{ stats.ca_cette_annee | number: '1.2-2' }} $</span>
+      <span class="libelle-kpi">Cette année</span>
+    </div>
+    <div class="carte-kpi avertissement">
+      <mat-icon>hourglass_top</mat-icon>
+      <span class="valeur-kpi">{{ stats.factures_impayees.montant | number: '1.2-2' }} $</span>
+      <span class="libelle-kpi">En attente de paiement ({{ stats.factures_impayees.nombre }} facture(s))</span>
+    </div>
+  </div>
+
+  <div class="grille-kpi">
+    <div class="carte-kpi">
+      <mat-icon>folder</mat-icon>
+      <span class="valeur-kpi">{{ totalDossiers }}</span>
+      <span class="libelle-kpi">Dossiers au total</span>
+    </div>
+    <div class="carte-kpi">
+      <mat-icon>groups</mat-icon>
+      <span class="valeur-kpi">{{ stats.nombre_clients }}</span>
+      <span class="libelle-kpi">Clients</span>
+    </div>
+    <div class="carte-kpi">
+      <mat-icon>gavel</mat-icon>
+      <span class="valeur-kpi">{{ stats.audiences_a_venir }}</span>
+      <span class="libelle-kpi">Audiences à venir</span>
+    </div>
+    <div class="carte-kpi" matTooltip="Audiences, délais procéduraux, RDV client et autres — toutes les échéances de l'Agenda confondues">
+      <mat-icon>event_note</mat-icon>
+      <span class="valeur-kpi">{{ stats.echeances_a_venir }}</span>
+      <span class="libelle-kpi">Échéances à venir (tous types)</span>
+    </div>
+    <div class="carte-kpi" matTooltip="Des demandes que le cabinet a déjà confirmées">
+      <mat-icon>event_available</mat-icon>
+      <span class="valeur-kpi">{{ stats.rendez_vous.a_venir }}</span>
+      <span class="libelle-kpi">Rendez-vous à venir</span>
+    </div>
+    <div class="carte-kpi" matTooltip="Le cabinet n'a pas encore confirmé">
+      <mat-icon>pending_actions</mat-icon>
+      <span class="valeur-kpi">{{ stats.rendez_vous.en_attente }}</span>
+      <span class="libelle-kpi">Demandes de RDV en attente</span>
+    </div>
+    <div class="carte-kpi" matTooltip="Toutes les demandes confirmées depuis le début, passées et futures">
+      <mat-icon>check_circle</mat-icon>
+      <span class="valeur-kpi">{{ stats.rendez_vous.total_confirmes }}</span>
+      <span class="libelle-kpi">Rendez-vous confirmés (tous temps)</span>
+    </div>
+    <div class="carte-kpi" matTooltip="Toutes les demandes ou rendez-vous annulés depuis le début">
+      <mat-icon>cancel</mat-icon>
+      <span class="valeur-kpi">{{ stats.rendez_vous.total_annules }}</span>
+      <span class="libelle-kpi">Rendez-vous annulés (tous temps)</span>
+    </div>
+  </div>
+
+  <!-- ÉVOLUTION MENSUELLE -->
+  <div class="bloc-graphique">
+    <h3>Évolution du chiffre d'affaires (12 derniers mois)</h3>
+    <div class="graphique-barres graphique-barres--vertical">
+      <div class="barre-verticale-conteneur" *ngFor="let m of stats.evolution_mensuelle">
+        <div class="barre-verticale" [style.height.%]="(m.total / maxEvolutionMensuelle) * 100" [title]="(m.total | number: '1.2-2') + ' $'"></div>
+        <span class="etiquette-barre">{{ m.mois }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grille-deux-colonnes">
+    <!-- CA PAR AVOCAT -->
+    <div class="bloc-graphique">
+      <h3>Chiffre d'affaires par avocat</h3>
+      <div class="graphique-barres-horizontales" *ngIf="stats.ca_par_avocat.length; else aucuneDonnee">
+        <div class="ligne-barre-horizontale" *ngFor="let a of stats.ca_par_avocat">
+          <span class="libelle-barre-horizontale">{{ a.avocat }}</span>
+          <div class="piste-barre-horizontale">
+            <div class="barre-horizontale" [style.width.%]="(a.total / maxCaParAvocat) * 100"></div>
+          </div>
+          <span class="valeur-barre-horizontale">{{ a.total | number: '1.0-0' }} $</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOSSIERS PAR TYPE -->
+    <div class="bloc-graphique">
+      <h3>Dossiers par domaine</h3>
+      <div class="graphique-barres-horizontales" *ngIf="stats.dossiers_par_type.length; else aucuneDonnee">
+        <div class="ligne-barre-horizontale" *ngFor="let t of stats.dossiers_par_type">
+          <span class="libelle-barre-horizontale">{{ t.type }}</span>
+          <div class="piste-barre-horizontale">
+            <div class="barre-horizontale barre-horizontale--brass" [style.width.%]="(t.total / maxDossiersParType) * 100"></div>
+          </div>
+          <span class="valeur-barre-horizontale">{{ t.total }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOSSIERS PAR STATUT -->
+  <div class="bloc-graphique">
+    <h3>Dossiers par statut</h3>
+    <div class="puces-statut-dossiers">
+      <div class="puce-statut-dossier" *ngFor="let entree of dossiersStatutEntries()">
+        <span class="badge">{{ libellesStatut[entree[0]] || entree[0] }}</span>
+        <strong>{{ entree[1] }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #aucuneDonnee><p class="vide">Pas encore de données.</p></ng-template>
+</div>
+
+<ng-template #loading><p>Chargement...</p></ng-template>

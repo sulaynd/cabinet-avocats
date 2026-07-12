@@ -1,0 +1,62 @@
+<form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form-material" *ngIf="!chargement">
+  <h2>Coordonnées du cabinet</h2>
+  <p class="permission-note">
+    Ces informations apparaissent sur l'écran de connexion, la barre latérale, le portail
+    client, le questionnaire public, ainsi que sur les factures (PDF et email) et les
+    confirmations de rendez-vous.
+  </p>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Nom du cabinet</mat-label>
+    <input matInput formControlName="nom" placeholder="Ex: JCA — Juristyle Conseil &amp; Accompagnement" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Adresse</mat-label>
+    <input matInput formControlName="adresse" placeholder="Ex: 1-616 rue des Mélèzes Nord, Québec G1X 3C5" />
+  </mat-form-field>
+
+  <div class="ligne-champs">
+    <mat-form-field appearance="outline">
+      <mat-label>Téléphone</mat-label>
+      <input matInput formControlName="telephone" placeholder="Ex: 418 262-9610" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Email de contact</mat-label>
+      <input matInput type="email" formControlName="email" />
+    </mat-form-field>
+  </div>
+
+  <div class="actions-formulaire">
+    <button mat-button type="button" (click)="annuler()">Retour</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || enregistrement">
+      <mat-icon>save</mat-icon> {{ enregistrement ? 'Enregistrement...' : 'Enregistrer' }}
+    </button>
+  </div>
+</form>
+
+<div class="section-portail-client" *ngIf="!chargement">
+  <h3>Photo du fondateur</h3>
+  <p class="permission-note">Affichée dans un cercle sur la page d'accueil publique, juste après l'en-tête.</p>
+
+  <div class="apercu-photo-fondateur">
+    <div class="cercle-apercu">
+      <img *ngIf="apercuFichier || photoUrl" [src]="apercuFichier || photoUrl" alt="Aperçu" />
+      <span *ngIf="!apercuFichier && !photoUrl">Aucune photo</span>
+    </div>
+    <div>
+      <input type="file" accept="image/*" (change)="surSelectionPhoto($event)" />
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="!fichierSelectionne || televersementEnCours"
+        (click)="televerserPhoto()"
+        style="margin-top: 10px; display: block;"
+      >
+        <mat-icon>upload</mat-icon> {{ televersementEnCours ? 'Envoi...' : 'Téléverser cette photo' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<p *ngIf="chargement">Chargement...</p>

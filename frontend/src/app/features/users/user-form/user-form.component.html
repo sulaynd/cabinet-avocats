@@ -1,0 +1,79 @@
+<form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form-material">
+  <h2>{{ userId ? 'Modifier le membre' : 'Nouveau membre' }}</h2>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Nom complet</mat-label>
+    <input matInput formControlName="name" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Email</mat-label>
+    <input matInput type="email" formControlName="email" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Mot de passe</mat-label>
+    <input matInput type="password" formControlName="password" autocomplete="new-password" [placeholder]="userId ? 'Laisser vide pour ne pas changer' : '8 caractères minimum'" />
+  </mat-form-field>
+
+  <div class="ligne-champs">
+    <mat-form-field appearance="outline">
+      <mat-label>Rôle</mat-label>
+      <mat-select formControlName="role">
+        <mat-option *ngFor="let r of roles" [value]="r">{{ r }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Téléphone</mat-label>
+      <input matInput formControlName="phone" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Taux horaire par défaut ($/h, facultatif)</mat-label>
+    <input matInput type="number" step="0.01" formControlName="taux_horaire_defaut" placeholder="Utilisé si le dossier ne définit pas son propre taux" />
+  </mat-form-field>
+
+  <div class="section-portail-client">
+    <h3>Présentation publique</h3>
+    <p class="permission-note">
+      Si activé, cette personne apparaît dans la section "Notre équipe" de la page d'accueil du
+      site, avec le titre, la bio et la photo ci-dessous.
+    </p>
+    <mat-checkbox formControlName="afficher_equipe_publique">Afficher sur la page d'accueil</mat-checkbox>
+
+    <ng-container *ngIf="form.value.afficher_equipe_publique">
+      <mat-form-field appearance="outline" class="champ-pleine-largeur" style="margin-top: 14px;">
+        <mat-label>Titre affiché publiquement</mat-label>
+        <input matInput formControlName="titre_public" placeholder="Ex: Avocat associé" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="champ-pleine-largeur">
+        <mat-label>Bio courte</mat-label>
+        <textarea matInput formControlName="bio_publique" rows="2" placeholder="Ex: Spécialiste en droit de l'immigration depuis 10 ans."></textarea>
+      </mat-form-field>
+
+      <div class="apercu-photo-fondateur">
+        <div class="cercle-apercu">
+          <img *ngIf="apercuFichier || photoUrl" [src]="apercuFichier || photoUrl" alt="Aperçu" />
+          <span *ngIf="!apercuFichier && !photoUrl">Aucune photo</span>
+        </div>
+        <div>
+          <input type="file" accept="image/*" (change)="surSelectionPhoto($event)" />
+          <p class="permission-note" *ngIf="fichierSelectionne">
+            Cette photo sera envoyée en cliquant sur "Enregistrer" ci-dessous.
+          </p>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <p class="erreur" *ngIf="erreur">{{ erreur }}</p>
+
+  <div class="actions-formulaire">
+    <button mat-button type="button" (click)="annuler()">Annuler</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || enregistrement">
+      <mat-icon>save</mat-icon> {{ enregistrement ? 'Enregistrement...' : 'Enregistrer' }}
+    </button>
+  </div>
+</form>

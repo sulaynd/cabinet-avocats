@@ -1,0 +1,67 @@
+<mat-sidenav-container class="shell-conteneur">
+  <mat-sidenav mode="side" opened class="shell-sidenav">
+    <div class="marque">
+      <div class="sceau">{{ initiales(cabinet?.nom) }}</div>
+      <div class="nom">{{ initiales(cabinet?.nom) }}<small>{{ cabinet?.nom }}</small></div>
+    </div>
+
+    <!-- Nav en HTML simple (pas de mat-nav-list) : on garde un contrôle total
+         sur le CSS plutôt que de dépendre des états internes (ripple, state-layer)
+         d'Angular Material, qui posaient un problème de survol difficile à isoler. -->
+    <nav class="shell-nav">
+      <a class="lien-nav" routerLink="/dossiers" routerLinkActive="actif" [routerLinkActiveOptions]="{exact:false}">
+        <mat-icon>folder</mat-icon>
+        <span>Dossiers</span>
+      </a>
+      <a class="lien-nav" routerLink="/clients" routerLinkActive="actif">
+        <mat-icon>people</mat-icon>
+        <span>Clients</span>
+      </a>
+      <a class="lien-nav" routerLink="/echeances" routerLinkActive="actif">
+        <mat-icon>event</mat-icon>
+        <span>Agenda</span>
+      </a>
+      <a class="lien-nav" routerLink="/rendez-vous" routerLinkActive="actif">
+        <mat-icon>event_available</mat-icon>
+        <span>Rendez-vous</span>
+      </a>
+      <a class="lien-nav" routerLink="/factures" routerLinkActive="actif">
+        <mat-icon>receipt_long</mat-icon>
+        <span>Factures</span>
+      </a>
+    </nav>
+
+    <div class="shell-bas">
+      <div class="role-info" *ngIf="utilisateur">
+        <strong>{{ utilisateur.name }}</strong>
+        <span class="role-tag">{{ utilisateur.role }}</span>
+      </div>
+      <a class="lien-nav" *appHasRole="['admin']" routerLink="/tableau-de-bord" routerLinkActive="actif" style="margin-bottom: 8px;">
+        <mat-icon>dashboard</mat-icon>
+        <span>Tableau de bord</span>
+      </a>
+      <a class="lien-nav" *appHasRole="['admin']" routerLink="/utilisateurs" routerLinkActive="actif" style="margin-bottom: 8px;">
+        <mat-icon>admin_panel_settings</mat-icon>
+        <span>Équipe</span>
+      </a>
+      <a class="lien-nav" *appHasRole="['admin']" routerLink="/questionnaires" routerLinkActive="actif" style="margin-bottom: 8px;">
+        <mat-icon>assignment</mat-icon>
+        <span>Questionnaires</span>
+      </a>
+      <a class="lien-nav" *appHasRole="['admin']" routerLink="/parametres-cabinet" routerLinkActive="actif" style="margin-bottom: 8px;">
+        <mat-icon>settings</mat-icon>
+        <span>Paramètres</span>
+      </a>
+      <a mat-button routerLink="/changer-mot-de-passe" class="lien-changer-mdp">
+        <mat-icon>lock_reset</mat-icon> Changer mon mot de passe
+      </a>
+      <button mat-stroked-button class="btn-deconnexion" (click)="deconnexion()">
+        <mat-icon>logout</mat-icon> Se déconnecter
+      </button>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="shell-contenu">
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

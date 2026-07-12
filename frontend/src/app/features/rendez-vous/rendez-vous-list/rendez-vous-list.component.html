@@ -1,0 +1,97 @@
+<div class="rendez-vous-list">
+  <p class="sync-intro">Demandes reçues via le widget de prise de rendez-vous en ligne du site du cabinet.</p>
+
+  <table mat-table matSort [dataSource]="dataSource" *ngIf="!chargement; else loading" class="mat-elevation-z1">
+    <ng-container matColumnDef="date_heure">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Date demandée</th>
+      <td mat-cell *matCellDef="let r">{{ r.date_heure | date: 'dd/MM/yyyy HH:mm' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="nom">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
+      <td mat-cell *matCellDef="let r">{{ r.nom }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+      <td mat-cell *matCellDef="let r">{{ r.email }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="avocat">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Avocat</th>
+      <td mat-cell *matCellDef="let r">{{ r.avocat?.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="motif">
+      <th mat-header-cell *matHeaderCellDef>Motif</th>
+      <td mat-cell *matCellDef="let r">{{ r.motif || '—' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="statut">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
+      <td mat-cell *matCellDef="let r">
+        <mat-chip [class]="'chip-statut-' + (r.statut === 'confirme' ? 'payee' : (r.statut === 'annule' ? 'annulee' : 'en_attente'))">{{ r.statut }}</mat-chip>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let r">
+        <button mat-icon-button *ngIf="r.statut === 'demande'" (click)="ouvrirPopupConfirmation(r)" title="Confirmer">
+          <mat-icon>check_circle</mat-icon>
+        </button>
+        <button mat-icon-button *ngIf="r.statut !== 'annule'" (click)="annuler(r.id)" title="Annuler">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+    <tr mat-row *matRowDef="let r; columns: colonnes;" [class.ligne-en-attente]="r.statut === 'demande'"></tr>
+  </table>
+
+  <p class="vide" *ngIf="!chargement && dataSource.data.length === 0">Aucune demande de rendez-vous.</p>
+
+  <ng-template #loading><p>Chargement...</p></ng-template>
+
+  <mat-paginator
+    *ngIf="!chargement"
+    [length]="totalRendezVous"
+    [pageSize]="taillePage"
+    [pageIndex]="pageCourante - 1"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="changerPage($event)"
+  ></mat-paginator>
+
+  <!-- POPUP DE CONFIRMATION -->
+  <div class="overlay" *ngIf="rendezVousAConfirmer" (click)="fermerPopupConfirmation()">
+    <div class="modale" (click)="$event.stopPropagation()">
+      <div class="modale-tete">
+        <h3>Confirmer le rendez-vous</h3>
+        <button mat-icon-button (click)="fermerPopupConfirmation()" title="Fermer">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modale-corps">
+        <p class="permission-note">
+          {{ rendezVousAConfirmer.nom }} — {{ rendezVousAConfirmer.date_heure | date: 'dd/MM/yyyy HH:mm' }}
+        </p>
+        <label>
+          Montant ($/h)
+          <input type="number" step="0.01" min="0" required [(ngModel)]="montantPopup" #champMontant="ngModel" />
+        </label>
+        <p class="erreur" *ngIf="!montantPopup && champMontant.touched">Le montant est obligatoire.</p>
+        <label>
+          Lien de rencontre (Google Meet / Teams, facultatif)
+          <input type="text" placeholder="https://..." [(ngModel)]="lienPopup" />
+        </label>
+      </div>
+      <div class="modale-pied">
+        <button mat-button (click)="fermerPopupConfirmation()">Annuler</button>
+        <button mat-raised-button color="primary" [disabled]="confirmationEnCours || !montantPopup" (click)="envoyerConfirmation()">
+          {{ confirmationEnCours ? 'Envoi...' : 'Envoyer la confirmation' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

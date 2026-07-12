@@ -1,0 +1,63 @@
+<div class="portail-dossiers">
+  <div class="topbar">
+    <h1>Mon espace client</h1>
+    <button class="btn" (click)="deconnexion()">Se déconnecter</button>
+  </div>
+
+  <div *ngIf="!dossierOuvert">
+    <h3>Mes dossiers</h3>
+    <table>
+      <thead><tr><th>Référence</th><th>Titre</th><th>Avocat</th><th>Statut</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let d of dossiers">
+          <td>{{ d.reference }}</td>
+          <td>{{ d.titre }}</td>
+          <td>{{ d.avocat?.name }}</td>
+          <td><span class="badge">{{ d.statut }}</span></td>
+          <td><button (click)="ouvrirDossier(d.id)">Voir le détail</button></td>
+        </tr>
+        <tr *ngIf="!dossiers.length"><td colspan="5" class="vide">Aucun dossier pour le moment.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Mes factures</h3>
+    <table>
+      <thead><tr><th>Numéro</th><th>Émission</th><th>Montant TTC</th><th>Statut</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let f of factures">
+          <td>{{ f.numero }}</td>
+          <td>{{ f.date_emission | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ f.montant_ttc | number: '1.2-2' }} €</td>
+          <td><span class="badge badge-{{ f.statut }}">{{ f.statut }}</span></td>
+        </tr>
+        <tr *ngIf="!factures.length"><td colspan="4" class="vide">Aucune facture pour le moment.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="dossierOuvert">
+    <a href="#" (click)="fermerDossier(); $event.preventDefault()" class="fil-retour">← Retour à mes dossiers</a>
+    <h3>{{ dossierOuvert.reference }} — {{ dossierOuvert.titre }}</h3>
+    <p>Avocat en charge : {{ dossierOuvert.avocat?.name }}</p>
+
+    <h4>Documents</h4>
+    <table>
+      <thead><tr><th>Nom</th><th>Signature</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let doc of dossierOuvert.documents">
+          <td>{{ doc.nom_original }}</td>
+          <td>
+            <span *ngIf="!doc.necessite_signature">—</span>
+            <span *ngIf="doc.necessite_signature && doc.signe_le" class="badge badge-payee">Signé</span>
+            <span *ngIf="doc.necessite_signature && !doc.signe_le" class="badge badge-en_attente">À signer</span>
+          </td>
+          <td>
+            <button (click)="telechargerDocument(doc.id, doc.nom_original)">Télécharger</button>
+            <button *ngIf="doc.necessite_signature && !doc.signe_le" (click)="signer(doc.id)">Signer</button>
+          </td>
+        </tr>
+        <tr *ngIf="!dossierOuvert.documents?.length"><td colspan="3" class="vide">Aucun document.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

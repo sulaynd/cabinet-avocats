@@ -1,0 +1,78 @@
+<div class="user-list">
+  <div class="toolbar">
+    <mat-form-field appearance="outline" class="champ-recherche">
+      <mat-label>Rechercher un utilisateur</mat-label>
+      <input matInput [(ngModel)]="recherche" (input)="onRechercheChange()" placeholder="Nom, email..." />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="champ-filtre">
+      <mat-label>Rôle</mat-label>
+      <mat-select [(ngModel)]="roleFiltre" (selectionChange)="charger()">
+        <mat-option value="">Tous les rôles</mat-option>
+        <mat-option *ngFor="let r of roles" [value]="r">{{ r }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <span class="spacer"></span>
+
+    <a mat-raised-button color="primary" routerLink="/utilisateurs/nouveau">
+      <mat-icon>add</mat-icon> Nouveau membre
+    </a>
+  </div>
+
+  <table mat-table matSort [dataSource]="dataSource" *ngIf="!chargement; else loading" class="mat-elevation-z1">
+    <ng-container matColumnDef="nom">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
+      <td mat-cell *matCellDef="let u">{{ u.name }} <mat-chip *ngIf="estMoi(u)">vous</mat-chip></td>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+      <td mat-cell *matCellDef="let u">{{ u.email }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Rôle</th>
+      <td mat-cell *matCellDef="let u"><mat-chip>{{ u.role }}</mat-chip></td>
+    </ng-container>
+
+    <ng-container matColumnDef="telephone">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Téléphone</th>
+      <td mat-cell *matCellDef="let u">{{ u.phone || '—' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="dossiers">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Dossiers</th>
+      <td mat-cell *matCellDef="let u">{{ u.dossiers_count ?? '—' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let u">
+        <a mat-icon-button [routerLink]="['/utilisateurs', u.id, 'modifier']" title="Modifier">
+          <mat-icon>edit</mat-icon>
+        </a>
+        <button mat-icon-button (click)="supprimer(u)" [disabled]="estMoi(u)" title="Supprimer">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+    <tr mat-row *matRowDef="let u; columns: colonnes;"></tr>
+  </table>
+
+  <p class="vide" *ngIf="!chargement && dataSource.data.length === 0">Aucun utilisateur trouvé.</p>
+
+  <ng-template #loading><p>Chargement...</p></ng-template>
+
+  <mat-paginator
+    *ngIf="!chargement"
+    [length]="totalUtilisateurs"
+    [pageSize]="taillePage"
+    [pageIndex]="pageCourante - 1"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="changerPage($event)"
+  ></mat-paginator>
+</div>

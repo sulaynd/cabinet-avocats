@@ -1,0 +1,323 @@
+<div class="dossier-detail" *ngIf="!chargement && dossier; else loading">
+
+  <div class="entete-dossier">
+    <div>
+      <h2>{{ dossier.reference }} — {{ dossier.titre }}</h2>
+      <p>
+        <span class="badge">{{ dossier.statut }}</span>
+        <span class="badge">{{ dossier.type_affaire }}</span>
+      </p>
+    </div>
+    <a mat-raised-button color="primary" [routerLink]="['/dossiers', dossier.id, 'modifier']">
+      <mat-icon>edit</mat-icon> Modifier le dossier
+    </a>
+  </div>
+
+  <div class="info-grid">
+    <div class="bloc">
+      <h3>Client</h3>
+      <p>{{ nomClient() }}</p>
+      <p>{{ dossier.client?.email }}</p>
+      <p>{{ dossier.client?.telephone }}</p>
+    </div>
+    <div class="bloc">
+      <h3>Avocat responsable</h3>
+      <p>{{ dossier.avocat?.name }}</p>
+      <p>{{ dossier.avocat?.email }}</p>
+      <button mat-button *appHasRole="['admin']" [hidden]="dossier.statut === 'clos'" (click)="ouvrirModaleAssignation()">
+        <mat-icon>swap_horiz</mat-icon> Réassigner le dossier
+      </button>
+      <p class="permission-note" *ngIf="dossier.statut === 'clos'">Dossier clos — réassignation désactivée.</p>
+    </div>
+    <div class="bloc">
+      <h3>Assistant traitant</h3>
+      <p>{{ dossier.assistant?.name || 'Aucun assistant assigné' }}</p>
+      <p>{{ dossier.assistant?.email }}</p>
+    </div>
+    <div class="bloc">
+      <h3>Dates</h3>
+      <p>Ouverture : {{ dossier.date_ouverture ? (dossier.date_ouverture | date: 'dd/MM/yyyy':'UTC') : '—' }}</p>
+      <p>Clôture : {{ dossier.date_cloture ? (dossier.date_cloture | date: 'dd/MM/yyyy':'UTC') : '—' }}</p>
+    </div>
+  </div>
+
+  <div class="bloc description" *ngIf="dossier.description">
+    <h3>Description</h3>
+    <p>{{ dossier.description }}</p>
+  </div>
+
+  <!-- QUESTIONNAIRE D'ACCUEIL -->
+  <section class="section-dossier" *ngIf="reponsesQuestionnaires.length">
+    <div class="section-entete">
+      <h3>Questionnaire de pré-consultation</h3>
+      <button mat-button [disabled]="renvoiQuestionnaireEnCours" (click)="renvoyerQuestionnaire()">
+        <mat-icon>send</mat-icon> {{ renvoiQuestionnaireEnCours ? 'Envoi...' : 'Renvoyer au client' }}
+      </button>
+    </div>
+    <table>
+      <thead><tr><th>Questionnaire</th><th>Envoyé le</th><th>Statut</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let r of reponsesQuestionnaires">
+          <td>{{ r.questionnaire?.nom }}</td>
+          <td>{{ r.envoye_le | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="badge" [class.badge-payee]="r.rempli_le" [class.badge-en_attente]="!r.rempli_le">
+              {{ r.rempli_le ? ('Rempli le ' + (r.rempli_le | date: 'dd/MM/yyyy')) : 'En attente de réponse' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ÉCHÉANCES -->
+  <section class="section-dossier">
+    <div class="section-entete">
+      <h3>Échéances</h3>
+      <a mat-button *ngIf="dossier.statut !== 'clos'" [routerLink]="['/echeances/nouvelle']" [queryParams]="{ dossier_id: dossier.id }">
+        <mat-icon>add</mat-icon> Ajouter une échéance
+      </a>
+    </div>
+
+    <table *ngIf="(dossier.echeances?.length ?? 0) > 0; else aucuneEcheance">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Titre</th>
+          <th>Lieu</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let echeance of dossier.echeances">
+          <td>{{ echeance.date_heure | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ echeance.type }}</td>
+          <td>{{ echeance.titre }}</td>
+          <td>{{ echeance.lieu }}</td>
+          <td><span class="badge">{{ echeance.statut }}</span></td>
+          <td>
+            <a mat-icon-button [routerLink]="['/echeances', echeance.id, 'modifier']" title="Modifier">
+              <mat-icon>edit</mat-icon>
+            </a>
+            <button mat-icon-button *ngIf="echeance.statut === 'a_venir'" (click)="marquerEcheanceRealisee(echeance.id)" title="Marquer réalisée">
+              <mat-icon>check_circle</mat-icon>
+            </button>
+            <button mat-icon-button (click)="supprimerEcheance(echeance.id)" title="Supprimer">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #aucuneEcheance>
+      <p>{{ dossier.statut === 'clos' ? 'Dossier clos — aucune échéance pour ce dossier.' : 'Aucune échéance pour ce dossier.' }}</p>
+    </ng-template>
+  </section>
+
+  <!-- COMMUNICATIONS -->
+  <app-communications-panel [dossierId]="dossier.id"></app-communications-panel>
+
+  <!-- DOCUMENTS -->
+  <section class="section-dossier">
+    <div class="section-entete">
+      <h3>Documents</h3>
+    </div>
+
+    <div class="upload-document">
+      <input type="file" (change)="surSelectionFichier($event)" />
+      <select [(ngModel)]="typeDocumentSelectionne">
+        <option *ngFor="let t of typesDocument" [value]="t">{{ t }}</option>
+      </select>
+      <label class="case-signature">
+        <input type="checkbox" [(ngModel)]="necessiteSignatureSelectionne" /> Signature client requise
+      </label>
+      <button mat-raised-button color="primary" type="button" (click)="televerserDocument()" [disabled]="!fichierSelectionne || televersement">
+        <mat-icon>upload</mat-icon> {{ televersement ? 'Envoi...' : 'Téléverser' }}
+      </button>
+    </div>
+    <p class="erreur" *ngIf="erreurTeleversement">{{ erreurTeleversement }}</p>
+
+    <table *ngIf="(dossier.documents?.length ?? 0) > 0; else aucunDocument">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Type</th>
+          <th>Taille</th>
+          <th>Ajouté le</th>
+          <th>Signature</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let document of dossier.documents">
+          <td>{{ document.nom_original }}</td>
+          <td><span class="badge">{{ document.type }}</span></td>
+          <td>{{ formaterTaille(document.taille) }}</td>
+          <td>{{ document.created_at | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            <span *ngIf="!document.necessite_signature" class="permission-note">—</span>
+            <span *ngIf="document.necessite_signature && !document.signe_le" class="badge badge-en_attente">En attente</span>
+            <span *ngIf="document.necessite_signature && document.signe_le" class="badge badge-payee">
+              Signé le {{ document.signe_le | date: 'dd/MM/yyyy' }}
+            </span>
+          </td>
+          <td>
+            <button mat-icon-button (click)="telechargerDocument(document.id, document.nom_original)" title="Télécharger">
+              <mat-icon>download</mat-icon>
+            </button>
+            <button mat-icon-button (click)="supprimerDocument(document.id)" title="Supprimer">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+    <ng-template #aucunDocument><p>Aucun document pour ce dossier.</p></ng-template>
+  </section>
+
+  <!-- TEMPS PASSÉ / CHRONOMÈTRE -->
+  <section class="section-dossier">
+    <div class="section-entete">
+      <h3>Temps passé</h3>
+      <button
+        mat-button
+        *appHasRole="['admin', 'avocat']"
+        [disabled]="generationFacture || (dossier.mode_facturation === 'horaire' && totalHeuresNonFacturees === 0)"
+        (click)="genererFactureDepuisTemps()"
+      >
+        <mat-icon>receipt_long</mat-icon>
+        {{ generationFacture ? 'Génération...' : ('Générer une facture (' + (dossier.mode_facturation === 'forfait' ? 'forfait' : totalHeuresNonFacturees.toFixed(2) + ' h non facturées') + ')') }}
+      </button>
+    </div>
+
+    <div class="chrono-widget">
+      <ng-container *ngIf="chronoActifSurCeDossier; else chronoArrete">
+        <span class="chrono-actif">⏱ Chronomètre en cours — démarré à {{ chronoEnCours!.demarre_a | date: 'HH:mm' }}</span>
+        <button mat-stroked-button (click)="arreterChrono()">
+          <mat-icon>stop</mat-icon> Arrêter le chronomètre
+        </button>
+      </ng-container>
+      <ng-template #chronoArrete>
+        <ng-container *ngIf="dossier.statut !== 'clos'; else dossierClosTemps">
+          <input type="text" placeholder="Description (facultatif)" [(ngModel)]="descriptionChrono" [disabled]="!!chronoEnCours" />
+          <button mat-raised-button color="primary" (click)="demarrerChrono()" [disabled]="!!chronoEnCours">
+            <mat-icon>play_arrow</mat-icon> Démarrer le chronomètre
+          </button>
+          <span class="permission-note" *ngIf="chronoEnCours">Un chronomètre est déjà en cours sur un autre dossier.</span>
+        </ng-container>
+      </ng-template>
+    </div>
+
+    <div class="ajout-manuel" *ngIf="dossier.statut !== 'clos'">
+      <input type="number" min="1" placeholder="Minutes" [(ngModel)]="minutesManuelles" />
+      <input type="text" placeholder="Description" [(ngModel)]="descriptionManuelle" />
+      <button mat-stroked-button (click)="ajouterTempsManuel()">
+        <mat-icon>add</mat-icon> Ajouter une entrée manuelle
+      </button>
+    </div>
+    <ng-template #dossierClosTemps>
+      <p class="permission-note">Dossier clos — plus de nouvelle saisie de temps possible.</p>
+    </ng-template>
+
+    <table *ngIf="tempsPasses.length; else aucunTemps">
+      <thead><tr><th>Intervenant</th><th>Description</th><th>Durée</th><th>Facturable</th><th>Statut</th><th></th></tr></thead>
+      <tbody>
+        <tr *ngFor="let t of tempsPasses">
+          <td>{{ t.user?.name }}</td>
+          <td>{{ t.description || '—' }}</td>
+          <td>{{ formaterDuree(t.duree_secondes) }}</td>
+          <td>{{ t.facturable ? 'Oui' : 'Non' }}</td>
+          <td><span class="badge" [class.badge-payee]="t.facture_id">{{ t.facture_id ? 'Facturé' : (t.termine_a ? 'Non facturé' : 'En cours') }}</span></td>
+          <td>
+            <button mat-icon-button *ngIf="!t.facture_id && t.termine_a" (click)="supprimerTemps(t.id)" title="Supprimer">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #aucunTemps><p class="vide">Aucun temps enregistré pour ce dossier.</p></ng-template>
+  </section>
+
+  <!-- FACTURES -->
+  <section class="section-dossier">
+    <div class="section-entete">
+      <h3>Factures</h3>
+      <a
+        mat-button
+        *appHasRole="['admin', 'avocat']"
+        [routerLink]="['/factures/nouvelle']"
+        [queryParams]="{ dossier_id: dossier.id }"
+      >
+        <mat-icon>add</mat-icon> Nouvelle facture
+      </a>
+    </div>
+
+    <table *ngIf="(dossier.factures?.length ?? 0) > 0; else aucuneFacture">
+      <thead>
+        <tr>
+          <th>Numéro</th>
+          <th>Émission</th>
+          <th>Montant TTC</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let facture of dossier.factures">
+          <td>{{ facture.numero }}</td>
+          <td>{{ facture.date_emission | date: 'dd/MM/yyyy':'UTC' }}</td>
+          <td>{{ facture.montant_ttc | number: '1.2-2' }} $</td>
+          <td><span class="badge statut-{{ facture.statut }}">{{ facture.statut }}</span></td>
+          <td>
+            <button mat-icon-button class="bouton-pdf-grand" (click)="telechargerFacturePdf(facture.id, facture.numero)" title="Télécharger le PDF">
+              <mat-icon class="icone-pdf-grande">picture_as_pdf</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #aucuneFacture><p>Aucune facture pour ce dossier.</p></ng-template>
+  </section>
+
+</div>
+
+<ng-template #loading>
+  <p>Chargement du dossier...</p>
+</ng-template>
+
+<div class="overlay" *ngIf="modaleAssignationOuverte" (click)="fermerModaleAssignation()">
+  <div class="modale" (click)="$event.stopPropagation()">
+    <div class="modale-tete">
+      <h3>Réassigner le dossier</h3>
+      <button mat-icon-button (click)="fermerModaleAssignation()" title="Fermer">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="modale-corps">
+      <label>
+        Avocat responsable
+        <select [(ngModel)]="avocatIdChoisi">
+          <option [ngValue]="null">-- Sélectionner --</option>
+          <option *ngFor="let a of avocats" [ngValue]="a.id">{{ a.name }}</option>
+        </select>
+      </label>
+      <label>
+        Assistant traitant (facultatif)
+        <select [(ngModel)]="assistantIdChoisi">
+          <option [ngValue]="null">-- Aucun --</option>
+          <option *ngFor="let a of assistants" [ngValue]="a.id">{{ a.name }}</option>
+        </select>
+      </label>
+    </div>
+    <div class="modale-pied">
+      <button mat-button (click)="fermerModaleAssignation()">Annuler</button>
+      <button mat-raised-button color="primary" [disabled]="!avocatIdChoisi || assignationEnCours" (click)="confirmerAssignation()">
+        {{ assignationEnCours ? 'Enregistrement...' : 'Confirmer' }}
+      </button>
+    </div>
+  </div>
+</div>

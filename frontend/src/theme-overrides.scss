@@ -1,0 +1,42 @@
+/*
+ * Surcouche de thème — aligne Angular Material sur l'identité visuelle du
+ * cabinet (encre/charbon + laiton) définie dans ce même fichier plus haut,
+ * plutôt que de garder le violet/indigo par défaut de Material.
+ *
+ * Utilise les variables CSS "system tokens" exposées par Angular Material 17+
+ * (--mat-sys-*), documentées dans leur guide de theming ("Theming your own
+ * components"). Ce sont de simples variables CSS : elles s'appliquent quelle
+ * que soit la version exacte de l'API Sass que `ng add @angular/material` a
+ * généré dans ce fichier (theme M3 via mat.theme(), ou legacy M2 via
+ * mat.define-theme()/mat.define-palette()) — pas besoin d'aller modifier le
+ * mixin Sass généré plus haut.
+ *
+ * Si votre version de Material est antérieure à ces system tokens (peu
+ * probable avec un `ng add` récent), la palette M2 équivalente s'obtient en
+ * remplaçant, dans le bloc généré par `ng add` plus haut dans ce fichier,
+ * `mat.$violet-palette` (ou équivalent) par une palette personnalisée créée
+ * via `mat.define-palette` à partir des couleurs ci-dessous — voir
+ * CONFIGURATION.md §16 pour l'exemple complet.
+ */
+:root {
+  --mat-sys-primary: #1b2430;           /* encre — boutons pleins, éléments actifs */
+  --mat-sys-on-primary: #f2eee3;
+  --mat-sys-secondary: #a8802e;         /* laiton — accents, liens, focus */
+  --mat-sys-on-secondary: #241c08;
+  --mat-sys-tertiary: #a8802e;
+  --mat-sys-surface: #ffffff;
+  --mat-sys-surface-variant: #f7f5ef;   /* papier — fond des cartes/dialogues */
+  --mat-sys-on-surface: #1b2430;
+  --mat-sys-outline: #e4e0d5;
+  --mat-sys-error: #a3402c;
+}
+
+/* Ajustements ponctuels pour rester cohérent avec le reste de la feuille de
+   style (bords carrés à 2px, pas les coins très arrondis par défaut de M3). */
+.mat-mdc-raised-button, .mat-mdc-outlined-button, .mat-mdc-unelevated-button,
+.mat-mdc-form-field, .mat-mdc-dialog-surface, .mat-mdc-snack-bar-container {
+  --mdc-filled-button-container-shape: 2px;
+  --mdc-outlined-button-container-shape: 2px;
+  --mdc-text-button-container-shape: 2px;
+  --mdc-dialog-container-shape: 2px;
+}

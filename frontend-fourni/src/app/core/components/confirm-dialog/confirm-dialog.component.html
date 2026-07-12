@@ -1,0 +1,8 @@
+<h2 mat-dialog-title>{{ data.titre }}</h2>
+<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="annuler()">{{ data.libelleAnnuler || 'Annuler' }}</button>
+  <button mat-raised-button [color]="data.destructif ? 'warn' : 'primary'" (click)="confirmer()">
+    {{ data.libelleConfirmer || 'Confirmer' }}
+  </button>
+</mat-dialog-actions>

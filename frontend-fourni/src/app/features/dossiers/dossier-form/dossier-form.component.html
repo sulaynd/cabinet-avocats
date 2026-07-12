@@ -1,0 +1,106 @@
+<form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form-material">
+  <h2>{{ dossierId ? 'Modifier le dossier' : 'Nouveau dossier' }}</h2>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Client</mat-label>
+    <mat-select formControlName="client_id">
+      <mat-option *ngFor="let client of clients" [value]="client.id">
+        {{ client.type === 'entreprise' ? client.raison_sociale : (client.prenom + ' ' + client.nom) }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Titre du dossier</mat-label>
+    <input matInput formControlName="titre" />
+  </mat-form-field>
+
+  <div class="ligne-champs">
+    <mat-form-field appearance="outline">
+      <mat-label>Avocat responsable</mat-label>
+      <mat-select formControlName="avocat_id">
+        <mat-option *ngFor="let avocat of avocats" [value]="avocat.id">{{ avocat.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Assistant traitant (facultatif)</mat-label>
+      <mat-select formControlName="assistant_id">
+        <mat-option [value]="null">-- Aucun --</mat-option>
+        <mat-option *ngFor="let assistant of assistants" [value]="assistant.id">{{ assistant.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <p class="permission-note" *ngIf="!peutAssigner && dossierId">
+    L'assignation d'un dossier existant est réservée à l'administrateur.
+  </p>
+
+  <mat-checkbox formControlName="envoyer_questionnaire_accueil" *ngIf="!dossierId">
+    Envoyer automatiquement un questionnaire de pré-consultation au client
+  </mat-checkbox>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Type d'affaire</mat-label>
+    <mat-select formControlName="type_affaire">
+      <mat-option *ngFor="let t of typesAffaire" [value]="t">{{ t }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="ligne-champs">
+    <mat-form-field appearance="outline">
+      <mat-label>Mode de facturation</mat-label>
+      <mat-select formControlName="mode_facturation">
+        <mat-option value="horaire">Au temps passé (taux horaire)</mat-option>
+        <mat-option value="forfait">Forfait</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" *ngIf="form.value.mode_facturation === 'horaire'">
+      <mat-label>Taux horaire du dossier (€/h, facultatif)</mat-label>
+      <input matInput type="number" step="0.01" formControlName="taux_horaire" placeholder="Défaut : taux de l'intervenant" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" *ngIf="form.value.mode_facturation === 'forfait'">
+      <mat-label>Montant du forfait (€)</mat-label>
+      <input matInput type="number" step="0.01" formControlName="montant_forfait" />
+    </mat-form-field>
+  </div>
+
+  <div class="ligne-champs cases-facturation">
+    <mat-checkbox formControlName="facturer_a_cloture">Facturer et envoyer automatiquement à la clôture</mat-checkbox>
+    <mat-checkbox formControlName="facturation_periodique">Facturation périodique automatique</mat-checkbox>
+
+    <mat-form-field appearance="outline" *ngIf="form.value.facturation_periodique">
+      <mat-label>Fréquence</mat-label>
+      <mat-select formControlName="frequence_facturation">
+        <mat-option value="hebdomadaire">Hebdomadaire</mat-option>
+        <mat-option value="mensuelle">Mensuelle</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="ligne-champs">
+    <mat-form-field appearance="outline">
+      <mat-label>Statut</mat-label>
+      <mat-select formControlName="statut">
+        <mat-option *ngFor="let s of statuts" [value]="s">{{ s }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Date d'ouverture</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="date_ouverture" />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Description</mat-label>
+    <textarea matInput formControlName="description" rows="4"></textarea>
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || enregistrement">
+    <mat-icon>save</mat-icon> {{ enregistrement ? 'Enregistrement...' : 'Enregistrer' }}
+  </button>
+</form>

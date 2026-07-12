@@ -1,0 +1,37 @@
+<div class="prise-rdv-publique">
+  <h2>Lambert &amp; Associés</h2>
+
+  <div *ngIf="chargement">Chargement...</div>
+
+  <div *ngIf="!chargement && erreur" class="erreur">{{ erreur }}</div>
+
+  <div *ngIf="!chargement && donnees && (envoye || donnees.deja_rempli)" class="confirmation-rdv">
+    <p>✅ Merci {{ donnees.client_nom }}, vos réponses ont bien été enregistrées pour le dossier « {{ donnees.dossier_titre }} ».</p>
+  </div>
+
+  <form *ngIf="!chargement && donnees && !envoye && !donnees.deja_rempli" (ngSubmit)="soumettre()" class="rdv-form">
+    <p class="sync-note">Bonjour {{ donnees.client_nom }}, merci de compléter ces quelques questions avant votre rendez-vous concernant « {{ donnees.dossier_titre }} ».</p>
+
+    <label *ngFor="let champ of donnees.questionnaire.champs">
+      {{ champ.label }} <span *ngIf="champ.requis">*</span>
+
+      <input *ngIf="champ.type === 'texte'" type="text" [(ngModel)]="reponses[champ.cle]" [name]="champ.cle" [required]="!!champ.requis" />
+      <textarea *ngIf="champ.type === 'zone_texte'" [(ngModel)]="reponses[champ.cle]" [name]="champ.cle" rows="3" [required]="!!champ.requis"></textarea>
+
+      <select *ngIf="champ.type === 'choix'" [(ngModel)]="reponses[champ.cle]" [name]="champ.cle" [required]="!!champ.requis">
+        <option [ngValue]="null">-- Choisir --</option>
+        <option *ngFor="let option of champ.options" [value]="option">{{ option }}</option>
+      </select>
+
+      <span *ngIf="champ.type === 'case'" style="display:block; margin-top:5px;">
+        <input type="checkbox" [(ngModel)]="reponses[champ.cle]" [name]="champ.cle" style="width:auto;" />
+      </span>
+    </label>
+
+    <p class="erreur" *ngIf="erreur">{{ erreur }}</p>
+
+    <button type="submit" class="btn-primary" [disabled]="envoiEnCours">
+      {{ envoiEnCours ? 'Envoi...' : 'Envoyer mes réponses' }}
+    </button>
+  </form>
+</div>

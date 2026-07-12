@@ -1,0 +1,178 @@
+<div class="page-accueil">
+
+  <!-- EN-TÊTE -->
+  <header class="entete-accueil">
+    <div class="marque-accueil">
+      <div class="sceau">{{ initiales(cabinet?.nom) }}</div>
+      <div class="nom">{{ cabinet?.nom }}</div>
+    </div>
+    <nav class="nav-accueil">
+      <a mat-raised-button color="primary" routerLink="/connexion">
+        <mat-icon>gavel</mat-icon> Connexion cabinet
+      </a>
+      <a mat-raised-button color="primary" routerLink="/portail/connexion">
+        <mat-icon>person</mat-icon> Espace client
+      </a>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero-accueil">
+    <h1>{{ cabinet?.nom }}</h1>
+    <p class="sous-titre-hero">
+      Cabinet international de conseil spécialisé en immigration et mobilité internationale,
+      recrutement international, coopération et développement international, action
+      humanitaire, ainsi qu'en services-conseils stratégiques.
+    </p>
+    <div class="actions-hero">
+      <a mat-raised-button color="primary" routerLink="/prendre-rendez-vous">
+        <mat-icon>event_available</mat-icon> Prendre rendez-vous
+      </a>
+      <a mat-stroked-button href="#contact">
+        <mat-icon>mail</mat-icon> Nous contacter
+      </a>
+    </div>
+  </section>
+
+  <!-- FONDATEUR -->
+  <section class="section-fondateur">
+    <div class="photo-fondateur">
+      <img *ngIf="cabinet?.photo_fondateur_url" [src]="cabinet?.photo_fondateur_url" alt="Me NDIAYE" class="photo-fondateur-img" />
+      <span *ngIf="!cabinet?.photo_fondateur_url">ND</span>
+    </div>
+    <div class="texte-fondateur">
+      <h2>Rencontrez Me NDIAYE</h2>
+      <p class="titre-fondateur">Fondateur et avocat principal — {{ cabinet?.nom }}</p>
+      <p>
+        Fort d'une expertise reconnue en immigration, mobilité internationale et
+        développement, Me NDIAYE accompagne depuis des années une clientèle variée à
+        travers le monde — particuliers, entreprises, gouvernements et organisations
+        internationales — dans leurs démarches les plus stratégiques.
+      </p>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section-services" id="services">
+    <h2>Nos domaines d'expertise</h2>
+    <div class="grille-services">
+      <div class="carte-service" *ngFor="let s of services">
+        <mat-icon>{{ s.icone }}</mat-icon>
+        <h3>{{ s.titre }}</h3>
+        <p>{{ s.description }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PUBLIC CIBLE -->
+  <section class="section-presentation">
+    <h2>Public cible</h2>
+    <div class="grille-publics">
+      <span class="puce-public" *ngFor="let p of publicsCibles">{{ p }}</span>
+    </div>
+  </section>
+
+  <!-- VISION / MISSION / VALEURS -->
+  <section class="section-identite">
+    <div class="grille-identite">
+      <div class="bloc-identite">
+        <mat-icon>visibility</mat-icon>
+        <h3>Vision</h3>
+        <p>Être une référence internationale.</p>
+      </div>
+      <div class="bloc-identite">
+        <mat-icon>flag</mat-icon>
+        <h3>Mission</h3>
+        <p>Faciliter la mobilité des talents et soutenir le développement durable.</p>
+      </div>
+    </div>
+    <h3 class="titre-valeurs">Nos valeurs</h3>
+    <div class="grille-valeurs">
+      <div class="valeur" *ngFor="let v of valeurs">
+        <mat-icon>{{ v.icone }}</mat-icon>
+        <span>{{ v.nom }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- POURQUOI NOUS -->
+  <section class="section-pourquoi">
+    <h2>Pourquoi nous choisir</h2>
+    <div class="grille-atouts">
+      <div class="atout">
+        <mat-icon>verified</mat-icon>
+        <h3>Expertise internationale</h3>
+        <p>Une équipe expérimentée dans les enjeux de mobilité, de développement et de coopération à l'échelle mondiale.</p>
+      </div>
+      <div class="atout">
+        <mat-icon>support_agent</mat-icon>
+        <h3>Accompagnement personnalisé</h3>
+        <p>Chaque dossier bénéficie d'une attention dédiée, adaptée à votre réalité et à votre pays.</p>
+      </div>
+      <div class="atout">
+        <mat-icon>lock</mat-icon>
+        <h3>Suivi en ligne sécurisé</h3>
+        <p>Consultez vos dossiers, factures et documents depuis votre espace client, où que vous soyez.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TÉMOIGNAGES -->
+  <section class="section-temoignages">
+    <h2>Ils nous font confiance</h2>
+    <div class="grille-temoignages">
+      <div class="carte-temoignage" *ngFor="let t of temoignages">
+        <mat-icon>format_quote</mat-icon>
+        <p class="texte-temoignage">{{ t.texte }}</p>
+        <p class="auteur-temoignage">— {{ t.auteur }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ÉQUIPE -->
+  <section class="section-equipe" *ngIf="equipe.length">
+    <h2>Notre équipe</h2>
+    <div class="grille-equipe">
+      <div class="carte-membre-public" *ngFor="let m of equipe">
+        <div class="photo-membre-public">
+          <img *ngIf="m.photo_url" [src]="m.photo_url" [alt]="m.nom" />
+          <span *ngIf="!m.photo_url">{{ initialesMembre(m.nom) }}</span>
+        </div>
+        <h3>{{ m.nom }}</h3>
+        <p class="titre-membre-public" *ngIf="m.titre">{{ m.titre }}</p>
+        <p *ngIf="m.bio">{{ m.bio }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ACTUALITÉS -->
+  <section class="section-actualites">
+    <h2>Actualités</h2>
+    <div class="grille-actualites">
+      <div class="carte-actualite" *ngFor="let a of actualites">
+        <span class="date-actualite">{{ a.date }}</span>
+        <h3>{{ a.titre }}</h3>
+        <p>{{ a.extrait }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="section-contact" id="contact">
+    <h2>Nous contacter</h2>
+    <div class="bloc-contact">
+      <p *ngIf="cabinet?.adresse"><mat-icon>place</mat-icon> {{ cabinet?.adresse }}</p>
+      <p *ngIf="cabinet?.telephone"><mat-icon>phone</mat-icon> {{ cabinet?.telephone }}</p>
+      <p *ngIf="cabinet?.email"><mat-icon>email</mat-icon> {{ cabinet?.email }}</p>
+    </div>
+    <a mat-raised-button color="primary" routerLink="/prendre-rendez-vous">
+      <mat-icon>event_available</mat-icon> Prendre rendez-vous
+    </a>
+  </section>
+
+  <!-- PIED DE PAGE -->
+  <footer class="pied-accueil">
+    <p>© {{ anneeCourante }} Copyright JCA - Juristyle Conseil &amp; Accompagnement – Avocats Me NDIAYE | Une réalisation de <a href="https://203media.ca/" target="_blank" rel="noopener">203 media</a></p>
+  </footer>
+
+</div>

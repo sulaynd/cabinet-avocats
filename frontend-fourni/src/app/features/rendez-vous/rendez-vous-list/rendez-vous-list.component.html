@@ -1,0 +1,23 @@
+<div class="rendez-vous-list">
+  <p class="sync-intro">Demandes reçues via le widget de prise de rendez-vous en ligne du site du cabinet.</p>
+
+  <table *ngIf="!chargement; else loading">
+    <thead><tr><th>Date demandée</th><th>Nom</th><th>Email</th><th>Avocat</th><th>Motif</th><th>Statut</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let r of rendezVous">
+        <td>{{ r.date_heure | date: 'dd/MM/yyyy HH:mm' }}</td>
+        <td>{{ r.nom }}</td>
+        <td>{{ r.email }}</td>
+        <td>{{ r.avocat?.name }}</td>
+        <td>{{ r.motif || '—' }}</td>
+        <td><span class="badge badge-{{ r.statut === 'confirme' ? 'payee' : (r.statut === 'annule' ? 'annulee' : 'en_attente') }}">{{ r.statut }}</span></td>
+        <td>
+          <button *ngIf="r.statut === 'demande'" (click)="confirmer(r.id)">Confirmer</button>
+          <button *ngIf="r.statut !== 'annule'" (click)="annuler(r.id)">Annuler</button>
+        </td>
+      </tr>
+      <tr *ngIf="rendezVous.length === 0"><td colspan="7" class="vide">Aucune demande de rendez-vous.</td></tr>
+    </tbody>
+  </table>
+  <ng-template #loading><p>Chargement...</p></ng-template>
+</div>

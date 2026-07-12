@@ -1,0 +1,104 @@
+<div class="echeance-agenda">
+  <div class="barre-outils">
+    <mat-button-toggle-group [value]="vue" (change)="changerVue($event.value)">
+      <mat-button-toggle value="calendrier">Calendrier</mat-button-toggle>
+      <mat-button-toggle value="liste">Liste</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <mat-form-field appearance="outline" class="champ-filtre-agenda">
+      <mat-label>Avocat / assistant</mat-label>
+      <mat-select [(ngModel)]="traitantFiltre" (selectionChange)="charger()">
+        <mat-option [value]="null">Tous les avocats / assistants</mat-option>
+        <mat-option *ngFor="let t of traitants" [value]="t.id">{{ t.name }} ({{ t.role }})</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="champ-filtre-agenda">
+      <mat-label>Type</mat-label>
+      <mat-select [(ngModel)]="typeFiltre" (selectionChange)="charger()">
+        <mat-option value="">Tous les types</mat-option>
+        <mat-option *ngFor="let t of types" [value]="t">{{ t }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="spacer"></div>
+    <button mat-button (click)="afficherSync = !afficherSync">
+      <mat-icon>link</mat-icon> {{ afficherSync ? 'Masquer la synchronisation' : 'Synchroniser mon agenda' }}
+    </button>
+    <a mat-raised-button color="primary" routerLink="/echeances/nouvelle">
+      <mat-icon>add</mat-icon> Nouvelle échéance
+    </a>
+  </div>
+
+  <app-synchronisation-calendrier *ngIf="afficherSync"></app-synchronisation-calendrier>
+
+  <div *ngIf="chargement">Chargement...</div>
+
+  <!-- ===== VUE CALENDRIER ===== -->
+  <div *ngIf="!chargement && vue === 'calendrier'" class="vue-calendrier">
+    <div class="entete-mois">
+      <button mat-icon-button (click)="moisPrecedent()"><mat-icon>chevron_left</mat-icon></button>
+      <h3>{{ moisCourant | date: 'MMMM yyyy' }}</h3>
+      <button mat-icon-button (click)="moisSuivant()"><mat-icon>chevron_right</mat-icon></button>
+      <button mat-button (click)="aujourdHui()">Aujourd'hui</button>
+    </div>
+
+    <div class="grille-calendrier">
+      <div class="entete-jour" *ngFor="let nom of nomsJours">{{ nom }}</div>
+
+      <ng-container *ngFor="let semaine of semaines">
+        <div
+          class="case-jour"
+          *ngFor="let jour of semaine"
+          [class.hors-mois]="jour.horsMois"
+          [class.aujourdhui]="jour.aujourdhui"
+          [class.selectionne]="jourSelectionne === jour.cle"
+          (click)="jour.echeances.length && selectionnerJour(jour.cle)"
+        >
+          <span class="numero-jour">{{ jour.date.getDate() }}</span>
+          <div class="puces-echeance" *ngIf="jour.echeances.length">
+            <span class="puce" *ngFor="let e of jour.echeances.slice(0,3)" [ngClass]="'puce-' + e.type" [title]="e.titre"></span>
+            <span class="puce-plus" *ngIf="jour.echeances.length > 3">+{{ jour.echeances.length - 3 }}</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="panneau-jour" *ngIf="jourSelectionne">
+      <h4>{{ jourSelectionne | date: 'EEEE d MMMM y' }}</h4>
+      <div class="ligne-echeance" *ngFor="let e of echeancesDuJourSelectionne">
+        <span class="heure">{{ e.date_heure | date: 'HH:mm' }}</span>
+        <span class="badge">{{ e.type }}</span>
+        <span class="titre-e">{{ e.titre }}</span>
+        <span class="lieu-e" *ngIf="e.lieu">— {{ e.lieu }}</span>
+        <span class="actions">
+          <a mat-icon-button [routerLink]="['/echeances', e.id, 'modifier']" title="Modifier"><mat-icon>edit</mat-icon></a>
+          <button mat-icon-button *ngIf="e.statut === 'a_venir'" (click)="marquerRealisee(e)" title="Marquer réalisée"><mat-icon>check_circle</mat-icon></button>
+          <button mat-icon-button (click)="supprimer(e)" title="Supprimer"><mat-icon>delete</mat-icon></button>
+        </span>
+      </div>
+      <p *ngIf="!echeancesDuJourSelectionne.length" class="vide">Aucune échéance ce jour.</p>
+    </div>
+  </div>
+
+  <!-- ===== VUE LISTE ===== -->
+  <div *ngIf="!chargement && vue === 'liste'">
+    <div class="jour-groupe" *ngFor="let groupe of groupesParJour">
+      <h3>{{ groupe.date | date: 'EEEE d MMMM y' }}</h3>
+      <ul>
+        <li *ngFor="let echeance of groupe.echeances" [class.realisee]="echeance.statut === 'realisee'" [class.annulee]="echeance.statut === 'annulee'">
+          <span class="heure">{{ echeance.date_heure | date: 'HH:mm' }}</span>
+          <span class="type-badge">{{ echeance.type }}</span>
+          <span class="titre">{{ echeance.titre }}</span>
+          <span class="lieu" *ngIf="echeance.lieu">— {{ echeance.lieu }}</span>
+          <span class="actions">
+            <a mat-icon-button [routerLink]="['/echeances', echeance.id, 'modifier']" title="Modifier"><mat-icon>edit</mat-icon></a>
+            <button mat-icon-button *ngIf="echeance.statut === 'a_venir'" (click)="marquerRealisee(echeance)" title="Marquer réalisée"><mat-icon>check_circle</mat-icon></button>
+            <button mat-icon-button (click)="supprimer(echeance)" title="Supprimer"><mat-icon>delete</mat-icon></button>
+          </span>
+        </li>
+      </ul>
+    </div>
+    <p *ngIf="!groupesParJour.length">Aucune échéance.</p>
+  </div>
+</div>

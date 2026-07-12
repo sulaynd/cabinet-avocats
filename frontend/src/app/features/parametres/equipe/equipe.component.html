@@ -1,0 +1,43 @@
+<div class="equipe-admin">
+  <div class="section-entete">
+    <div>
+      <h2>Équipe du cabinet</h2>
+      <p class="permission-note">Affichée sur la page d'accueil publique. Décochez "Actif" pour masquer un membre sans le supprimer.</p>
+    </div>
+    <a mat-button routerLink="/parametres-cabinet"><mat-icon>arrow_back</mat-icon> Coordonnées du cabinet</a>
+  </div>
+
+  <p *ngIf="chargement">Chargement...</p>
+
+  <div class="carte-membre" *ngFor="let membre of membres">
+    <div class="cercle-apercu">
+      <img *ngIf="apercusFichiers[membre.id] || membre.photo_url" [src]="apercusFichiers[membre.id] || membre.photo_url" alt="" />
+      <span *ngIf="!apercusFichiers[membre.id] && !membre.photo_url">Photo</span>
+    </div>
+
+    <div class="champs-membre">
+      <div class="ligne-champs-membre">
+        <label>Nom<input type="text" [(ngModel)]="membre.nom" placeholder="Ex: Me Malick NDIAYE" /></label>
+        <label>Titre<input type="text" [(ngModel)]="membre.titre" placeholder="Ex: Avocat associé" /></label>
+      </div>
+      <label>Bio (courte)<textarea [(ngModel)]="membre.bio" rows="2" placeholder="Ex: Spécialiste en droit de l'immigration depuis 10 ans."></textarea></label>
+      <div class="ligne-actions-membre">
+        <input type="file" accept="image/*" (change)="surSelectionPhoto($event, membre)" />
+        <mat-checkbox [(ngModel)]="membre.actif">Actif</mat-checkbox>
+      </div>
+    </div>
+
+    <div class="actions-carte-membre">
+      <button mat-icon-button (click)="supprimer(membre)" title="Supprimer">
+        <mat-icon>delete</mat-icon>
+      </button>
+      <button mat-raised-button color="primary" [disabled]="enregistrementEnCours[membre.id]" (click)="enregistrer(membre)">
+        <mat-icon>save</mat-icon> {{ enregistrementEnCours[membre.id] ? '...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+
+  <button mat-stroked-button (click)="ajouterMembre()">
+    <mat-icon>add</mat-icon> Ajouter un membre
+  </button>
+</div>

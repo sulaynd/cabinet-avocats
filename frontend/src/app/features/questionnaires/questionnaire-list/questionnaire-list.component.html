@@ -1,0 +1,53 @@
+<div class="questionnaire-list">
+  <div class="toolbar">
+    <p class="sync-intro">
+      Un questionnaire "par défaut" (sans type d'affaire) est envoyé si aucun questionnaire
+      ne cible spécifiquement le type d'affaire du nouveau dossier.
+    </p>
+    <span class="spacer"></span>
+    <a mat-raised-button color="primary" routerLink="/questionnaires/nouveau">
+      <mat-icon>add</mat-icon> Nouveau questionnaire
+    </a>
+  </div>
+
+  <table mat-table matSort [dataSource]="dataSource" class="mat-elevation-z1">
+    <ng-container matColumnDef="nom">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
+      <td mat-cell *matCellDef="let q">{{ q.nom }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="type_affaire">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Type d'affaire ciblé</th>
+      <td mat-cell *matCellDef="let q">{{ q.type_affaire || 'Par défaut (tous types)' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="champs">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Champs</th>
+      <td mat-cell *matCellDef="let q">{{ q.champs.length }} question(s)</td>
+    </ng-container>
+
+    <ng-container matColumnDef="statut">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
+      <td mat-cell *matCellDef="let q">
+        <mat-chip [class]="q.actif ? 'chip-statut-payee' : 'chip-statut-annulee'">{{ q.actif ? 'actif' : 'inactif' }}</mat-chip>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let q">
+        <a mat-icon-button [routerLink]="['/questionnaires', q.id, 'modifier']" title="Modifier">
+          <mat-icon>edit</mat-icon>
+        </a>
+        <button mat-icon-button (click)="supprimer(q)" title="Supprimer">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="colonnes"></tr>
+    <tr mat-row *matRowDef="let q; columns: colonnes;"></tr>
+  </table>
+
+  <p class="vide" *ngIf="!dataSource.data.length">Aucun questionnaire configuré.</p>
+</div>

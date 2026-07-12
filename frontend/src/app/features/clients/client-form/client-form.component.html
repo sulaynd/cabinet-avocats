@@ -1,0 +1,95 @@
+<form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form-material">
+  <h2>{{ clientId ? 'Modifier le client' : 'Nouveau client' }}</h2>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Type de client</mat-label>
+    <mat-select formControlName="type">
+      <mat-option value="particulier">Particulier</mat-option>
+      <mat-option value="entreprise">Entreprise</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="ligne-champs" *ngIf="!estEntreprise">
+    <mat-form-field appearance="outline">
+      <mat-label>Prénom</mat-label>
+      <input matInput formControlName="prenom" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Nom</mat-label>
+      <input matInput formControlName="nom" />
+    </mat-form-field>
+  </div>
+
+  <div class="ligne-champs" *ngIf="estEntreprise">
+    <mat-form-field appearance="outline">
+      <mat-label>Raison sociale</mat-label>
+      <input matInput formControlName="raison_sociale" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>SIRET</mat-label>
+      <input matInput formControlName="siret" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Email</mat-label>
+    <input matInput type="email" formControlName="email" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Téléphone</mat-label>
+    <input matInput formControlName="telephone" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Adresse</mat-label>
+    <input matInput formControlName="adresse" />
+  </mat-form-field>
+
+  <div class="ligne-champs">
+    <mat-form-field appearance="outline">
+      <mat-label>Code postal</mat-label>
+      <input matInput formControlName="code_postal" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Ville</mat-label>
+      <input matInput formControlName="ville" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Notes</mat-label>
+    <textarea matInput formControlName="notes" rows="3"></textarea>
+  </mat-form-field>
+
+  <div class="section-portail-client" *ngIf="clientId">
+    <h3>Accès au portail client</h3>
+    <p class="permission-note" *ngIf="portailActiveLe">
+      Accès activé le {{ portailActiveLe | date: 'dd/MM/yyyy à HH:mm' }}. Vous pouvez réinitialiser
+      le mot de passe si le client l'a perdu.
+    </p>
+    <p class="permission-note" *ngIf="!portailActiveLe">
+      Ce client n'a pas encore accès à son espace en ligne (consultation de ses dossiers,
+      factures et documents).
+    </p>
+    <button
+      mat-stroked-button
+      type="button"
+      [disabled]="activationPortailEnCours || !form.value.email"
+      (click)="activerPortail()"
+    >
+      <mat-icon>{{ portailActiveLe ? 'lock_reset' : 'person_add' }}</mat-icon>
+      {{ activationPortailEnCours ? 'Envoi en cours...' : (portailActiveLe ? "Réinitialiser l'accès" : "Activer l'accès au portail") }}
+    </button>
+    <p class="permission-note" *ngIf="!form.value.email">
+      Renseignez d'abord un email pour ce client.
+    </p>
+  </div>
+
+  <div class="actions-formulaire">
+    <button mat-button type="button" (click)="annuler()">Annuler</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || enregistrement">
+      <mat-icon>save</mat-icon> {{ enregistrement ? 'Enregistrement...' : 'Enregistrer' }}
+    </button>
+  </div>
+</form>

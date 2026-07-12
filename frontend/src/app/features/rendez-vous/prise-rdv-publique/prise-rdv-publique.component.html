@@ -1,0 +1,90 @@
+<div class="ecran-rdv-public">
+  <div class="prise-rdv-publique">
+    <div class="entete-rdv-public">
+      <h2>Prendre rendez-vous avec le cabinet</h2>
+      <button type="button" class="btn-fermer-rdv" (click)="fermer()" title="Fermer">×</button>
+    </div>
+
+    <div *ngIf="reservationConfirmee; else formulaire" class="confirmation-rdv">
+      <p>✅ Votre demande de rendez-vous a bien été envoyée. Un email de confirmation vous a été adressé, et le cabinet validera ce créneau très prochainement.</p>
+      <button type="button" class="btn-primary" (click)="fermer()">Fermer</button>
+    </div>
+
+    <ng-template #formulaire>
+      <form [formGroup]="form" (ngSubmit)="reserver()" class="rdv-form">
+        <label>
+          Avocat souhaité
+          <select formControlName="avocat_id" (change)="chargerCreneaux()">
+            <option [ngValue]="null">-- Sélectionner --</option>
+            <option *ngFor="let a of avocats" [ngValue]="a.id">{{ a.name }}</option>
+          </select>
+        </label>
+
+        <ng-container *ngIf="form.value.avocat_id">
+          <div class="chargement-creneaux" *ngIf="chargementCreneaux">Chargement des créneaux...</div>
+
+          <ng-container *ngIf="!chargementCreneaux && joursDisponibles.length">
+            <label class="etiquette-etape">Choisissez un jour</label>
+            <div class="rangee-jours">
+              <button type="button" mat-icon-button class="fleche-defilement" (click)="defilerJours('gauche')">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <div class="jours-disponibles" #joursScroll>
+                <button
+                  type="button"
+                  *ngFor="let j of joursDisponibles"
+                  class="jour-btn"
+                  [class.selectionne]="jourChoisi === j.cle"
+                  (click)="choisirJour(j.cle)"
+                >
+                  {{ j.libelle }}
+                </button>
+              </div>
+              <button type="button" mat-icon-button class="fleche-defilement" (click)="defilerJours('droite')">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+
+            <label class="etiquette-etape" *ngIf="jourChoisi">Choisissez une heure</label>
+            <div class="creneaux" *ngIf="jourChoisi">
+              <button
+                type="button"
+                *ngFor="let c of creneauxDuJour"
+                class="creneau-btn"
+                [class.selectionne]="creneauChoisi === c"
+                (click)="creneauChoisi = c"
+              >
+                {{ c | date: 'HH:mm' }}
+              </button>
+            </div>
+          </ng-container>
+
+          <p *ngIf="!chargementCreneaux && joursDisponibles.length === 0" class="vide">
+            Aucun créneau disponible dans les 30 prochains jours.
+          </p>
+
+          <label>Nom complet<span class="requis">*</span><input type="text" formControlName="nom" /></label>
+          <label>Email<span class="requis">*</span><input type="email" formControlName="email" /></label>
+          <label>Téléphone<span class="requis">*</span><input type="text" formControlName="telephone" /></label>
+          <label>Adresse (facultatif)<input type="text" formControlName="adresse" /></label>
+          <div class="ligne-code-ville">
+            <label>Code postal (facultatif)<input type="text" formControlName="code_postal" /></label>
+            <label>Ville (facultatif)<input type="text" formControlName="ville" /></label>
+          </div>
+          <label>Motif de la consultation (facultatif)<textarea formControlName="motif" rows="3"></textarea></label>
+
+          <div class="avertissement-cloture" *ngIf="!creneauChoisi && joursDisponibles.length">
+            <mat-icon>info</mat-icon>
+            <p>Merci de choisir un jour et une heure ci-dessus avant de confirmer.</p>
+          </div>
+
+          <p class="erreur" *ngIf="erreur">{{ erreur }}</p>
+
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || !creneauChoisi || reservationEnCours">
+            {{ reservationEnCours ? 'Réservation...' : 'Confirmer la demande de rendez-vous' }}
+          </button>
+        </ng-container>
+      </form>
+    </ng-template>
+  </div>
+</div>
