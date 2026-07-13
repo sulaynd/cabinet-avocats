@@ -52,6 +52,14 @@ export class PortailAuthService {
     );
   }
 
+  demanderReinitialisation(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/mot-de-passe-oublie`, { email });
+  }
+
+  reinitialiserMotDePasse(email: string, token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/reinitialiser-mot-de-passe`, { email, token, password });
+  }
+
   isConnecte(): boolean {
     return !!this.getToken();
   }

@@ -1,0 +1,41 @@
+<div class="ecran-connexion">
+  <form [formGroup]="form" (ngSubmit)="soumettre()" class="portail-login-material dossier-form-material" *ngIf="!messageEnvoye">
+    <div class="marque">
+      <div class="sceau">🔑</div>
+      <div class="nom">Mot de passe oublié</div>
+    </div>
+
+    <p class="permission-note" style="margin-bottom: 18px;">
+      Saisissez votre adresse email — si un compte existe, un lien de réinitialisation vous sera envoyé.
+    </p>
+
+    <mat-form-field appearance="outline" class="champ-pleine-largeur">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" />
+    </mat-form-field>
+
+    <p class="erreur" *ngIf="erreur">{{ erreur }}</p>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || chargement" class="champ-pleine-largeur">
+      {{ chargement ? 'Envoi...' : 'Envoyer le lien' }}
+    </button>
+
+    <p class="note-login">
+      <a routerLink="/connexion">← Retour à la connexion</a>
+    </p>
+  </form>
+
+  <div class="portail-login-material dossier-form-material" *ngIf="messageEnvoye">
+    <div class="marque">
+      <div class="sceau">✓</div>
+      <div class="nom">Email envoyé</div>
+    </div>
+    <p class="permission-note">
+      Si un compte existe avec cette adresse, un email contenant un lien de réinitialisation
+      vient d'être envoyé. Le lien est valide pendant 1 heure.
+    </p>
+    <p class="note-login">
+      <a routerLink="/connexion">← Retour à la connexion</a>
+    </p>
+  </div>
+</div>

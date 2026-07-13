@@ -31,6 +31,20 @@ export const routes: Routes = [
 
   { path: 'connexion', component: LoginComponent },
   {
+    path: 'mot-de-passe-oublie',
+    loadComponent: () =>
+      import('./features/auth/mot-de-passe-oublie/mot-de-passe-oublie.component').then(
+        (m) => m.MotDePasseOublieComponent
+      ),
+  },
+  {
+    path: 'reinitialiser-mot-de-passe',
+    loadComponent: () =>
+      import('./features/auth/reinitialiser-mot-de-passe/reinitialiser-mot-de-passe.component').then(
+        (m) => m.ReinitialiserMotDePasseComponent
+      ),
+  },
+  {
     path: 'changer-mot-de-passe',
     canActivate: [authGuard],
     loadComponent: () =>
@@ -48,6 +62,20 @@ export const routes: Routes = [
 
   // Portail client — authentification et espace totalement séparés du cabinet.
   { path: 'portail/connexion', component: PortailLoginComponent },
+  {
+    path: 'portail/mot-de-passe-oublie',
+    loadComponent: () =>
+      import('./features/portail/portail-mot-de-passe-oublie/portail-mot-de-passe-oublie.component').then(
+        (m) => m.PortailMotDePasseOublieComponent
+      ),
+  },
+  {
+    path: 'portail/reinitialiser-mot-de-passe',
+    loadComponent: () =>
+      import(
+        './features/portail/portail-reinitialiser-mot-de-passe/portail-reinitialiser-mot-de-passe.component'
+      ).then((m) => m.PortailReinitialiserMotDePasseComponent),
+  },
   {
     path: 'portail/changer-mot-de-passe',
     canActivate: [portailAuthGuard],

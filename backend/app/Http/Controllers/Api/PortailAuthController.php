@@ -78,4 +78,57 @@ class PortailAuthController extends Controller
 
         return response()->json(['message' => 'Mot de passe mis à jour.']);
     }
+
+    /** Demande d'envoi du lien de réinitialisation côté client. Répond
+     * toujours pareil, que l'email existe ou non. */
+    public function demanderReinitialisation(Request $request)
+    {
+        $data = $request->validate(['email' => 'required|email']);
+
+        $client = Client::where('email', $data['email'])->first();
+
+        if ($client) {
+            $token = \Illuminate\Support\Str::random(64);
+
+            \Illuminate\Support\Facades\DB::table('client_password_reset_tokens')->updateOrInsert(
+                ['email' => $client->email],
+                ['token' => Hash::make($token), 'created_at' => now()->toDateTimeString()]
+            );
+
+            Mail::to($client->email)->send(new \App\Mail\ReinitialiserMotDePassePortailMail($client->nom_complet, $token, $data['email']));
+        }
+
+        return response()->json([
+            'message' => "Si un compte existe avec cet email, un lien de réinitialisation vient d'être envoyé.",
+        ]);
+    }
+
+    /** Confirme le nouveau mot de passe côté client à partir du jeton reçu par email. */
+    public function reinitialiser(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'token' => 'required|string',
+            'password' => ['required', 'min:8'],
+        ]);
+
+        $enregistrement = \Illuminate\Support\Facades\DB::table('client_password_reset_tokens')->where('email', $data['email'])->first();
+
+        if (! $enregistrement || ! Hash::check($data['token'], $enregistrement->token)) {
+            return response()->json(['message' => 'Ce lien de réinitialisation est invalide.'], 422);
+        }
+
+        if (now()->diffInMinutes(\Carbon\Carbon::parse($enregistrement->created_at), absolute: true) > 60) {
+            \Illuminate\Support\Facades\DB::table('client_password_reset_tokens')->where('email', $data['email'])->delete();
+
+            return response()->json(['message' => 'Ce lien de réinitialisation a expiré, merci d\'en redemander un nouveau.'], 422);
+        }
+
+        $client = Client::where('email', $data['email'])->firstOrFail();
+        $client->update(['password' => Hash::make($data['password']), 'doit_changer_mot_de_passe' => false]);
+
+        \Illuminate\Support\Facades\DB::table('client_password_reset_tokens')->where('email', $data['email'])->delete();
+
+        return response()->json(['message' => 'Mot de passe réinitialisé avec succès.']);
+    }
 }

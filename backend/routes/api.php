@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\CabinetSettingController;
+use App\Http\Controllers\Api\MotDePasseOublieController;
 use App\Http\Controllers\Api\ActualiteController;
 use App\Http\Controllers\Api\OffreEmploiController;
 use App\Http\Controllers\Api\TemoignageController;
@@ -45,6 +46,11 @@ Route::post('/login', function (Request $request) {
     return response()->json(['user' => $user, 'token' => $token]);
 })->middleware('throttle:5,1');
 
+// Récupération de mot de passe côté cabinet — limité contre les abus (spam
+// d'emails ou tentatives de deviner des adresses existantes).
+Route::post('/mot-de-passe-oublie', [MotDePasseOublieController::class, 'demander'])->middleware('throttle:5,1');
+Route::post('/reinitialiser-mot-de-passe', [MotDePasseOublieController::class, 'reinitialiser'])->middleware('throttle:5,1');
+
 // Flux iCal publics : consommés par des logiciels d'agenda externes (Google Calendar,
 // Outlook, Apple Calendar...) qui ne savent pas envoyer de token Bearer. La sécurité
 // repose sur le caractère secret et régénérable du jeton présent dans l'URL elle-même.
@@ -62,6 +68,8 @@ Route::post('/public/rendez-vous', [RendezVousPublicController::class, 'reserver
 
 // Connexion au portail client (guard séparé des comptes internes du cabinet).
 Route::post('/portail/connexion', [PortailAuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/portail/mot-de-passe-oublie', [PortailAuthController::class, 'demanderReinitialisation'])->middleware('throttle:5,1');
+Route::post('/portail/reinitialiser-mot-de-passe', [PortailAuthController::class, 'reinitialiser'])->middleware('throttle:5,1');
 
 // Questionnaire de pré-consultation : page publique ouverte depuis le lien reçu par email.
 Route::middleware('throttle:20,1')->group(function () {
