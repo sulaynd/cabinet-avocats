@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Location } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,7 +16,7 @@ interface AvocatPublic {
 @Component({
   selector: 'app-prise-rdv-publique',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatIconModule],
+  imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatIconModule],
   templateUrl: './prise-rdv-publique.component.html',
 })
 export class PriseRdvPubliqueComponent implements OnInit {
