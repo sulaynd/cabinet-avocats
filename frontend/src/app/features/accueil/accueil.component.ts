@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,6 +7,12 @@ import { CabinetSettingService } from '../../core/services/cabinet-setting.servi
 import { CoordonneesCabinet } from '../../core/models/cabinet-setting.model';
 import { MembreEquipeService } from '../../core/services/membre-equipe.service';
 import { MembreEquipe } from '../../core/models/membre-equipe.model';
+import { TemoignageService } from '../../core/services/temoignage.service';
+import { Temoignage } from '../../core/models/temoignage.model';
+import { OffreEmploiService } from '../../core/services/offre-emploi.service';
+import { OffreEmploi } from '../../core/models/offre-emploi.model';
+import { ActualiteService } from '../../core/services/actualite.service';
+import { Actualite } from '../../core/models/actualite.model';
 
 @Component({
   selector: 'app-accueil',
@@ -15,8 +21,14 @@ import { MembreEquipe } from '../../core/models/membre-equipe.model';
   templateUrl: './accueil.component.html',
 })
 export class AccueilComponent implements OnInit {
+  @ViewChild('temoignagesScroll') temoignagesScroll?: ElementRef<HTMLDivElement>;
+  @ViewChild('servicesScroll') servicesScroll?: ElementRef<HTMLDivElement>;
+
   cabinet: CoordonneesCabinet | null = null;
   equipe: MembreEquipe[] = [];
+  temoignages: Temoignage[] = [];
+  offresEmploi: OffreEmploi[] = [];
+  actualites: Actualite[] = [];
   readonly anneeCourante = new Date().getFullYear();
 
   readonly services = [
@@ -42,28 +54,20 @@ export class AccueilComponent implements OnInit {
     { icone: 'eco', nom: 'Responsabilité sociale' },
   ];
 
-  // Témoignages et actualités : contenu d'exemple à remplacer par vos vrais
-  // témoignages clients et actualités une fois disponibles.
-  readonly temoignages = [
-    { texte: "Grâce à JCA, notre dossier d'immigration a été traité avec une rigueur et un professionnalisme remarquables. Un accompagnement humain du début à la fin.", auteur: 'Un client accompagné en immigration' },
-    { texte: "Une équipe qui comprend les enjeux internationaux et sait naviguer entre les exigences réglementaires de plusieurs pays. Recommandé sans hésiter.", auteur: 'Une entreprise partenaire' },
-    { texte: "Le suivi en ligne de notre dossier nous a permis de rester informés à chaque étape, où que nous soyons dans le monde.", auteur: 'Un client à l\'international' },
-  ];
-
-  readonly actualites = [
-    { date: 'Juillet 2026', titre: 'JCA élargit son accompagnement en mobilité internationale', extrait: "De nouveaux partenariats pour mieux servir nos clients à travers le monde." },
-    { date: 'Juin 2026', titre: 'Webinaire : les nouvelles règles d\'immigration', extrait: 'Un survol des changements récents et de leurs impacts pour les employeurs et travailleurs.' },
-    { date: 'Mai 2026', titre: 'JCA renforce son pôle action humanitaire', extrait: "Un accompagnement dédié aux organisations humanitaires et à leurs missions sur le terrain." },
-  ];
-
   constructor(
     private cabinetSettingService: CabinetSettingService,
-    private membreEquipeService: MembreEquipeService
+    private membreEquipeService: MembreEquipeService,
+    private temoignageService: TemoignageService,
+    private offreEmploiService: OffreEmploiService,
+    private actualiteService: ActualiteService
   ) {}
 
   ngOnInit(): void {
     this.cabinetSettingService.public().subscribe((c) => (this.cabinet = c));
     this.membreEquipeService.public().subscribe((m) => (this.equipe = m));
+    this.temoignageService.public().subscribe((t) => (this.temoignages = t));
+    this.offreEmploiService.public().subscribe((o) => (this.offresEmploi = o));
+    this.actualiteService.public().subscribe((a) => (this.actualites = a));
   }
 
   initiales(nom: string | undefined): string {
@@ -76,6 +80,50 @@ export class AccueilComponent implements OnInit {
       .slice(0, 3)
       .map((mot) => mot[0].toUpperCase())
       .join('');
+  }
+
+  /** Méthode générique de défilement, réutilisable pour n'importe quelle rangée
+   * (services, témoignages, ou chaque bande de l'équipe) via une référence de
+   * template locale passée directement en paramètre, sans @ViewChild dédié. */
+  defilerVersLeBas(): void {
+    document.getElementById('pied-de-page')?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }
+
+  defilerVersLeHaut(): void {
+    document.getElementById('haut-de-page')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  defilerRangee(conteneur: HTMLElement, direction: 'gauche' | 'droite'): void {
+    const decalage = direction === 'gauche' ? -300 : 300;
+    conteneur.scrollBy({ left: decalage, behavior: 'smooth' });
+  }
+
+  defilerServices(direction: 'gauche' | 'droite'): void {
+    const conteneur = this.servicesScroll?.nativeElement;
+    if (!conteneur) return;
+    const decalage = direction === 'gauche' ? -320 : 320;
+    conteneur.scrollBy({ left: decalage, behavior: 'smooth' });
+  }
+
+  /** Fait défiler la rangée de témoignages au clic des flèches, utile quand
+   * leur nombre grandit avec le temps (au lieu d'un simple empilement vertical). */
+  defilerTemoignages(direction: 'gauche' | 'droite'): void {
+    const conteneur = this.temoignagesScroll?.nativeElement;
+    if (!conteneur) return;
+    const decalage = direction === 'gauche' ? -340 : 340;
+    conteneur.scrollBy({ left: decalage, behavior: 'smooth' });
+  }
+
+  get equipeAvocats(): MembreEquipe[] {
+    return this.equipe.filter((m) => m.role === 'admin' || m.role === 'avocat');
+  }
+
+  get equipeAssistants(): MembreEquipe[] {
+    return this.equipe.filter((m) => m.role === 'assistant');
+  }
+
+  get equipeStagiaires(): MembreEquipe[] {
+    return this.equipe.filter((m) => m.role === 'stagiaire');
   }
 
   initialesMembre(nom: string): string {

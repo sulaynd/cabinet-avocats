@@ -26,6 +26,7 @@ class Client extends Model implements Authenticatable
     ];
 
     protected $hidden = ['password'];
+    protected $appends = ['nom_complet'];
 
     protected function casts(): array
     {

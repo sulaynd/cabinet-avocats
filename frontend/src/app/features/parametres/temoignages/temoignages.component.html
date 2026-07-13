@@ -1,0 +1,40 @@
+<div class="equipe-admin">
+  <div class="section-entete">
+    <div>
+      <h2>Témoignages</h2>
+      <p class="permission-note">
+        Soumis par les clients depuis leur espace personnel. Activez pour publier sur la page
+        d'accueil — le texte n'est jamais modifiable ici, ce sont les mots du client.
+      </p>
+    </div>
+    <a mat-button routerLink="/parametres-cabinet"><mat-icon>arrow_back</mat-icon> Coordonnées du cabinet</a>
+  </div>
+
+  <p *ngIf="chargement">Chargement...</p>
+  <p class="vide" *ngIf="!chargement && temoignages.length === 0">Aucun témoignage soumis pour l'instant.</p>
+
+  <div class="carte-membre" *ngFor="let temoignage of temoignages">
+    <div class="champs-membre" style="flex: 1;">
+      <div class="ligne-champs-membre" style="align-items: center;">
+        <strong>{{ temoignage.client?.nom_complet || 'Client supprimé' }}</strong>
+        <mat-chip [color]="temoignage.actif ? 'primary' : undefined" [highlighted]="temoignage.actif">
+          {{ temoignage.actif ? 'Publié' : 'En attente' }}
+        </mat-chip>
+      </div>
+      <p style="font-style: italic; color: var(--slate); margin: 8px 0;">"{{ temoignage.texte }}"</p>
+      <mat-slide-toggle
+        [(ngModel)]="temoignage.actif"
+        [disabled]="enregistrementEnCours[temoignage.id]"
+        (change)="basculerActif(temoignage)"
+      >
+        Publier sur la page d'accueil
+      </mat-slide-toggle>
+    </div>
+
+    <div class="actions-carte-membre">
+      <button mat-icon-button (click)="supprimer(temoignage)" title="Supprimer">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

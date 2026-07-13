@@ -3,7 +3,14 @@ import { Echeance } from './echeance.model';
 import { DocumentFile } from './document.model';
 import { Facture } from './facture.model';
 
-export type TypeAffaire = 'civil' | 'penal' | 'commercial' | 'famille' | 'travail' | 'immobilier' | 'autre';
+export type TypeAffaire =
+  | 'immigration_mobilite'
+  | 'recrutement_international'
+  | 'cooperation_internationale'
+  | 'developpement_international'
+  | 'action_humanitaire'
+  | 'conseils_strategiques'
+  | 'autre';
 export type StatutDossier = 'ouvert' | 'en_cours' | 'en_attente' | 'clos' | 'archive';
 
 export interface Avocat {

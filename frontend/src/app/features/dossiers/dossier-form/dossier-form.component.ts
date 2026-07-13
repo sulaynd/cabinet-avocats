@@ -36,7 +36,15 @@ export class DossierFormComponent implements OnInit {
   assistants: Utilisateur[] = [];
   enregistrement = false;
 
-  readonly typesAffaire = ['civil', 'penal', 'commercial', 'famille', 'travail', 'immobilier', 'autre'];
+  readonly typesAffaire: { valeur: string; libelle: string }[] = [
+    { valeur: 'immigration_mobilite', libelle: 'Immigration & mobilité internationale' },
+    { valeur: 'recrutement_international', libelle: 'Recrutement international' },
+    { valeur: 'cooperation_internationale', libelle: 'Coopération internationale' },
+    { valeur: 'developpement_international', libelle: 'Développement international' },
+    { valeur: 'action_humanitaire', libelle: 'Action humanitaire' },
+    { valeur: 'conseils_strategiques', libelle: 'Services-conseils stratégiques' },
+    { valeur: 'autre', libelle: 'Autre' },
+  ];
   readonly statuts = ['ouvert', 'en_cours', 'en_attente', 'clos', 'archive'];
 
   // Déclaré via inject() (et non par constructeur) car utilisé dans l'initialiseur

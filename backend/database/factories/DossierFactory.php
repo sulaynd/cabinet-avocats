@@ -19,7 +19,10 @@ class DossierFactory extends Factory
             'avocat_id' => User::factory()->avocat(),
             'assistant_id' => null,
             'titre' => $this->faker->sentence(4),
-            'type_affaire' => $this->faker->randomElement(['civil', 'penal', 'commercial', 'famille', 'travail', 'immobilier', 'autre']),
+            'type_affaire' => $this->faker->randomElement([
+                'immigration_mobilite', 'recrutement_international', 'cooperation_internationale',
+                'developpement_international', 'action_humanitaire', 'conseils_strategiques', 'autre',
+            ]),
             'statut' => 'ouvert',
             'mode_facturation' => 'horaire',
             'taux_horaire' => null,

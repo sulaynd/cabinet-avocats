@@ -1,7 +1,7 @@
 <div class="page-accueil">
 
   <!-- EN-TÊTE -->
-  <header class="entete-accueil">
+  <header class="entete-accueil" id="haut-de-page">
     <div class="marque-accueil">
       <div class="sceau">{{ initiales(cabinet?.nom) }}</div>
       <div class="nom">{{ cabinet?.nom }}</div>
@@ -32,6 +32,10 @@
         <mat-icon>mail</mat-icon> Nous contacter
       </a>
     </div>
+
+    <button type="button" class="fleche-vers-bas" (click)="defilerVersLeBas()" title="Voir plus bas">
+      <mat-icon>keyboard_arrow_down</mat-icon>
+    </button>
   </section>
 
   <!-- FONDATEUR -->
@@ -55,12 +59,20 @@
   <!-- SERVICES -->
   <section class="section-services" id="services">
     <h2>Nos domaines d'expertise</h2>
-    <div class="grille-services">
-      <div class="carte-service" *ngFor="let s of services">
-        <mat-icon>{{ s.icone }}</mat-icon>
-        <h3>{{ s.titre }}</h3>
-        <p>{{ s.description }}</p>
+    <div class="rangee-services">
+      <button type="button" mat-icon-button class="fleche-defilement" (click)="defilerServices('gauche')">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <div class="grille-services" #servicesScroll>
+        <div class="carte-service" *ngFor="let s of services">
+          <mat-icon>{{ s.icone }}</mat-icon>
+          <h3>{{ s.titre }}</h3>
+          <p>{{ s.description }}</p>
+        </div>
       </div>
+      <button type="button" mat-icon-button class="fleche-defilement" (click)="defilerServices('droite')">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
     </div>
   </section>
 
@@ -118,42 +130,179 @@
   </section>
 
   <!-- TÉMOIGNAGES -->
-  <section class="section-temoignages">
+  <section class="section-temoignages" *ngIf="temoignages.length">
     <h2>Ils nous font confiance</h2>
-    <div class="grille-temoignages">
-      <div class="carte-temoignage" *ngFor="let t of temoignages">
-        <mat-icon>format_quote</mat-icon>
-        <p class="texte-temoignage">{{ t.texte }}</p>
-        <p class="auteur-temoignage">— {{ t.auteur }}</p>
+    <div class="rangee-temoignages">
+      <button type="button" mat-icon-button class="fleche-defilement" (click)="defilerTemoignages('gauche')">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <div class="grille-temoignages" #temoignagesScroll>
+        <div class="carte-temoignage" *ngFor="let t of temoignages">
+          <mat-icon>format_quote</mat-icon>
+          <p class="texte-temoignage">{{ t.texte }}</p>
+          <p class="auteur-temoignage">— {{ t.nom }}</p>
+        </div>
       </div>
+      <button type="button" mat-icon-button class="fleche-defilement" (click)="defilerTemoignages('droite')">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
     </div>
   </section>
 
   <!-- ÉQUIPE -->
   <section class="section-equipe" *ngIf="equipe.length">
     <h2>Notre équipe</h2>
-    <div class="grille-equipe">
-      <div class="carte-membre-public" *ngFor="let m of equipe">
-        <div class="photo-membre-public">
-          <img *ngIf="m.photo_url" [src]="m.photo_url" [alt]="m.nom" />
-          <span *ngIf="!m.photo_url">{{ initialesMembre(m.nom) }}</span>
+    <p class="resume-equipe">
+      Notre équipe est formée d'avocats solides en droit qui s'unissent afin de protéger les
+      intérêts juridiques et financiers de nos clients.
+    </p>
+    <ng-container *ngIf="equipeAvocats.length">
+      <h3 class="bande-equipe">Avocats</h3>
+      <div class="rangee-equipe">
+        <button type="button" mat-icon-button class="fleche-defilement" *ngIf="equipeAvocats.length >= 4" (click)="defilerRangee(rangeeAvocats, 'gauche')">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="grille-equipe" #rangeeAvocats>
+          <div class="carte-membre-public" *ngFor="let m of equipeAvocats">
+            <div class="photo-membre-public">
+              <img *ngIf="m.photo_url" [src]="m.photo_url" [alt]="m.nom" />
+              <span *ngIf="!m.photo_url">{{ initialesMembre(m.nom) }}</span>
+            </div>
+            <h3>{{ m.nom }}</h3>
+            <p class="titre-membre-public" *ngIf="m.titre">{{ m.titre }}</p>
+            <p *ngIf="m.bio">{{ m.bio }}</p>
+          </div>
         </div>
-        <h3>{{ m.nom }}</h3>
-        <p class="titre-membre-public" *ngIf="m.titre">{{ m.titre }}</p>
-        <p *ngIf="m.bio">{{ m.bio }}</p>
+        <button type="button" mat-icon-button class="fleche-defilement" *ngIf="equipeAvocats.length >= 4" (click)="defilerRangee(rangeeAvocats, 'droite')">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
       </div>
-    </div>
+    </ng-container>
+
+    <ng-container *ngIf="equipeAssistants.length">
+      <h3 class="bande-equipe">Assistants</h3>
+      <div class="rangee-equipe">
+        <button type="button" mat-icon-button class="fleche-defilement" *ngIf="equipeAssistants.length >= 4" (click)="defilerRangee(rangeeAssistants, 'gauche')">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="grille-equipe" #rangeeAssistants>
+          <div class="carte-membre-public" *ngFor="let m of equipeAssistants">
+            <div class="photo-membre-public">
+              <img *ngIf="m.photo_url" [src]="m.photo_url" [alt]="m.nom" />
+              <span *ngIf="!m.photo_url">{{ initialesMembre(m.nom) }}</span>
+            </div>
+            <h3>{{ m.nom }}</h3>
+            <p class="titre-membre-public" *ngIf="m.titre">{{ m.titre }}</p>
+            <p *ngIf="m.bio">{{ m.bio }}</p>
+          </div>
+        </div>
+        <button type="button" mat-icon-button class="fleche-defilement" *ngIf="equipeAssistants.length >= 4" (click)="defilerRangee(rangeeAssistants, 'droite')">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="equipeStagiaires.length">
+      <h3 class="bande-equipe">Stagiaires</h3>
+      <div class="rangee-equipe">
+        <button type="button" mat-icon-button class="fleche-defilement" *ngIf="equipeStagiaires.length >= 4" (click)="defilerRangee(rangeeStagiaires, 'gauche')">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="grille-equipe" #rangeeStagiaires>
+          <div class="carte-membre-public" *ngFor="let m of equipeStagiaires">
+            <div class="photo-membre-public">
+              <img *ngIf="m.photo_url" [src]="m.photo_url" [alt]="m.nom" />
+              <span *ngIf="!m.photo_url">{{ initialesMembre(m.nom) }}</span>
+            </div>
+            <h3>{{ m.nom }}</h3>
+            <p class="titre-membre-public" *ngIf="m.titre">{{ m.titre }}</p>
+            <p *ngIf="m.bio">{{ m.bio }}</p>
+          </div>
+        </div>
+        <button type="button" mat-icon-button class="fleche-defilement" *ngIf="equipeStagiaires.length >= 4" (click)="defilerRangee(rangeeStagiaires, 'droite')">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    </ng-container>
   </section>
 
   <!-- ACTUALITÉS -->
-  <section class="section-actualites">
+  <section class="section-actualites" *ngIf="actualites.length">
     <h2>Actualités</h2>
-    <div class="grille-actualites">
-      <div class="carte-actualite" *ngFor="let a of actualites">
-        <span class="date-actualite">{{ a.date }}</span>
-        <h3>{{ a.titre }}</h3>
-        <p>{{ a.extrait }}</p>
+    <div class="rangee-actualites">
+      <button type="button" mat-icon-button class="fleche-defilement" *ngIf="actualites.length >= 4" (click)="defilerRangee(rangeeActualites, 'gauche')">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <div class="grille-actualites" #rangeeActualites>
+        <div class="carte-actualite" *ngFor="let a of actualites">
+          <span class="date-actualite">{{ a.date | date: 'MMMM yyyy' }}</span>
+          <h3>{{ a.titre }}</h3>
+          <p>{{ a.extrait }}</p>
+        </div>
       </div>
+      <button type="button" mat-icon-button class="fleche-defilement" *ngIf="actualites.length >= 4" (click)="defilerRangee(rangeeActualites, 'droite')">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </section>
+
+  <!-- CARRIÈRES -->
+  <section class="section-carrieres" *ngIf="offresEmploi.length">
+    <h2>Carrières</h2>
+    <div class="texte-carrieres">
+      <p class="accroche-carrieres">
+        Joignez-vous à notre cabinet et évoluez auprès de professionnels passionnés favorisant le
+        travail d'équipe et l'approche multidisciplinaire.
+      </p>
+      <p>
+        Faites carrière chez Me NDIAYE et unissez-vous à une équipe d'avocats et leur personnel de
+        soutien alliant l'expérience, le savoir et la passion d'une équipe qui vise l'excellence.
+      </p>
+      <p>
+        Forte de sa diversité, l'étude a su développer au fil du temps son expertise dans de vastes
+        domaines du droit.
+      </p>
+      <p>
+        Développement professionnel, initiative et écoute sont mis de l'avant au sein de notre
+        cabinet. Me NDIAYE croit en la force de la collaboration entre tous ses membres afin que
+        chacun participe activement au rayonnement du cabinet.
+      </p>
+      <p>
+        Dans le cadre de la croissance continue de notre cabinet, nous vous invitons à nous faire
+        parvenir votre curriculum vitae en tout temps à l'adresse suivante :
+        <a [href]="'mailto:' + cabinet?.email">{{ cabinet?.email }}</a>
+      </p>
+      <p>
+        Chez Me NDIAYE, vous bénéficiez des avantages des plus grands cabinets tout en faisant
+        partie d'une équipe chaleureuse et impliquée. Nous vous offrons les ressources pour
+        développer votre plein potentiel.
+      </p>
+    </div>
+
+    <h3 class="sous-titre-carrieres">Postes à combler actuellement</h3>
+
+    <div class="rangee-carrieres">
+      <button type="button" mat-icon-button class="fleche-defilement" *ngIf="offresEmploi.length >= 4" (click)="defilerRangee(rangeeCarrieres, 'gauche')">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <div class="grille-carrieres" #rangeeCarrieres>
+        <div class="carte-offre" *ngFor="let o of offresEmploi">
+          <div class="entete-offre">
+            <h3>{{ o.titre }}</h3>
+            <span class="badge-contrat">{{ o.type_contrat.replace('_', ' ') }}</span>
+          </div>
+          <p class="meta-offre" *ngIf="o.lieu">
+            <mat-icon>place</mat-icon> {{ o.lieu }}
+          </p>
+          <p class="meta-offre" *ngIf="o.date_limite">
+            <mat-icon>event</mat-icon> Candidatures jusqu'au {{ o.date_limite | date: 'dd/MM/yyyy' }}
+          </p>
+          <p class="description-offre">{{ o.description }}</p>
+        </div>
+      </div>
+      <button type="button" mat-icon-button class="fleche-defilement" *ngIf="offresEmploi.length >= 4" (click)="defilerRangee(rangeeCarrieres, 'droite')">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
     </div>
   </section>
 
@@ -171,7 +320,10 @@
   </section>
 
   <!-- PIED DE PAGE -->
-  <footer class="pied-accueil">
+  <footer class="pied-accueil" id="pied-de-page">
+    <button type="button" class="fleche-vers-haut" (click)="defilerVersLeHaut()" title="Retour en haut">
+      <mat-icon>keyboard_arrow_up</mat-icon>
+    </button>
     <p>© {{ anneeCourante }} Copyright JCA - Juristyle Conseil &amp; Accompagnement – Avocats Me NDIAYE | Une réalisation de <a href="https://203media.ca/" target="_blank" rel="noopener">203 media</a></p>
   </footer>
 

@@ -1,0 +1,34 @@
+<div class="portail-dossiers">
+  <div class="topbar">
+    <h1>Votre témoignage</h1>
+    <button mat-stroked-button (click)="annuler()">
+      <mat-icon>arrow_back</mat-icon> Retour à mes dossiers
+    </button>
+  </div>
+
+  <p *ngIf="chargement">Chargement...</p>
+
+  <form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form-material" *ngIf="!chargement">
+    <p class="permission-note">
+      Votre témoignage peut être affiché sur notre page d'accueil pour aider d'autres personnes à
+      nous découvrir. Il sera d'abord relu par le cabinet avant publication.
+    </p>
+
+    <mat-chip *ngIf="temoignageExistant" [color]="temoignageExistant.actif ? 'primary' : undefined" [highlighted]="temoignageExistant.actif" style="margin-bottom: 16px;">
+      {{ temoignageExistant.actif ? 'Publié sur la page d\'accueil' : 'En attente de validation par le cabinet' }}
+    </mat-chip>
+
+    <mat-form-field appearance="outline" class="champ-pleine-largeur">
+      <mat-label>Votre témoignage</mat-label>
+      <textarea matInput formControlName="texte" rows="5" placeholder="Partagez votre expérience avec le cabinet..."></textarea>
+      <mat-hint>{{ form.value.texte?.length || 0 }}/2000 caractères</mat-hint>
+    </mat-form-field>
+
+    <div class="actions-formulaire">
+      <button mat-button type="button" (click)="annuler()">Annuler</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || enregistrement">
+        {{ enregistrement ? 'Envoi...' : (temoignageExistant ? 'Mettre à jour mon témoignage' : 'Envoyer mon témoignage') }}
+      </button>
+    </div>
+  </form>
+</div>

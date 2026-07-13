@@ -48,6 +48,18 @@
         <mat-icon>assignment</mat-icon>
         <span>Questionnaires</span>
       </a>
+      <a class="lien-nav" *appHasRole="['admin']" routerLink="/temoignages" routerLinkActive="actif" style="margin-bottom: 8px;">
+        <mat-icon>format_quote</mat-icon>
+        <span>Témoignages</span>
+      </a>
+      <a class="lien-nav" *appHasRole="['admin']" routerLink="/carrieres" routerLinkActive="actif" style="margin-bottom: 8px;">
+        <mat-icon>work</mat-icon>
+        <span>Carrières</span>
+      </a>
+      <a class="lien-nav" *appHasRole="['admin']" routerLink="/actualites" routerLinkActive="actif" style="margin-bottom: 8px;">
+        <mat-icon>article</mat-icon>
+        <span>Actualités</span>
+      </a>
       <a class="lien-nav" *appHasRole="['admin']" routerLink="/parametres-cabinet" routerLinkActive="actif" style="margin-bottom: 8px;">
         <mat-icon>settings</mat-icon>
         <span>Paramètres</span>

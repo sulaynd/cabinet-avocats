@@ -20,6 +20,7 @@ export class PortailDossiersComponent implements OnInit {
   dossiers: Dossier[] = [];
   factures: Facture[] = [];
   dossierOuvert: Dossier | null = null;
+  nomClient: string | null = null;
 
   readonly colonnesDossiers = ['reference', 'titre', 'avocat', 'statut', 'actions'];
   readonly colonnesFactures = ['numero', 'emission', 'montant', 'statut'];
@@ -32,6 +33,7 @@ export class PortailDossiersComponent implements OnInit {
     // clientCourant a été réinitialisé) ou a navigué directement ici en
     // contournant la redirection post-connexion, on revérifie depuis l'API.
     this.portailAuth.moi().subscribe((client) => {
+      this.nomClient = client.nom_complet ?? null;
       if (client.doit_changer_mot_de_passe) {
         this.router.navigate(['/portail/changer-mot-de-passe']);
       }

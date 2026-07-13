@@ -1,0 +1,47 @@
+<div class="equipe-admin">
+  <div class="section-entete">
+    <div>
+      <h2>Carrières</h2>
+      <p class="permission-note">
+        Affichées sur la page d'accueil publique. Décochez "Publier" pour masquer une offre sans la
+        supprimer — une offre dont la date limite est dépassée disparaît aussi automatiquement.
+      </p>
+    </div>
+    <a mat-button routerLink="/parametres-cabinet"><mat-icon>arrow_back</mat-icon> Coordonnées du cabinet</a>
+  </div>
+
+  <p *ngIf="chargement">Chargement...</p>
+
+  <div class="carte-membre" *ngFor="let offre of offres">
+    <div class="champs-membre" style="flex: 1;">
+      <div class="ligne-champs-membre">
+        <label>Titre du poste<input type="text" [(ngModel)]="offre.titre" placeholder="Ex: Avocat en immigration" /></label>
+        <label>
+          Type de contrat
+          <select [(ngModel)]="offre.type_contrat">
+            <option *ngFor="let t of typesContrat" [value]="t.valeur">{{ t.libelle }}</option>
+          </select>
+        </label>
+      </div>
+      <div class="ligne-champs-membre">
+        <label>Lieu (facultatif)<input type="text" [(ngModel)]="offre.lieu" placeholder="Ex: Québec (télétravail possible)" /></label>
+        <label>Date limite de candidature (facultatif)<input type="date" [(ngModel)]="offre.date_limite" /></label>
+      </div>
+      <label>Description<textarea [(ngModel)]="offre.description" rows="4" placeholder="Missions, profil recherché, comment postuler..."></textarea></label>
+      <mat-checkbox [(ngModel)]="offre.actif">Publier sur la page d'accueil</mat-checkbox>
+    </div>
+
+    <div class="actions-carte-membre">
+      <button mat-icon-button (click)="supprimer(offre)" title="Supprimer">
+        <mat-icon>delete</mat-icon>
+      </button>
+      <button mat-raised-button color="primary" [disabled]="enregistrementEnCours[offre.id]" (click)="enregistrer(offre)">
+        <mat-icon>save</mat-icon> {{ enregistrementEnCours[offre.id] ? '...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+
+  <button mat-stroked-button (click)="ajouterOffre()">
+    <mat-icon>add</mat-icon> Ajouter une offre
+  </button>
+</div>

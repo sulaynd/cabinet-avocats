@@ -99,7 +99,7 @@
       <h3>Dossiers par domaine</h3>
       <div class="graphique-barres-horizontales" *ngIf="stats.dossiers_par_type.length; else aucuneDonnee">
         <div class="ligne-barre-horizontale" *ngFor="let t of stats.dossiers_par_type">
-          <span class="libelle-barre-horizontale">{{ t.type }}</span>
+          <span class="libelle-barre-horizontale">{{ libellesTypeAffaire[t.type] || t.type }}</span>
           <div class="piste-barre-horizontale">
             <div class="barre-horizontale barre-horizontale--brass" [style.width.%]="(t.total / maxDossiersParType) * 100"></div>
           </div>

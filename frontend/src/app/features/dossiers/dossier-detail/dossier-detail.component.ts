@@ -34,6 +34,16 @@ export class DossierDetailComponent implements OnInit {
   dossier: Dossier | null = null;
   chargement = false;
 
+  readonly libellesTypeAffaire: Record<string, string> = {
+    immigration_mobilite: 'Immigration & mobilité internationale',
+    recrutement_international: 'Recrutement international',
+    cooperation_internationale: 'Coopération internationale',
+    developpement_international: 'Développement international',
+    action_humanitaire: 'Action humanitaire',
+    conseils_strategiques: 'Services-conseils stratégiques',
+    autre: 'Autre',
+  };
+
   fichierSelectionne: File | null = null;
   typeDocumentSelectionne: TypeDocument = 'autre';
   necessiteSignatureSelectionne = false;

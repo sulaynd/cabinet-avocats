@@ -42,7 +42,7 @@
   <mat-form-field appearance="outline" class="champ-pleine-largeur">
     <mat-label>Type d'affaire</mat-label>
     <mat-select formControlName="type_affaire">
-      <mat-option *ngFor="let t of typesAffaire" [value]="t">{{ t }}</mat-option>
+      <mat-option *ngFor="let t of typesAffaire" [value]="t.valeur">{{ t.libelle }}</mat-option>
     </mat-select>
   </mat-form-field>
 

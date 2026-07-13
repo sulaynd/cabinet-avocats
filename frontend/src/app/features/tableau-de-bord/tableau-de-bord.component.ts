@@ -23,6 +23,16 @@ export class TableauDeBordComponent implements OnInit {
     archive: 'Archivé',
   };
 
+  readonly libellesTypeAffaire: Record<string, string> = {
+    immigration_mobilite: 'Immigration & mobilité internationale',
+    recrutement_international: 'Recrutement international',
+    cooperation_internationale: 'Coopération internationale',
+    developpement_international: 'Développement international',
+    action_humanitaire: 'Action humanitaire',
+    conseils_strategiques: 'Services-conseils stratégiques',
+    autre: 'Autre',
+  };
+
   constructor(private tableauDeBordService: TableauDeBordService) {}
 
   ngOnInit(): void {

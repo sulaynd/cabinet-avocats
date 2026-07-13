@@ -5,7 +5,7 @@
       <h2>{{ dossier.reference }} — {{ dossier.titre }}</h2>
       <p>
         <span class="badge">{{ dossier.statut }}</span>
-        <span class="badge">{{ dossier.type_affaire }}</span>
+        <span class="badge">{{ libellesTypeAffaire[dossier.type_affaire] || dossier.type_affaire }}</span>
       </p>
     </div>
     <a mat-raised-button color="primary" [routerLink]="['/dossiers', dossier.id, 'modifier']">

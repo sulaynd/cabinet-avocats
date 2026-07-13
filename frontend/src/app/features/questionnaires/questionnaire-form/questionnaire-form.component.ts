@@ -26,7 +26,15 @@ export class QuestionnaireFormComponent implements OnInit {
   enregistrement = false;
 
   readonly typesChamp: TypeChampQuestionnaire[] = ['texte', 'zone_texte', 'choix', 'case'];
-  readonly typesAffaire = ['civil', 'penal', 'commercial', 'famille', 'travail', 'immobilier', 'autre'];
+  readonly typesAffaire: { valeur: string; libelle: string }[] = [
+    { valeur: 'immigration_mobilite', libelle: 'Immigration & mobilité internationale' },
+    { valeur: 'recrutement_international', libelle: 'Recrutement international' },
+    { valeur: 'cooperation_internationale', libelle: 'Coopération internationale' },
+    { valeur: 'developpement_international', libelle: 'Développement international' },
+    { valeur: 'action_humanitaire', libelle: 'Action humanitaire' },
+    { valeur: 'conseils_strategiques', libelle: 'Services-conseils stratégiques' },
+    { valeur: 'autre', libelle: 'Autre' },
+  ];
 
   private fb = inject(FormBuilder);
 

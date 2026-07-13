@@ -57,6 +57,14 @@ export const routes: Routes = [
       ),
   },
   { path: 'portail/mes-dossiers', component: PortailDossiersComponent, canActivate: [portailAuthGuard] },
+  {
+    path: 'portail/temoignage',
+    canActivate: [portailAuthGuard],
+    loadComponent: () =>
+      import('./features/portail/portail-temoignage/portail-temoignage.component').then(
+        (m) => m.PortailTemoignageComponent
+      ),
+  },
 
   {
     path: '',
@@ -133,6 +141,33 @@ export const routes: Routes = [
           import('./features/parametres/parametres-cabinet/parametres-cabinet.component').then(
             (m) => m.ParametresCabinetComponent
           ),
+      },
+
+      // Témoignages (affichés sur la page d'accueil publique) — admin uniquement
+      {
+        path: 'temoignages',
+        canActivate: [roleGuard],
+        data: { roles: ['admin'] },
+        loadComponent: () =>
+          import('./features/parametres/temoignages/temoignages.component').then((m) => m.TemoignagesComponent),
+      },
+
+      // Offres d'emploi (Carrières, affichées sur la page d'accueil publique) — admin uniquement
+      {
+        path: 'carrieres',
+        canActivate: [roleGuard],
+        data: { roles: ['admin'] },
+        loadComponent: () =>
+          import('./features/parametres/carrieres/carrieres.component').then((m) => m.CarrieresComponent),
+      },
+
+      // Actualités (affichées sur la page d'accueil publique) — admin uniquement
+      {
+        path: 'actualites',
+        canActivate: [roleGuard],
+        data: { roles: ['admin'] },
+        loadComponent: () =>
+          import('./features/parametres/actualites/actualites.component').then((m) => m.ActualitesComponent),
       },
     ],
   },

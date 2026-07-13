@@ -1,0 +1,35 @@
+<div class="equipe-admin">
+  <div class="section-entete">
+    <div>
+      <h2>Actualités</h2>
+      <p class="permission-note">Affichées sur la page d'accueil publique. Décochez "Publier" pour masquer une actualité sans la supprimer.</p>
+    </div>
+    <a mat-button routerLink="/parametres-cabinet"><mat-icon>arrow_back</mat-icon> Coordonnées du cabinet</a>
+  </div>
+
+  <p *ngIf="chargement">Chargement...</p>
+
+  <div class="carte-membre" *ngFor="let actualite of actualites">
+    <div class="champs-membre" style="flex: 1;">
+      <div class="ligne-champs-membre">
+        <label>Titre<input type="text" [(ngModel)]="actualite.titre" placeholder="Ex: Nouveau partenariat international" /></label>
+        <label>Date<input type="date" [(ngModel)]="actualite.date" /></label>
+      </div>
+      <label>Extrait / résumé<textarea [(ngModel)]="actualite.extrait" rows="3" placeholder="Résumé court affiché sur la page d'accueil..."></textarea></label>
+      <mat-checkbox [(ngModel)]="actualite.actif">Publier sur la page d'accueil</mat-checkbox>
+    </div>
+
+    <div class="actions-carte-membre">
+      <button mat-icon-button (click)="supprimer(actualite)" title="Supprimer">
+        <mat-icon>delete</mat-icon>
+      </button>
+      <button mat-raised-button color="primary" [disabled]="enregistrementEnCours[actualite.id]" (click)="enregistrer(actualite)">
+        <mat-icon>save</mat-icon> {{ enregistrementEnCours[actualite.id] ? '...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+
+  <button mat-stroked-button (click)="ajouterActualite()">
+    <mat-icon>add</mat-icon> Ajouter une actualité
+  </button>
+</div>

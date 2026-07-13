@@ -40,7 +40,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   taillePage = 20;
 
   readonly colonnes = ['nom', 'email', 'role', 'telephone', 'dossiers', 'actions'];
-  readonly roles: Utilisateur['role'][] = ['admin', 'avocat', 'assistant'];
+  readonly roles: Utilisateur['role'][] = ['admin', 'avocat', 'assistant', 'stagiaire'];
 
   constructor(
     private userService: UserService,

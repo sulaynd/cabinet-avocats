@@ -29,7 +29,7 @@ export class UserFormComponent implements OnInit {
   fichierSelectionne: File | null = null;
   apercuFichier: string | null = null;
 
-  readonly roles: Role[] = ['admin', 'avocat', 'assistant'];
+  readonly roles: Role[] = ['admin', 'avocat', 'assistant', 'stagiaire'];
 
   private fb = inject(FormBuilder);
 

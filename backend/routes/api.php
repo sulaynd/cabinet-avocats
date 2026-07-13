@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\CabinetSettingController;
+use App\Http\Controllers\Api\ActualiteController;
+use App\Http\Controllers\Api\OffreEmploiController;
+use App\Http\Controllers\Api\TemoignageController;
 use App\Http\Controllers\Api\TableauDeBordController;
 use App\Http\Controllers\Api\MembreEquipeController;
 use App\Http\Controllers\Api\CommunicationController;
@@ -61,6 +64,9 @@ Route::post('/questionnaire/{token}', [QuestionnairePublicController::class, 'so
 // et portail) et le questionnaire public pour afficher le nom avant tout login.
 Route::get('/parametres-cabinet/public', [CabinetSettingController::class, 'public']);
 Route::get('/membres-equipe/public', [MembreEquipeController::class, 'public']);
+Route::get('/temoignages/public', [TemoignageController::class, 'public']);
+Route::get('/offres-emploi/public', [OffreEmploiController::class, 'public']);
+Route::get('/actualites/public', [ActualiteController::class, 'public']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', function (Request $request) {
@@ -141,6 +147,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Gestion des utilisateurs du cabinet (avocats, assistants, admins) — réservée aux admins.
     Route::apiResource('users', UserController::class)->middleware('role:admin');
     Route::post('users/{user}/photo', [UserController::class, 'televerserPhoto'])->middleware('role:admin');
+    Route::apiResource('temoignages', TemoignageController::class)->only(['index', 'update', 'destroy']);
+    Route::apiResource('offres-emploi', OffreEmploiController::class)->except(['show']);
+    Route::apiResource('actualites', ActualiteController::class)->except(['show']);
 
     // Activation du portail client (déclenchée par le cabinet, pas par le client).
     Route::post('clients/{client}/activer-portail', [PortailAuthController::class, 'activerPourClient']);
@@ -162,4 +171,6 @@ Route::middleware(['auth:sanctum', 'portail'])->prefix('portail')->group(functio
     Route::get('/mes-factures', [PortailController::class, 'mesFactures']);
     Route::get('/documents/{document}/telecharger', [PortailController::class, 'telechargerDocument']);
     Route::post('/documents/{document}/signer', [PortailController::class, 'signerDocument']);
+    Route::post('/temoignage', [TemoignageController::class, 'soumettreDepuisPortail']);
+    Route::get('/mon-temoignage', [TemoignageController::class, 'monTemoignage']);
 });

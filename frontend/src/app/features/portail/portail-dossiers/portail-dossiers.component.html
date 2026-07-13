@@ -1,7 +1,13 @@
 <div class="portail-dossiers">
   <div class="topbar">
-    <h1>Mon espace client</h1>
+    <div>
+      <h1>Mon espace client</h1>
+      <p *ngIf="nomClient" class="salutation-client">Bonjour {{ nomClient }}</p>
+    </div>
     <div class="actions-topbar">
+      <a mat-button routerLink="/portail/temoignage">
+        <mat-icon>rate_review</mat-icon> Laisser un témoignage
+      </a>
       <a mat-button routerLink="/portail/changer-mot-de-passe">
         <mat-icon>lock_reset</mat-icon> Changer mon mot de passe
       </a>

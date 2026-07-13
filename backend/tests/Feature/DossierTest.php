@@ -34,7 +34,7 @@ class DossierTest extends TestCase
             'client_id' => $client->id,
             'avocat_id' => $avocat->id,
             'titre' => 'Litige commercial',
-            'type_affaire' => 'commercial',
+            'type_affaire' => 'conseils_strategiques',
             'statut' => 'ouvert',
             'mode_facturation' => 'horaire',
         ]);
