@@ -26,6 +26,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+// Limité à 5 tentatives par minute par IP — protection contre la force brute
+// sur les mots de passe, sans gêner un utilisateur légitime qui se trompe une
+// ou deux fois.
 Route::post('/login', function (Request $request) {
     $credentials = $request->validate([
         'email' => 'required|email',
@@ -40,7 +43,7 @@ Route::post('/login', function (Request $request) {
     $token = $user->createToken('spa')->plainTextToken;
 
     return response()->json(['user' => $user, 'token' => $token]);
-});
+})->middleware('throttle:5,1');
 
 // Flux iCal publics : consommés par des logiciels d'agenda externes (Google Calendar,
 // Outlook, Apple Calendar...) qui ne savent pas envoyer de token Bearer. La sécurité
@@ -49,24 +52,32 @@ Route::get('/ical/perso/{token}.ics', [IcalController::class, 'personnel']);
 Route::get('/ical/equipe/{token}.ics', [IcalController::class, 'equipe']);
 
 // Prise de rendez-vous en ligne : routes publiques consommées par le site vitrine.
-Route::get('/public/avocats', [RendezVousPublicController::class, 'avocats']);
-Route::get('/public/creneaux', [RendezVousPublicController::class, 'creneauxDisponibles']);
-Route::post('/public/rendez-vous', [RendezVousPublicController::class, 'reserver']);
+// Lecture limitée large (le calendrier peut être rafraîchi souvent en navigant),
+// la soumission elle-même est plus stricte pour éviter le spam de demandes.
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/public/avocats', [RendezVousPublicController::class, 'avocats']);
+    Route::get('/public/creneaux', [RendezVousPublicController::class, 'creneauxDisponibles']);
+});
+Route::post('/public/rendez-vous', [RendezVousPublicController::class, 'reserver'])->middleware('throttle:5,60');
 
 // Connexion au portail client (guard séparé des comptes internes du cabinet).
-Route::post('/portail/connexion', [PortailAuthController::class, 'login']);
+Route::post('/portail/connexion', [PortailAuthController::class, 'login'])->middleware('throttle:5,1');
 
 // Questionnaire de pré-consultation : page publique ouverte depuis le lien reçu par email.
-Route::get('/questionnaire/{token}', [QuestionnairePublicController::class, 'afficher']);
-Route::post('/questionnaire/{token}', [QuestionnairePublicController::class, 'soumettre']);
+Route::middleware('throttle:20,1')->group(function () {
+    Route::get('/questionnaire/{token}', [QuestionnairePublicController::class, 'afficher']);
+    Route::post('/questionnaire/{token}', [QuestionnairePublicController::class, 'soumettre']);
+});
 
 // Coordonnées du cabinet — public, utilisé par les pages de connexion (cabinet
 // et portail) et le questionnaire public pour afficher le nom avant tout login.
-Route::get('/parametres-cabinet/public', [CabinetSettingController::class, 'public']);
-Route::get('/membres-equipe/public', [MembreEquipeController::class, 'public']);
-Route::get('/temoignages/public', [TemoignageController::class, 'public']);
-Route::get('/offres-emploi/public', [OffreEmploiController::class, 'public']);
-Route::get('/actualites/public', [ActualiteController::class, 'public']);
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/parametres-cabinet/public', [CabinetSettingController::class, 'public']);
+    Route::get('/membres-equipe/public', [MembreEquipeController::class, 'public']);
+    Route::get('/temoignages/public', [TemoignageController::class, 'public']);
+    Route::get('/offres-emploi/public', [OffreEmploiController::class, 'public']);
+    Route::get('/actualites/public', [ActualiteController::class, 'public']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', function (Request $request) {
