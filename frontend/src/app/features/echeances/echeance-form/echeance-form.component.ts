@@ -34,6 +34,7 @@ export class EcheanceFormComponent implements OnInit {
     { label: '1 heure avant', valeur: 60 },
     { label: '1 jour avant', valeur: 1440 },
     { label: '2 jours avant', valeur: 2880 },
+    { label: '3 jours avant', valeur: 4320 },
   ];
 
   private fb = inject(FormBuilder);
@@ -46,7 +47,7 @@ export class EcheanceFormComponent implements OnInit {
     type: this.fb.nonNullable.control('audience', Validators.required),
     date_heure: this.fb.nonNullable.control('', Validators.required),
     lieu: this.fb.nonNullable.control(''),
-    rappel_avant: [null as number | null],
+    rappel_avant: [4320 as number | null],
   });
 
   constructor(
