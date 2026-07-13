@@ -75,11 +75,13 @@ class TableauDeBordController extends Controller
     {
         $debut = now()->subMonths(11)->startOfMonth();
 
+        // Regroupement fait côté PHP plutôt qu'en SQL brut (DATE_FORMAT est
+        // spécifique à MySQL et casse sur SQLite, utilisé pour les tests).
         $facturesParMois = Facture::where('statut', 'payee')
             ->where('date_emission', '>=', $debut)
-            ->selectRaw("DATE_FORMAT(date_emission, '%Y-%m') as mois, SUM(montant_ttc) as total")
-            ->groupBy('mois')
-            ->pluck('total', 'mois');
+            ->get(['date_emission', 'montant_ttc'])
+            ->groupBy(fn ($facture) => $facture->date_emission->format('Y-m'))
+            ->map(fn ($groupe) => $groupe->sum('montant_ttc'));
 
         $resultat = [];
         for ($i = 11; $i >= 0; $i--) {
