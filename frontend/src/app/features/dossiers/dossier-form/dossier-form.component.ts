@@ -36,6 +36,10 @@ export class DossierFormComponent implements OnInit {
   assistants: Utilisateur[] = [];
   enregistrement = false;
 
+  get estStagiaire(): boolean {
+    return this.auth.currentUser()?.role === 'stagiaire';
+  }
+
   readonly typesAffaire: { valeur: string; libelle: string }[] = [
     { valeur: 'immigration_mobilite', libelle: 'Immigration & mobilité internationale' },
     { valeur: 'recrutement_international', libelle: 'Recrutement international' },
@@ -78,7 +82,7 @@ export class DossierFormComponent implements OnInit {
     private dossierService: DossierService,
     private clientService: ClientService,
     private userService: UserService,
-    private auth: AuthService,
+    public auth: AuthService,
     private notification: NotificationService,
     private route: ActivatedRoute,
     private router: Router

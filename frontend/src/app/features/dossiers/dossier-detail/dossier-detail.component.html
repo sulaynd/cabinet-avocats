@@ -117,7 +117,8 @@
   </section>
 
   <!-- COMMUNICATIONS -->
-  <app-communications-panel [dossierId]="dossier.id"></app-communications-panel>
+  <app-communications-panel *ngIf="!estStagiaire" [dossierId]="dossier.id"></app-communications-panel>
+  <p class="permission-note" *ngIf="estStagiaire">Les communications avec le client ne sont pas accessibles aux stagiaires.</p>
 
   <!-- DOCUMENTS -->
   <section class="section-dossier">

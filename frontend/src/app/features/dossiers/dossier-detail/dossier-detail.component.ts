@@ -13,6 +13,7 @@ import { UserService } from '../../../core/services/user.service';
 import { QuestionnaireService } from '../../../core/services/questionnaire.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Utilisateur } from '../../../core/models/user.model';
 import { ReponseQuestionnaire } from '../../../core/models/reponse-questionnaire.model';
 import { Dossier } from '../../../core/models/dossier.model';
@@ -81,7 +82,8 @@ export class DossierDetailComponent implements OnInit {
     private userService: UserService,
     private questionnaireService: QuestionnaireService,
     private notification: NotificationService,
-    private confirmService: ConfirmService
+    private confirmService: ConfirmService,
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -219,6 +221,10 @@ export class DossierDetailComponent implements OnInit {
 
   chargerTemps(): void {
     this.tempsPasseService.liste(this.dossierId).subscribe((temps) => (this.tempsPasses = temps));
+  }
+
+  get estStagiaire(): boolean {
+    return this.auth.currentUser()?.role === 'stagiaire';
   }
 
   get chronoActifSurCeDossier(): boolean {

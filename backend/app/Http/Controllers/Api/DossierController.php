@@ -126,6 +126,13 @@ class DossierController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        // Un stagiaire peut travailler sur un dossier au quotidien, mais la
+        // décision de le clôturer ou de l'archiver reste réservée à l'avocat
+        // responsable ou à l'admin.
+        if ($request->user()->estStagiaire() && isset($data['statut']) && in_array($data['statut'], ['clos', 'archive'])) {
+            abort(403, "En tant que stagiaire, vous ne pouvez pas clôturer ou archiver un dossier — demandez à l'avocat responsable.");
+        }
+
         // Changer l'avocat responsable ou l'assistant traitant d'un dossier est une
         // action d'assignation réservée à l'admin (voir aussi assigner() ci-dessous) ;
         // un avocat/assistant qui modifie "son" dossier ne peut pas se le retirer

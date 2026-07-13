@@ -61,6 +61,11 @@ class User extends Authenticatable
         return $dossier->avocat_id === $this->id || $dossier->assistant_id === $this->id;
     }
 
+    public function estStagiaire(): bool
+    {
+        return $this->role === 'stagiaire';
+    }
+
     public function tempsPasses(): HasMany
     {
         return $this->hasMany(TempsPasse::class);

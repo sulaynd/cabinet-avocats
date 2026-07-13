@@ -47,6 +47,7 @@ class FactureController extends Controller
 
         $dossierCible = \App\Models\Dossier::findOrFail($data['dossier_id']);
         abort_unless($request->user()->can('view', $dossierCible), 403, "Ce dossier ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous avez un accès en lecture seule aux factures.");
 
         $facture = DB::transaction(function () use ($data) {
             $facture = Facture::create([
@@ -89,6 +90,7 @@ class FactureController extends Controller
     public function update(Request $request, Facture $facture)
     {
         abort_unless($request->user()->can('view', $facture->dossier), 403, "Cette facture appartient à un dossier qui ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous avez un accès en lecture seule aux factures.");
 
         $data = $request->validate([
             'date_emission' => 'date',
@@ -107,6 +109,7 @@ class FactureController extends Controller
     public function marquerPayee(Request $request, Facture $facture)
     {
         abort_unless($request->user()->can('view', $facture->dossier), 403, "Cette facture appartient à un dossier qui ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous avez un accès en lecture seule aux factures.");
 
         $facture->update(['statut' => 'payee']);
 
@@ -121,6 +124,7 @@ class FactureController extends Controller
     public function genererDepuisTemps(Request $request, Dossier $dossier)
     {
         abort_unless($request->user()->can('view', $dossier), 403, "Ce dossier ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous avez un accès en lecture seule aux factures.");
 
         $request->validate(['envoyer_par_email' => 'boolean']);
 
@@ -139,6 +143,7 @@ class FactureController extends Controller
     public function destroy(Request $request, Facture $facture)
     {
         abort_unless($request->user()->can('view', $facture->dossier), 403, "Cette facture appartient à un dossier qui ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous avez un accès en lecture seule aux factures.");
         abort_if($facture->statut === 'payee', 422, "Une facture payée ne peut pas être supprimée (obligation de conservation comptable). Émettez une note de crédit si un remboursement est nécessaire.");
 
         $facture->delete();
@@ -166,6 +171,7 @@ class FactureController extends Controller
     public function envoyer(Request $request, Facture $facture)
     {
         abort_unless($request->user()->can('view', $facture->dossier), 403, "Cette facture appartient à un dossier qui ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous avez un accès en lecture seule aux factures.");
 
         if (! $facture->client->email) {
             return response()->json(['message' => 'Ce client ne possède pas d\'adresse email enregistrée.'], 422);

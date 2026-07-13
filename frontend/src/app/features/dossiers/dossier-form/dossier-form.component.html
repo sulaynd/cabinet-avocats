@@ -111,7 +111,9 @@
     <mat-form-field appearance="outline">
       <mat-label>Statut</mat-label>
       <mat-select formControlName="statut">
-        <mat-option *ngFor="let s of statuts" [value]="s">{{ s }}</mat-option>
+        <mat-option *ngFor="let s of statuts" [value]="s" [disabled]="estStagiaire && (s === 'clos' || s === 'archive')">
+          {{ s }}<span *ngIf="estStagiaire && (s === 'clos' || s === 'archive')"> (réservé à l'avocat/admin)</span>
+        </mat-option>
       </mat-select>
     </mat-form-field>
 

@@ -13,6 +13,7 @@ class CommunicationController extends Controller
     public function index(Request $request, Dossier $dossier)
     {
         abort_unless($request->user()->can('view', $dossier), 403, "Ce dossier ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "Les communications avec les clients ne sont pas accessibles aux stagiaires, par confidentialité.");
 
         return response()->json($dossier->communications()->with('user')->get());
     }
@@ -20,6 +21,7 @@ class CommunicationController extends Controller
     public function store(Request $request, Dossier $dossier)
     {
         abort_unless($request->user()->can('view', $dossier), 403, "Ce dossier ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "Les communications avec les clients ne sont pas accessibles aux stagiaires, par confidentialité.");
 
         $data = $request->validate([
             'type' => ['required', Rule::in(['appel', 'email', 'courrier', 'reunion', 'note'])],
@@ -40,6 +42,7 @@ class CommunicationController extends Controller
     public function update(Request $request, Communication $communication)
     {
         abort_unless($request->user()->can('view', $communication->dossier), 403, "Ce dossier ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "Les communications avec les clients ne sont pas accessibles aux stagiaires, par confidentialité.");
 
         $data = $request->validate([
             'type' => [Rule::in(['appel', 'email', 'courrier', 'reunion', 'note'])],
@@ -56,6 +59,7 @@ class CommunicationController extends Controller
     public function destroy(Request $request, Communication $communication)
     {
         abort_unless($request->user()->can('view', $communication->dossier), 403, "Ce dossier ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "Les communications avec les clients ne sont pas accessibles aux stagiaires, par confidentialité.");
 
         $communication->delete();
 

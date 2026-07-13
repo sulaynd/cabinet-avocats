@@ -55,7 +55,9 @@
         <mat-menu #menu="matMenu">
           <button mat-menu-item (click)="telechargerPdf(f)"><mat-icon>picture_as_pdf</mat-icon> Télécharger le PDF</button>
           <button mat-menu-item *appHasRole="['admin', 'avocat']" (click)="envoyerParEmail(f)"><mat-icon>email</mat-icon> Envoyer par email</button>
-          <button mat-menu-item *ngIf="f.statut !== 'payee'" (click)="marquerPayee(f)"><mat-icon>check_circle</mat-icon> Marquer payée</button>
+          <ng-container *ngIf="f.statut !== 'payee'">
+            <button mat-menu-item *appHasRole="['admin', 'avocat', 'assistant']" (click)="marquerPayee(f)"><mat-icon>check_circle</mat-icon> Marquer payée</button>
+          </ng-container>
           <button
             mat-menu-item
             *appHasRole="['admin', 'avocat']"
