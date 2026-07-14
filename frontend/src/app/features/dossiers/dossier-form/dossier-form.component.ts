@@ -40,6 +40,14 @@ export class DossierFormComponent implements OnInit {
     return this.auth.currentUser()?.role === 'stagiaire';
   }
 
+  get assistantsUniquement(): Utilisateur[] {
+    return this.assistants.filter((a) => a.role === 'assistant');
+  }
+
+  get stagiairesUniquement(): Utilisateur[] {
+    return this.assistants.filter((a) => a.role === 'stagiaire');
+  }
+
   readonly typesAffaire: { valeur: string; libelle: string }[] = [
     { valeur: 'immigration_mobilite', libelle: 'Immigration & mobilité internationale' },
     { valeur: 'recrutement_international', libelle: 'Recrutement international' },
@@ -63,6 +71,7 @@ export class DossierFormComponent implements OnInit {
     client_id: this.fb.control(null as number | null, Validators.required),
     avocat_id: this.fb.control(null as number | null, Validators.required),
     assistant_id: this.fb.control(null as number | null),
+    stagiaire_id: this.fb.control(null as number | null),
     titre: this.fb.nonNullable.control('', Validators.required),
     type_affaire: this.fb.nonNullable.control('autre', Validators.required),
     statut: this.fb.nonNullable.control('ouvert', Validators.required),
@@ -104,7 +113,7 @@ export class DossierFormComponent implements OnInit {
     // Le champ "avocat responsable" ne propose que les utilisateurs de rôle avocat ;
     // le champ "assistant traitant" (facultatif) ne propose que le rôle assistant.
     this.userService.liste({ role: 'avocat', per_page: 100 }).subscribe((res) => (this.avocats = res.data));
-    this.userService.liste({ role: 'assistant', per_page: 100 }).subscribe((res) => (this.assistants = res.data));
+    this.userService.liste({ role: 'assistant,stagiaire', per_page: 100 }).subscribe((res) => (this.assistants = res.data));
 
     const idParam = this.route.snapshot.paramMap.get('id');
     this.dossierId = idParam ? Number(idParam) : null;
@@ -115,6 +124,7 @@ export class DossierFormComponent implements OnInit {
         // l'assignation (ignoré côté serveur) : les deux champs sont désactivés.
         this.form.get('avocat_id')?.disable();
         this.form.get('assistant_id')?.disable();
+        this.form.get('stagiaire_id')?.disable();
       } else if (this.auth.hasRole('avocat')) {
         // À la création, un avocat s'auto-assigne (champ non pertinent) mais
         // peut librement choisir un assistant pour l'épauler sur ce dossier.
@@ -123,6 +133,9 @@ export class DossierFormComponent implements OnInit {
         // Un assistant doit désigner l'avocat sous la responsabilité duquel le
         // dossier est ouvert ; il s'auto-assigne lui-même comme assistant traitant.
         this.form.get('assistant_id')?.disable();
+      } else if (this.auth.hasRole('stagiaire')) {
+        // Un stagiaire s'auto-assigne lui-même comme stagiaire traitant.
+        this.form.get('stagiaire_id')?.disable();
       }
     }
 
@@ -132,6 +145,7 @@ export class DossierFormComponent implements OnInit {
           client_id: dossier.client_id,
           avocat_id: dossier.avocat_id,
           assistant_id: dossier.assistant_id ?? null,
+          stagiaire_id: dossier.stagiaire_id ?? null,
           titre: dossier.titre,
           type_affaire: dossier.type_affaire,
           statut: dossier.statut,

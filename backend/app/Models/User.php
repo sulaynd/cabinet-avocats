@@ -58,7 +58,7 @@ class User extends Authenticatable
     /** Vrai si l'utilisateur est avocat responsable OU assistant traitant du dossier donné. */
     public function estTraitantDe(Dossier $dossier): bool
     {
-        return $dossier->avocat_id === $this->id || $dossier->assistant_id === $this->id;
+        return $dossier->avocat_id === $this->id || $dossier->assistant_id === $this->id || $dossier->stagiaire_id === $this->id;
     }
 
     public function estStagiaire(): bool

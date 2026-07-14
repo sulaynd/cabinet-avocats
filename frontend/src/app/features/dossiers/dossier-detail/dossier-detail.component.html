@@ -35,6 +35,11 @@
       <p>{{ dossier.assistant?.email }}</p>
     </div>
     <div class="bloc">
+      <h3>Stagiaire traitant</h3>
+      <p>{{ dossier.stagiaire?.name || 'Aucun stagiaire assigné' }}</p>
+      <p>{{ dossier.stagiaire?.email }}</p>
+    </div>
+    <div class="bloc">
       <h3>Dates</h3>
       <p>Ouverture : {{ dossier.date_ouverture ? (dossier.date_ouverture | date: 'dd/MM/yyyy':'UTC') : '—' }}</p>
       <p>Clôture : {{ dossier.date_cloture ? (dossier.date_cloture | date: 'dd/MM/yyyy':'UTC') : '—' }}</p>
@@ -310,7 +315,14 @@
         Assistant traitant (facultatif)
         <select [(ngModel)]="assistantIdChoisi">
           <option [ngValue]="null">-- Aucun --</option>
-          <option *ngFor="let a of assistants" [ngValue]="a.id">{{ a.name }}</option>
+          <option *ngFor="let a of assistantsUniquement" [ngValue]="a.id">{{ a.name }}</option>
+        </select>
+      </label>
+      <label>
+        Stagiaire traitant (facultatif)
+        <select [(ngModel)]="stagiaireIdChoisi">
+          <option [ngValue]="null">-- Aucun --</option>
+          <option *ngFor="let s of stagiairesUniquement" [ngValue]="s.id">{{ s.name }}</option>
         </select>
       </label>
     </div>

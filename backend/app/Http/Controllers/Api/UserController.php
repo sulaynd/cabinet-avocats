@@ -18,7 +18,9 @@ class UserController extends Controller
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             })
-            ->when($request->role, fn ($q, $role) => $q->where('role', $role))
+            ->when($request->role, fn ($q, $role) => str_contains($role, ',')
+                ? $q->whereIn('role', explode(',', $role))
+                : $q->where('role', $role))
             ->orderBy('name')
             ->paginate($request->per_page ?? 20);
 

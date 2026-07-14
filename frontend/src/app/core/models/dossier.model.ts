@@ -25,10 +25,12 @@ export interface Dossier {
   client_id: number;
   avocat_id: number;
   assistant_id?: number | null;
+  stagiaire_id?: number | null;
   client?: Client;
   avocat?: Avocat;
   /** Assistant(e) traitant(e) du dossier, en plus de l'avocat responsable (optionnel). */
   assistant?: Avocat;
+  stagiaire?: Avocat;
   titre: string;
   type_affaire: TypeAffaire;
   statut: StatutDossier;

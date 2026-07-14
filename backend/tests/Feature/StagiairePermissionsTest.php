@@ -83,4 +83,28 @@ class StagiairePermissionsTest extends TestCase
             ->getJson("/api/dossiers/{$dossier->id}/communications")
             ->assertOk();
     }
+
+    public function test_peut_assigner_un_assistant_et_un_stagiaire_simultanement(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $avocat = User::factory()->avocat()->create();
+        $assistant = User::factory()->create(['role' => 'assistant']);
+        $stagiaire = User::factory()->create(['role' => 'stagiaire']);
+        $dossier = Dossier::factory()->create(['avocat_id' => $avocat->id]);
+
+        $this->actingAs($admin, 'sanctum')->postJson("/api/dossiers/{$dossier->id}/assigner", [
+            'avocat_id' => $avocat->id,
+            'assistant_id' => $assistant->id,
+            'stagiaire_id' => $stagiaire->id,
+        ])->assertOk();
+
+        $dossier->refresh();
+        $this->assertEquals($assistant->id, $dossier->assistant_id);
+        $this->assertEquals($stagiaire->id, $dossier->stagiaire_id);
+
+        // Les deux doivent alors avoir accès au dossier, chacun avec ses
+        // propres permissions (le stagiaire reste soumis à ses restrictions).
+        $this->actingAs($assistant, 'sanctum')->getJson("/api/dossiers/{$dossier->id}")->assertOk();
+        $this->actingAs($stagiaire, 'sanctum')->getJson("/api/dossiers/{$dossier->id}")->assertOk();
+    }
 }

@@ -12,7 +12,7 @@ class Dossier extends Model
     use HasFactory;
 
     protected $fillable = [
-        'reference', 'client_id', 'avocat_id', 'assistant_id', 'titre', 'type_affaire',
+        'reference', 'client_id', 'avocat_id', 'assistant_id', 'stagiaire_id', 'titre', 'type_affaire',
         'statut', 'mode_facturation', 'taux_horaire', 'montant_forfait',
         'facturation_periodique', 'frequence_facturation', 'facturer_a_cloture', 'derniere_facturation_auto_le',
         'date_ouverture', 'date_cloture', 'description',
@@ -38,6 +38,13 @@ class Dossier extends Model
     public function assistant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assistant_id');
+    }
+
+    /** Stagiaire assigné(e) au dossier, distinct de l'assistant — les deux
+     * peuvent être assignés en même temps sur un même dossier. */
+    public function stagiaire(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'stagiaire_id');
     }
 
     public function echeances(): HasMany
@@ -91,6 +98,6 @@ class Dossier extends Model
             return $query;
         }
 
-        return $query->where(fn ($q) => $q->where('avocat_id', $utilisateur->id)->orWhere('assistant_id', $utilisateur->id));
+        return $query->where(fn ($q) => $q->where('avocat_id', $utilisateur->id)->orWhere('assistant_id', $utilisateur->id)->orWhere('stagiaire_id', $utilisateur->id));
     }
 }

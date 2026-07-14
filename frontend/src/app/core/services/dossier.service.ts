@@ -62,7 +62,7 @@ export class DossierService {
   }
 
   /** Assigne/réassigne l'avocat responsable et l'assistant traitant — réservé admin. */
-  assigner(id: number, payload: { avocat_id: number; assistant_id?: number | null }): Observable<Dossier> {
+  assigner(id: number, payload: { avocat_id: number; assistant_id?: number | null; stagiaire_id?: number | null }): Observable<Dossier> {
     return this.http.post<Dossier>(`${this.apiUrl}/${id}/assigner`, payload);
   }
 

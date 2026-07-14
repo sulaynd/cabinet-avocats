@@ -13,7 +13,7 @@ class DossierController extends Controller
     public function index(Request $request)
     {
         $dossiers = Dossier::query()
-            ->with(['client', 'avocat', 'assistant'])
+            ->with(['client', 'avocat', 'assistant', 'stagiaire'])
             // Un avocat/assistant ne voit que les dossiers qui lui sont assignés ;
             // un admin voit tout. Voir Dossier::scopeVisiblePar().
             ->visiblePar($request->user())
@@ -25,7 +25,7 @@ class DossierController extends Controller
             // le scope ci-dessus le restreint de toute façon à lui-même.
             ->when($request->traitant_id && $request->user()->role === 'admin', function ($q) use ($request) {
                 $id = $request->traitant_id;
-                $q->where(fn ($sous) => $sous->where('avocat_id', $id)->orWhere('assistant_id', $id));
+                $q->where(fn ($sous) => $sous->where('avocat_id', $id)->orWhere('assistant_id', $id)->orWhere('stagiaire_id', $id));
             })
             ->when($request->search, function ($q, $search) {
                 $q->where('titre', 'like', "%{$search}%")
@@ -48,6 +48,7 @@ class DossierController extends Controller
             'client_id' => 'required|exists:clients,id',
             'avocat_id' => ($avocatIdRequis ? 'required' : 'nullable') . '|exists:users,id',
             'assistant_id' => 'nullable|exists:users,id',
+            'stagiaire_id' => 'nullable|exists:users,id',
             'titre' => 'required|string|max:255',
             'type_affaire' => [Rule::in(['immigration_mobilite', 'recrutement_international', 'cooperation_internationale', 'developpement_international', 'action_humanitaire', 'conseils_strategiques', 'autre'])],
             'statut' => [Rule::in(['ouvert', 'en_cours', 'en_attente', 'clos', 'archive'])],
@@ -72,6 +73,8 @@ class DossierController extends Controller
             $data['avocat_id'] = $request->user()->id;
         } elseif ($request->user()->role === 'assistant') {
             $data['assistant_id'] = $request->user()->id;
+        } elseif ($request->user()->role === 'stagiaire') {
+            $data['stagiaire_id'] = $request->user()->id;
         }
 
         if (empty($data['avocat_id'])) {
@@ -94,14 +97,14 @@ class DossierController extends Controller
             EnvoiQuestionnaireAccueil::pourDossier($dossier);
         }
 
-        return response()->json($dossier->load(['client', 'avocat', 'assistant']), 201);
+        return response()->json($dossier->load(['client', 'avocat', 'assistant', 'stagiaire']), 201);
     }
 
     public function show(Request $request, Dossier $dossier)
     {
         abort_unless($request->user()->can('view', $dossier), 403, "Ce dossier ne vous est pas assigné.");
 
-        return response()->json($dossier->load(['client', 'avocat', 'assistant', 'echeances', 'documents', 'factures']));
+        return response()->json($dossier->load(['client', 'avocat', 'assistant', 'stagiaire', 'echeances', 'documents', 'factures']));
     }
 
     public function update(Request $request, Dossier $dossier)
@@ -112,6 +115,7 @@ class DossierController extends Controller
             'client_id' => 'exists:clients,id',
             'avocat_id' => 'exists:users,id',
             'assistant_id' => 'nullable|exists:users,id',
+            'stagiaire_id' => 'nullable|exists:users,id',
             'titre' => 'string|max:255',
             'type_affaire' => [Rule::in(['immigration_mobilite', 'recrutement_international', 'cooperation_internationale', 'developpement_international', 'action_humanitaire', 'conseils_strategiques', 'autre'])],
             'statut' => [Rule::in(['ouvert', 'en_cours', 'en_attente', 'clos', 'archive'])],
@@ -138,7 +142,7 @@ class DossierController extends Controller
         // un avocat/assistant qui modifie "son" dossier ne peut pas se le retirer
         // ni se l'attribuer à lui-même via ce endpoint générique.
         if ($request->user()->role !== 'admin') {
-            unset($data['avocat_id'], $data['assistant_id']);
+            unset($data['avocat_id'], $data['assistant_id'], $data['stagiaire_id']);
         }
 
         $statutAvant = $dossier->statut;
@@ -164,7 +168,7 @@ class DossierController extends Controller
             \App\Services\FacturationAutomatique::genererPourDossier($dossier, envoyerParEmail: true);
         }
 
-        return response()->json($dossier->load(['client', 'avocat', 'assistant']));
+        return response()->json($dossier->load(['client', 'avocat', 'assistant', 'stagiaire']));
     }
 
     /**
@@ -181,11 +185,12 @@ class DossierController extends Controller
         $data = $request->validate([
             'avocat_id' => 'required|exists:users,id',
             'assistant_id' => 'nullable|exists:users,id',
+            'stagiaire_id' => 'nullable|exists:users,id',
         ]);
 
         $dossier->update($data);
 
-        return response()->json($dossier->load(['client', 'avocat', 'assistant']));
+        return response()->json($dossier->load(['client', 'avocat', 'assistant', 'stagiaire']));
     }
 
     public function destroy(Request $request, Dossier $dossier)

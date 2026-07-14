@@ -27,7 +27,15 @@
       <mat-label>Assistant traitant (facultatif)</mat-label>
       <mat-select formControlName="assistant_id">
         <mat-option [value]="null">-- Aucun --</mat-option>
-        <mat-option *ngFor="let assistant of assistants" [value]="assistant.id">{{ assistant.name }}</mat-option>
+        <mat-option *ngFor="let assistant of assistantsUniquement" [value]="assistant.id">{{ assistant.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Stagiaire traitant (facultatif)</mat-label>
+      <mat-select formControlName="stagiaire_id">
+        <mat-option [value]="null">-- Aucun --</mat-option>
+        <mat-option *ngFor="let stagiaire of stagiairesUniquement" [value]="stagiaire.id">{{ stagiaire.name }}</mat-option>
       </mat-select>
     </mat-form-field>
   </div>

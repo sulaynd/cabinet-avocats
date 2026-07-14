@@ -19,7 +19,7 @@ class EnvoyerRappelsEcheances extends Command
         // configurable dans le formulaire) — on ne traite ici que celles pour
         // lesquelles ce délai est écoulé, jamais déjà notifiées, et toujours
         // "à venir" (pas déjà passées, annulées ou réalisées).
-        $echeances = Echeance::with('dossier.avocat', 'dossier.assistant')
+        $echeances = Echeance::with('dossier.avocat', 'dossier.assistant', 'dossier.stagiaire')
             ->whereNotNull('rappel_avant')
             ->where('rappel_envoye', false)
             ->where('statut', 'a_venir')
@@ -29,7 +29,7 @@ class EnvoyerRappelsEcheances extends Command
         $envoyes = 0;
 
         foreach ($echeances as $echeance) {
-            $destinataires = collect([$echeance->dossier->avocat, $echeance->dossier->assistant])
+            $destinataires = collect([$echeance->dossier->avocat, $echeance->dossier->assistant, $echeance->dossier->stagiaire])
                 ->filter()
                 ->pluck('email')
                 ->unique();

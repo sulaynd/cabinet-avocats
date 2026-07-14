@@ -66,6 +66,7 @@ export class DossierDetailComponent implements OnInit {
   assistants: Utilisateur[] = [];
   avocatIdChoisi: number | null = null;
   assistantIdChoisi: number | null = null;
+  stagiaireIdChoisi: number | null = null;
   assignationEnCours = false;
 
   // --- Questionnaire d'accueil ---
@@ -323,14 +324,23 @@ export class DossierDetailComponent implements OnInit {
   ouvrirModaleAssignation(): void {
     this.avocatIdChoisi = this.dossier?.avocat_id ?? null;
     this.assistantIdChoisi = this.dossier?.assistant_id ?? null;
+    this.stagiaireIdChoisi = this.dossier?.stagiaire_id ?? null;
     this.modaleAssignationOuverte = true;
 
     if (!this.avocats.length) {
       this.userService.liste({ role: 'avocat', per_page: 100 }).subscribe((res) => (this.avocats = res.data));
     }
     if (!this.assistants.length) {
-      this.userService.liste({ role: 'assistant', per_page: 100 }).subscribe((res) => (this.assistants = res.data));
+      this.userService.liste({ role: 'assistant,stagiaire', per_page: 100 }).subscribe((res) => (this.assistants = res.data));
     }
+  }
+
+  get assistantsUniquement(): Utilisateur[] {
+    return this.assistants.filter((a) => a.role === 'assistant');
+  }
+
+  get stagiairesUniquement(): Utilisateur[] {
+    return this.assistants.filter((a) => a.role === 'stagiaire');
   }
 
   fermerModaleAssignation(): void {
@@ -341,7 +351,7 @@ export class DossierDetailComponent implements OnInit {
     if (!this.avocatIdChoisi) return;
     this.assignationEnCours = true;
 
-    this.dossierService.assigner(this.dossierId, { avocat_id: this.avocatIdChoisi, assistant_id: this.assistantIdChoisi }).subscribe({
+    this.dossierService.assigner(this.dossierId, { avocat_id: this.avocatIdChoisi, assistant_id: this.assistantIdChoisi, stagiaire_id: this.stagiaireIdChoisi }).subscribe({
       next: () => {
         this.assignationEnCours = false;
         this.modaleAssignationOuverte = false;
