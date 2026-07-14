@@ -103,15 +103,17 @@
           <td>{{ echeance.lieu }}</td>
           <td><span class="badge">{{ echeance.statut }}</span></td>
           <td>
-            <a mat-icon-button [routerLink]="['/echeances', echeance.id, 'modifier']" title="Modifier">
-              <mat-icon>edit</mat-icon>
-            </a>
-            <button mat-icon-button *ngIf="echeance.statut === 'a_venir'" (click)="marquerEcheanceRealisee(echeance.id)" title="Marquer réalisée">
-              <mat-icon>check_circle</mat-icon>
-            </button>
-            <button mat-icon-button (click)="supprimerEcheance(echeance.id)" title="Supprimer">
-              <mat-icon>delete</mat-icon>
-            </button>
+            <ng-container *appHasRole="['admin', 'avocat', 'assistant']">
+              <a mat-icon-button [routerLink]="['/echeances', echeance.id, 'modifier']" title="Modifier">
+                <mat-icon>edit</mat-icon>
+              </a>
+              <button mat-icon-button *ngIf="echeance.statut === 'a_venir'" (click)="marquerEcheanceRealisee(echeance.id)" title="Marquer réalisée">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+              <button mat-icon-button (click)="supprimerEcheance(echeance.id)" title="Supprimer">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </ng-container>
           </td>
         </tr>
       </tbody>
@@ -173,7 +175,7 @@
             <button mat-icon-button (click)="telechargerDocument(document.id, document.nom_original)" title="Télécharger">
               <mat-icon>download</mat-icon>
             </button>
-            <button mat-icon-button (click)="supprimerDocument(document.id)" title="Supprimer">
+            <button mat-icon-button *appHasRole="['admin', 'avocat', 'assistant']" (click)="supprimerDocument(document.id)" title="Supprimer">
               <mat-icon>delete</mat-icon>
             </button>
           </td>

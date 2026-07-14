@@ -14,6 +14,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
 import { Echeance, TypeEcheance } from '../../../core/models/echeance.model';
 import { Utilisateur } from '../../../core/models/user.model';
 import { SynchronisationCalendrierComponent } from '../synchronisation-calendrier/synchronisation-calendrier.component';
+import { HasRoleDirective } from '../../../core/directives/has-role.directive';
 
 interface JourCalendrier {
   date: Date;
@@ -29,7 +30,7 @@ interface JourCalendrier {
   imports: [
     CommonModule, RouterLink, FormsModule,
     MatFormFieldModule, MatSelectModule, MatButtonModule, MatButtonToggleModule, MatIconModule,
-    SynchronisationCalendrierComponent,
+    SynchronisationCalendrierComponent, HasRoleDirective,
   ],
   templateUrl: './echeance-agenda.component.html',
 })

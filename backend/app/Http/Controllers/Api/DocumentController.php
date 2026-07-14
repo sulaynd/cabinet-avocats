@@ -58,6 +58,7 @@ class DocumentController extends Controller
     public function destroy(Request $request, Document $document)
     {
         abort_unless($request->user()->can('view', $document->dossier), 403, "Ce dossier ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous ne pouvez pas supprimer un document.");
 
         Storage::disk('local')->delete($document->chemin);
         $document->delete();

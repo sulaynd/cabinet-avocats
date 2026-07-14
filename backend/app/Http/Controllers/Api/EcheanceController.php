@@ -64,6 +64,7 @@ class EcheanceController extends Controller
     public function update(Request $request, Echeance $echeance)
     {
         abort_unless($request->user()->can('view', $echeance->dossier), 403, "Ce dossier ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous ne pouvez pas modifier une échéance.");
 
         $data = $request->validate([
             'titre' => 'string|max:255',
@@ -82,6 +83,7 @@ class EcheanceController extends Controller
     public function destroy(Request $request, Echeance $echeance)
     {
         abort_unless($request->user()->can('view', $echeance->dossier), 403, "Ce dossier ne vous est pas assigné.");
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous ne pouvez pas supprimer une échéance.");
 
         $echeance->delete();
 

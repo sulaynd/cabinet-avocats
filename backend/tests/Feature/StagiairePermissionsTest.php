@@ -125,6 +125,53 @@ class StagiairePermissionsTest extends TestCase
             ->postJson("/api/rendez-vous/{$rendezVous->id}/confirmer", ['montant_consultation' => 150])
             ->assertOk();
     }
+
+    public function test_stagiaire_ne_peut_pas_modifier_une_echeance(): void
+    {
+        $stagiaire = User::factory()->create(['role' => 'stagiaire']);
+        $dossier = Dossier::factory()->create(['assistant_id' => $stagiaire->id]);
+        $echeance = \App\Models\Echeance::factory()->create(['dossier_id' => $dossier->id, 'statut' => 'a_venir']);
+
+        $this->actingAs($stagiaire, 'sanctum')
+            ->putJson("/api/echeances/{$echeance->id}", ['titre' => 'Modifié'])
+            ->assertStatus(403);
+    }
+
+    public function test_stagiaire_ne_peut_pas_marquer_une_echeance_realisee(): void
+    {
+        $stagiaire = User::factory()->create(['role' => 'stagiaire']);
+        $dossier = Dossier::factory()->create(['assistant_id' => $stagiaire->id]);
+        $echeance = \App\Models\Echeance::factory()->create(['dossier_id' => $dossier->id, 'statut' => 'a_venir']);
+
+        $this->actingAs($stagiaire, 'sanctum')
+            ->putJson("/api/echeances/{$echeance->id}", ['statut' => 'realisee'])
+            ->assertStatus(403);
+    }
+
+    public function test_stagiaire_ne_peut_pas_supprimer_une_echeance(): void
+    {
+        $stagiaire = User::factory()->create(['role' => 'stagiaire']);
+        $dossier = Dossier::factory()->create(['assistant_id' => $stagiaire->id]);
+        $echeance = \App\Models\Echeance::factory()->create(['dossier_id' => $dossier->id]);
+
+        $this->actingAs($stagiaire, 'sanctum')
+            ->deleteJson("/api/echeances/{$echeance->id}")
+            ->assertStatus(403);
+    }
+
+    public function test_stagiaire_ne_peut_pas_supprimer_un_document(): void
+    {
+        $stagiaire = User::factory()->create(['role' => 'stagiaire']);
+        $dossier = Dossier::factory()->create(['assistant_id' => $stagiaire->id]);
+        $document = \App\Models\Document::factory()->create(['dossier_id' => $dossier->id]);
+
+        $this->actingAs($stagiaire, 'sanctum')
+            ->deleteJson("/api/documents/{$document->id}")
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('documents', ['id' => $document->id]);
+    }
+
     public function test_peut_assigner_un_assistant_et_un_stagiaire_simultanement(): void
     {
         $admin = User::factory()->admin()->create();
