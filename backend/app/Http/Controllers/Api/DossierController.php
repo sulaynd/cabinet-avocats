@@ -54,7 +54,7 @@ class DossierController extends Controller
             'statut' => [Rule::in(['ouvert', 'en_cours', 'en_attente', 'clos', 'archive'])],
             'mode_facturation' => [Rule::in(['horaire', 'forfait'])],
             'taux_horaire' => 'nullable|numeric|min:0',
-            'montant_forfait' => 'nullable|numeric|min:0',
+            'montant_forfait' => 'required_if:mode_facturation,forfait|nullable|numeric|min:0.01',
             'facturation_periodique' => 'boolean',
             'frequence_facturation' => ['nullable', Rule::in(['hebdomadaire', 'mensuelle'])],
             'facturer_a_cloture' => 'boolean',
@@ -121,7 +121,7 @@ class DossierController extends Controller
             'statut' => [Rule::in(['ouvert', 'en_cours', 'en_attente', 'clos', 'archive'])],
             'mode_facturation' => [Rule::in(['horaire', 'forfait'])],
             'taux_horaire' => 'nullable|numeric|min:0',
-            'montant_forfait' => 'nullable|numeric|min:0',
+            'montant_forfait' => 'required_if:mode_facturation,forfait|nullable|numeric|min:0.01',
             'facturation_periodique' => 'boolean',
             'frequence_facturation' => ['nullable', Rule::in(['hebdomadaire', 'mensuelle'])],
             'facturer_a_cloture' => 'boolean',
@@ -132,6 +132,17 @@ class DossierController extends Controller
         // La date d'ouverture est figée dès la création du dossier, pour tout
         // le monde y compris l'admin — elle sert de repère fiable (délais,
         // rapports) qui ne doit jamais pouvoir être corrigée après coup.
+
+        // Le mode "forfait" exige un montant — on vérifie contre l'état final
+        // (nouvelle valeur envoyée, sinon celle déjà en base), pour couvrir le
+        // cas d'une modification partielle qui ne renvoie pas mode_facturation.
+        $modeEffectif = $data['mode_facturation'] ?? $dossier->mode_facturation;
+        $montantEffectif = array_key_exists('montant_forfait', $data) ? $data['montant_forfait'] : $dossier->montant_forfait;
+        abort_if(
+            $modeEffectif === 'forfait' && empty($montantEffectif),
+            422,
+            "Le montant du forfait est obligatoire lorsque le mode de facturation est 'Forfait'."
+        );
 
         // Un stagiaire peut travailler sur un dossier au quotidien, mais la
         // décision de le clôturer ou de l'archiver reste réservée à l'avocat

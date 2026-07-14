@@ -142,6 +142,16 @@ export class DossierFormComponent implements OnInit {
       controleTaux?.updateValueAndValidity({ emitEvent: false });
     });
 
+    this.form.get('mode_facturation')?.valueChanges.subscribe((mode) => {
+      const controleForfait = this.form.get('montant_forfait');
+      if (mode === 'forfait') {
+        controleForfait?.setValidators([Validators.required, Validators.min(0.01)]);
+      } else {
+        controleForfait?.clearValidators();
+      }
+      controleForfait?.updateValueAndValidity({ emitEvent: false });
+    });
+
     const idParam = this.route.snapshot.paramMap.get('id');
     this.dossierId = idParam ? Number(idParam) : null;
 

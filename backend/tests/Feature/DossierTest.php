@@ -116,4 +116,39 @@ class DossierTest extends TestCase
             ])
             ->assertStatus(422);
     }
+
+    public function test_creation_refusee_si_forfait_sans_montant(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $client = \App\Models\Client::factory()->create();
+        $avocat = User::factory()->avocat()->create();
+
+        $this->actingAs($admin, 'sanctum')->postJson('/api/dossiers', [
+            'client_id' => $client->id,
+            'avocat_id' => $avocat->id,
+            'titre' => 'Test forfait',
+            'type_affaire' => 'autre',
+            'mode_facturation' => 'forfait',
+        ])->assertStatus(422);
+    }
+
+    public function test_modification_refusee_si_bascule_vers_forfait_sans_montant(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $dossier = Dossier::factory()->create(['mode_facturation' => 'horaire']);
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/dossiers/{$dossier->id}", ['mode_facturation' => 'forfait'])
+            ->assertStatus(422);
+    }
+
+    public function test_modification_autorisee_si_forfait_avec_montant(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $dossier = Dossier::factory()->create(['mode_facturation' => 'horaire']);
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/dossiers/{$dossier->id}", ['mode_facturation' => 'forfait', 'montant_forfait' => 2500])
+            ->assertOk();
+    }
 }
