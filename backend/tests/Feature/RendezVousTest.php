@@ -35,11 +35,12 @@ class RendezVousTest extends TestCase
             ->postJson("/api/rendez-vous/{$rdv->id}/confirmer", [
                 'montant_consultation' => 200,
                 'lien_rencontre' => 'https://meet.google.com/abc-defg-hij',
+                'duree_minutes' => 90,
             ])
             ->assertOk();
 
         $this->assertEquals('confirme', $rdv->fresh()->statut);
-        Mail::assertSent(RendezVousConfirmeMail::class, fn ($mail) => $mail->montantConsultation === 200.0);
+        Mail::assertSent(RendezVousConfirmeMail::class, fn ($mail) => $mail->montantConsultation === 200.0 && $mail->dureeMinutes === 90);
     }
 
     public function test_montant_et_lien_ne_sont_jamais_enregistres_en_base(): void
@@ -51,6 +52,7 @@ class RendezVousTest extends TestCase
         $this->actingAs($admin, 'sanctum')->postJson("/api/rendez-vous/{$rdv->id}/confirmer", [
             'montant_consultation' => 150,
             'lien_rencontre' => 'https://teams.microsoft.com/xyz',
+            'duree_minutes' => 60,
         ]);
 
         $this->assertDatabaseMissing('rendezvous_en_ligne', ['id' => $rdv->id, 'montant_consultation' => 150]);

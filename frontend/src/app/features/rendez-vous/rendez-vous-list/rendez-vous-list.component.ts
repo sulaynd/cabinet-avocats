@@ -76,12 +76,23 @@ export class RendezVousListComponent implements OnInit, AfterViewInit {
   rendezVousAConfirmer: RendezVous | null = null;
   montantPopup: number | null = null;
   lienPopup = '';
+  dureePopup = 60;
+
+  readonly optionsDuree = [
+    { valeur: 30, libelle: '30 minutes' },
+    { valeur: 60, libelle: '1h' },
+    { valeur: 90, libelle: '1h 30mn' },
+    { valeur: 120, libelle: '2h' },
+    { valeur: 150, libelle: '2h 30mn' },
+    { valeur: 180, libelle: '3h' },
+  ];
   confirmationEnCours = false;
 
   ouvrirPopupConfirmation(r: RendezVous): void {
     this.rendezVousAConfirmer = r;
     this.montantPopup = null;
     this.lienPopup = '';
+    this.dureePopup = 60;
   }
 
   fermerPopupConfirmation(): void {
@@ -92,7 +103,7 @@ export class RendezVousListComponent implements OnInit, AfterViewInit {
     if (!this.rendezVousAConfirmer || !this.montantPopup) return;
     this.confirmationEnCours = true;
 
-    this.rendezVousService.confirmer(this.rendezVousAConfirmer.id, this.montantPopup, this.lienPopup).subscribe({
+    this.rendezVousService.confirmer(this.rendezVousAConfirmer.id, this.montantPopup, this.lienPopup, this.dureePopup).subscribe({
       next: () => {
         this.confirmationEnCours = false;
         this.notification.succes('Rendez-vous confirmé.');

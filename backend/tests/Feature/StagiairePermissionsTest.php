@@ -122,7 +122,7 @@ class StagiairePermissionsTest extends TestCase
         $rendezVous = \App\Models\RendezVousEnLigne::factory()->create(['statut' => 'demande']);
 
         $this->actingAs($assistant, 'sanctum')
-            ->postJson("/api/rendez-vous/{$rendezVous->id}/confirmer", ['montant_consultation' => 150])
+            ->postJson("/api/rendez-vous/{$rendezVous->id}/confirmer", ['montant_consultation' => 150, 'duree_minutes' => 60])
             ->assertOk();
     }
 

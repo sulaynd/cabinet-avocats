@@ -93,6 +93,12 @@
         </label>
         <p class="erreur" *ngIf="!montantPopup && champMontant.touched">Le montant est obligatoire.</p>
         <label>
+          Durée de la consultation
+          <select [(ngModel)]="dureePopup">
+            <option *ngFor="let d of optionsDuree" [ngValue]="d.valeur">{{ d.libelle }}</option>
+          </select>
+        </label>
+        <label>
           Lien de rencontre (Google Meet / Teams, facultatif)
           <input type="text" placeholder="https://..." [(ngModel)]="lienPopup" />
         </label>

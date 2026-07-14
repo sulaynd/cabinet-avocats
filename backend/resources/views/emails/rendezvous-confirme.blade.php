@@ -21,7 +21,7 @@
 
     @if ($montantConsultation)
         <p>
-            Je vous propose une consultation à distance de 1h au tarif de
+            Je vous propose une consultation à distance de {{ $dureeLibelle }} au tarif de
             {{ number_format($montantConsultation, 2, ',', ' ') }} $, payable par virement Interac
             au numéro suivant : {{ $cabinet->telephone }}
         </p>

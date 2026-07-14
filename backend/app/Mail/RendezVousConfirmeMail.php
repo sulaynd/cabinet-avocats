@@ -15,8 +15,24 @@ class RendezVousConfirmeMail extends Mailable
     public function __construct(
         public RendezVousEnLigne $rendezVous,
         public ?float $montantConsultation = null,
-        public ?string $lienRencontre = null
+        public ?string $lienRencontre = null,
+        public ?int $dureeMinutes = 60
     ) {
+    }
+
+    /** Convertit la durée en minutes vers un libellé français lisible (30 minutes, 1h, 1h 30, 2h...). */
+    private function libelleDuree(): string
+    {
+        $minutes = $this->dureeMinutes ?? 60;
+
+        if ($minutes < 60) {
+            return "{$minutes} minutes";
+        }
+
+        $heures = intdiv($minutes, 60);
+        $reste = $minutes % 60;
+
+        return $reste === 0 ? "{$heures}h" : "{$heures}h {$reste}";
     }
 
     public function build()
@@ -30,6 +46,7 @@ class RendezVousConfirmeMail extends Mailable
                 'rendezVous' => $this->rendezVous,
                 'montantConsultation' => $this->montantConsultation,
                 'lienRencontre' => $this->lienRencontre,
+                'dureeLibelle' => $this->libelleDuree(),
             ]);
     }
 }

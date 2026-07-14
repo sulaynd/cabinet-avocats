@@ -8,6 +8,7 @@ use App\Mail\RendezVousConfirmeMail;
 use App\Models\RendezVousEnLigne;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class RendezVousController extends Controller
 {
@@ -33,12 +34,13 @@ class RendezVousController extends Controller
         $data = $request->validate([
             'montant_consultation' => 'required|numeric|min:0',
             'lien_rencontre' => 'nullable|string|max:500',
+            'duree_minutes' => ['required', Rule::in([30, 60, 90, 120, 150, 180])],
         ]);
 
         $rendezVous->update(['statut' => 'confirme']);
 
         Mail::to($rendezVous->email)->send(
-            new RendezVousConfirmeMail($rendezVous->load('avocat'), $data['montant_consultation'] ?? null, $data['lien_rencontre'] ?? null)
+            new RendezVousConfirmeMail($rendezVous->load('avocat'), $data['montant_consultation'] ?? null, $data['lien_rencontre'] ?? null, $data['duree_minutes'])
         );
 
         return response()->json($rendezVous);

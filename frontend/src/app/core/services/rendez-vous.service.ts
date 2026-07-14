@@ -22,10 +22,11 @@ export class RendezVousService {
     return this.http.get<Paginated<RendezVous>>(`${this.apiUrl}/rendez-vous`, { params: params as any });
   }
 
-  confirmer(id: number, montantConsultation?: number | null, lienRencontre?: string | null): Observable<RendezVous> {
+  confirmer(id: number, montantConsultation?: number | null, lienRencontre?: string | null, dureeMinutes?: number | null): Observable<RendezVous> {
     return this.http.post<RendezVous>(`${this.apiUrl}/rendez-vous/${id}/confirmer`, {
       montant_consultation: montantConsultation ?? null,
       lien_rencontre: lienRencontre ?? null,
+      duree_minutes: dureeMinutes ?? 60,
     });
   }
 
