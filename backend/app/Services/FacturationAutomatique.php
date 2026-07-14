@@ -48,6 +48,7 @@ class FacturationAutomatique
             'dossier_id' => $dossier->id,
             'client_id' => $dossier->client_id,
             'date_emission' => now()->toDateString(),
+            'date_echeance' => now()->addDays(30)->toDateString(),
             'taux_tps' => 5, 'taux_tvq' => 9.975, // Québec : calculées indépendamment (pas de taxe sur taxe depuis 2013)
             'statut' => 'brouillon',
         ]);
@@ -77,6 +78,7 @@ class FacturationAutomatique
             'dossier_id' => $dossier->id,
             'client_id' => $dossier->client_id,
             'date_emission' => now()->toDateString(),
+            'date_echeance' => now()->addDays(30)->toDateString(),
             'taux_tps' => 5, 'taux_tvq' => 9.975, // Québec : calculées indépendamment (pas de taxe sur taxe depuis 2013)
             'statut' => 'brouillon',
         ]);

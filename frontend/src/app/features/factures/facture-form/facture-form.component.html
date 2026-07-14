@@ -29,6 +29,11 @@
     </mat-form-field>
   </div>
 
+  <p class="bandeau-avertissement">
+    <mat-icon>info</mat-icon>
+    Date d'échéance par défaut : émission + 30 jours — modifiable
+  </p>
+
   <h3>Lignes de facturation</h3>
   <div formArrayName="lignes">
     <div *ngFor="let ligne of lignes.controls; let i = index" [formGroupName]="i" class="ligne-facture-material">

@@ -55,7 +55,7 @@ class FactureController extends Controller
                 'dossier_id' => $data['dossier_id'],
                 'client_id' => $data['client_id'],
                 'date_emission' => $data['date_emission'],
-                'date_echeance' => $data['date_echeance'] ?? null,
+                'date_echeance' => $data['date_echeance'] ?? \Carbon\Carbon::parse($data['date_emission'])->addDays(30)->toDateString(),
                 // Par défaut, taux du Québec : TPS (fédérale) 5 % + TVQ (provinciale) 9,975 %,
                 // calculées indépendamment (pas de taxe sur taxe depuis 2013).
                 'taux_tps' => $data['taux_tps'] ?? 5,

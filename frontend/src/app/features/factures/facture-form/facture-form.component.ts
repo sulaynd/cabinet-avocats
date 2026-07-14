@@ -50,6 +50,23 @@ export class FactureFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Échéance par défaut : émission + 30 jours (délai de paiement standard),
+    // recalculée automatiquement si l'émission change — sauf si l'utilisateur
+    // a lui-même personnalisé l'échéance, auquel cas on respecte son choix.
+    this.form.patchValue({ date_echeance: this.ajouterJours(this.form.value.date_emission!, 30) });
+
+    this.form.get('date_echeance')?.valueChanges.subscribe(() => {
+      this.echeanceModifieeManuellement = true;
+    });
+
+    this.form.get('date_emission')?.valueChanges.subscribe((nouvelleEmission) => {
+      if (!this.echeanceModifieeManuellement && nouvelleEmission) {
+        // patchValue seul (sans emitEvent:false) redéclencherait le listener
+        // ci-dessus par erreur ; on l'évite pour ne pas fausser le suivi.
+        this.form.get('date_echeance')?.setValue(this.ajouterJours(nouvelleEmission, 30), { emitEvent: false });
+      }
+    });
+
     this.dossierService.liste({ per_page: 100 }).subscribe((res) => {
       this.dossiers = res.data;
 
@@ -58,6 +75,14 @@ export class FactureFormComponent implements OnInit {
         this.form.patchValue({ dossier_id: Number(dossierIdParam) });
       }
     });
+  }
+
+  private echeanceModifieeManuellement = false;
+
+  private ajouterJours(dateStr: string, jours: number): string {
+    const date = new Date(dateStr + 'T00:00:00');
+    date.setDate(date.getDate() + jours);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
   get lignes(): FormArray {

@@ -117,4 +117,37 @@ class FactureTest extends TestCase
             ->putJson("/api/factures/{$facture->id}", ['date_echeance' => '2026-07-30'])
             ->assertOk();
     }
+
+    public function test_creation_manuelle_recoit_une_echeance_par_defaut_si_non_fournie(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $dossier = Dossier::factory()->create();
+
+        $reponse = $this->actingAs($admin, 'sanctum')->postJson('/api/factures', [
+            'dossier_id' => $dossier->id,
+            'client_id' => $dossier->client_id,
+            'date_emission' => '2026-07-12',
+            'lignes' => [['description' => 'Test', 'quantite' => 1, 'prix_unitaire' => 100]],
+        ])->assertCreated();
+
+        $this->assertEquals('2026-08-11', $reponse->json('date_echeance'));
+    }
+
+    public function test_generation_depuis_temps_passe_recoit_une_echeance_par_defaut(): void
+    {
+        $avocat = User::factory()->avocat()->create();
+        $dossier = Dossier::factory()->create(['avocat_id' => $avocat->id, 'mode_facturation' => 'horaire']);
+        \App\Models\TempsPasse::factory()->create([
+            'dossier_id' => $dossier->id,
+            'user_id' => $avocat->id,
+            'facturable' => true,
+            'facture_id' => null,
+        ]);
+
+        $reponse = $this->actingAs($avocat, 'sanctum')
+            ->postJson("/api/dossiers/{$dossier->id}/factures/generer-depuis-temps")
+            ->assertCreated();
+
+        $this->assertNotNull($reponse->json('date_echeance'));
+    }
 }

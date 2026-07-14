@@ -394,6 +394,13 @@ tr.ligne-en-attente:hover td[mat-cell] { background: #ede2c4 !important; }
 .chip-statut-archive, .chip-statut-annulee, .chip-statut-brouillon { background: var(--neutral-bg) !important; color: var(--slate) !important; }
 .chip-statut-en_retard { background: var(--danger-bg) !important; color: var(--danger) !important; }
 .echeance-depassee { color: var(--danger); font-weight: 600; }
+.bandeau-avertissement {
+  display: flex; align-items: center; gap: 8px;
+  background: #FBF3DD; color: #8A6D1E;
+  padding: 10px 16px; border-radius: 4px;
+  font-size: 13px; margin: -6px 0 20px;
+}
+.bandeau-avertissement mat-icon { font-size: 18px; width: 18px; height: 18px; flex: none; }
 
 .dossier-form-material {
   max-width: 680px;
