@@ -125,16 +125,30 @@ class DossierController extends Controller
             'facturation_periodique' => 'boolean',
             'frequence_facturation' => ['nullable', Rule::in(['hebdomadaire', 'mensuelle'])],
             'facturer_a_cloture' => 'boolean',
-            'date_ouverture' => 'nullable|date',
             'date_cloture' => 'nullable|date',
             'description' => 'nullable|string',
         ]);
+
+        // La date d'ouverture est figée dès la création du dossier, pour tout
+        // le monde y compris l'admin — elle sert de repère fiable (délais,
+        // rapports) qui ne doit jamais pouvoir être corrigée après coup.
 
         // Un stagiaire peut travailler sur un dossier au quotidien, mais la
         // décision de le clôturer ou de l'archiver reste réservée à l'avocat
         // responsable ou à l'admin.
         if ($request->user()->estStagiaire() && isset($data['statut']) && in_array($data['statut'], ['clos', 'archive'])) {
             abort(403, "En tant que stagiaire, vous ne pouvez pas clôturer ou archiver un dossier — demandez à l'avocat responsable.");
+        }
+
+        // Un stagiaire a un accès en lecture seule aux factures ; le laisser
+        // modifier les réglages de facturation automatique (mode, taux,
+        // périodicité, facturation à la clôture) reviendrait à contourner
+        // cette restriction par la bande.
+        if ($request->user()->estStagiaire()) {
+            unset(
+                $data['mode_facturation'], $data['taux_horaire'], $data['montant_forfait'],
+                $data['facturation_periodique'], $data['frequence_facturation'], $data['facturer_a_cloture']
+            );
         }
 
         // Changer l'avocat responsable ou l'assistant traitant d'un dossier est une

@@ -1,13 +1,18 @@
-<form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form-material">
+<form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form-material formulaire-large">
   <h2>{{ dossierId ? 'Modifier le dossier' : 'Nouveau dossier' }}</h2>
 
-  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+  <mat-form-field appearance="outline" class="champ-pleine-largeur" *ngIf="!dossierId">
     <mat-label>Client</mat-label>
     <mat-select formControlName="client_id">
       <mat-option *ngFor="let client of clients" [value]="client.id">
         {{ client.type === 'entreprise' ? client.raison_sociale : ((client.prenom || '') + ' ' + (client.nom || '')) }}
       </mat-option>
     </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="champ-pleine-largeur" *ngIf="dossierId">
+    <mat-label>Client</mat-label>
+    <input matInput [value]="nomClientOriginal" disabled />
   </mat-form-field>
 
   <mat-form-field appearance="outline" class="champ-pleine-largeur">

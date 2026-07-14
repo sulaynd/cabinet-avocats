@@ -172,6 +172,41 @@ class StagiairePermissionsTest extends TestCase
         $this->assertDatabaseHas('documents', ['id' => $document->id]);
     }
 
+    public function test_stagiaire_ne_peut_pas_modifier_les_reglages_de_facturation(): void
+    {
+        $stagiaire = User::factory()->create(['role' => 'stagiaire']);
+        $dossier = Dossier::factory()->create([
+            'assistant_id' => $stagiaire->id,
+            'mode_facturation' => 'horaire',
+            'facturation_periodique' => false,
+            'facturer_a_cloture' => false,
+        ]);
+
+        $this->actingAs($stagiaire, 'sanctum')->putJson("/api/dossiers/{$dossier->id}", [
+            'mode_facturation' => 'forfait',
+            'montant_forfait' => 5000,
+            'facturation_periodique' => true,
+            'facturer_a_cloture' => true,
+        ])->assertOk();
+
+        $dossier->refresh();
+        $this->assertEquals('horaire', $dossier->mode_facturation);
+        $this->assertFalse((bool) $dossier->facturation_periodique);
+        $this->assertFalse((bool) $dossier->facturer_a_cloture);
+    }
+
+    public function test_date_ouverture_est_verrouillee_pour_tous_meme_ladmin(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $dossier = Dossier::factory()->create(['date_ouverture' => '2026-01-15']);
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/dossiers/{$dossier->id}", ['date_ouverture' => '2020-01-01'])
+            ->assertOk();
+
+        $this->assertEquals('2026-01-15', $dossier->fresh()->date_ouverture->format('Y-m-d'));
+    }
+
     public function test_peut_assigner_un_assistant_et_un_stagiaire_simultanement(): void
     {
         $admin = User::factory()->admin()->create();

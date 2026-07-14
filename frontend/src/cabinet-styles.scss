@@ -402,6 +402,7 @@ tr.ligne-en-attente:hover td[mat-cell] { background: #ede2c4 !important; }
   border-radius: 2px;
   padding: 26px 30px;
 }
+.dossier-form-material.formulaire-large { max-width: 860px; }
 .dossier-form-material .champ-pleine-largeur { width: 100%; }
 .dossier-form-material .ligne-champs { display: flex; gap: 16px; }
 .dossier-form-material .ligne-champs mat-form-field { flex: 1; }

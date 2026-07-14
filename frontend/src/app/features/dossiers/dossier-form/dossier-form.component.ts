@@ -31,6 +31,7 @@ import { Utilisateur } from '../../../core/models/user.model';
 })
 export class DossierFormComponent implements OnInit {
   dossierId: number | null = null;
+  nomClientOriginal = '';
   clients: Client[] = [];
   avocats: Utilisateur[] = [];
   assistants: Utilisateur[] = [];
@@ -137,10 +138,37 @@ export class DossierFormComponent implements OnInit {
         // Un stagiaire s'auto-assigne lui-même comme stagiaire traitant.
         this.form.get('stagiaire_id')?.disable();
       }
+
+      if (this.auth.hasRole('stagiaire')) {
+        // Accès en lecture seule aux factures : les réglages de facturation
+        // automatique (mode, taux, périodicité, facturation à la clôture)
+        // restent visibles mais non modifiables, pour cohérence avec cette
+        // restriction (ignorés côté serveur de toute façon).
+        this.form.get('mode_facturation')?.disable();
+        this.form.get('taux_horaire')?.disable();
+        this.form.get('montant_forfait')?.disable();
+        this.form.get('facturation_periodique')?.disable();
+        this.form.get('frequence_facturation')?.disable();
+        this.form.get('facturer_a_cloture')?.disable();
+      }
     }
 
     if (this.dossierId) {
       this.dossierService.obtenir(this.dossierId).subscribe((dossier) => {
+        this.nomClientOriginal = dossier.client
+          ? dossier.client.type === 'entreprise'
+            ? dossier.client.raison_sociale || ''
+            : `${dossier.client.prenom || ''} ${dossier.client.nom || ''}`.trim()
+          : '';
+        // Le client d'un dossier ne doit jamais changer par erreur : plutôt
+        // qu'un menu déroulant listant tous les clients (risque de clic sur le
+        // mauvais client), on affiche son nom en texte simple en modification.
+        this.form.get('client_id')?.disable();
+
+        // La date d'ouverture est figée dès la création, pour tout le monde
+        // y compris l'admin (ignorée côté serveur de toute façon).
+        this.form.get('date_ouverture')?.disable();
+
         this.form.patchValue({
           client_id: dossier.client_id,
           avocat_id: dossier.avocat_id,
