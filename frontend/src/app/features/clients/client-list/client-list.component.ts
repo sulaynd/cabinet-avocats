@@ -12,6 +12,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ClientService } from '../../../core/services/client.service';
+import { HasRoleDirective } from '../../../core/directives/has-role.directive';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { Client } from '../../../core/models/client.model';
@@ -22,7 +23,7 @@ import { Client } from '../../../core/models/client.model';
   imports: [
     CommonModule, RouterLink, FormsModule,
     MatTableModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, MatPaginatorModule, MatChipsModule, MatSortModule, MatTooltipModule,
+    MatButtonModule, MatIconModule, MatPaginatorModule, MatChipsModule, MatSortModule, MatTooltipModule, HasRoleDirective,
   ],
   templateUrl: './client-list.component.html',
 })

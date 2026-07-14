@@ -28,6 +28,8 @@ class RendezVousController extends Controller
 
     public function confirmer(Request $request, RendezVousEnLigne $rendezVous)
     {
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous ne pouvez pas confirmer un rendez-vous.");
+
         $data = $request->validate([
             'montant_consultation' => 'required|numeric|min:0',
             'lien_rencontre' => 'nullable|string|max:500',
@@ -42,8 +44,10 @@ class RendezVousController extends Controller
         return response()->json($rendezVous);
     }
 
-    public function annuler(RendezVousEnLigne $rendezVous)
+    public function annuler(Request $request, RendezVousEnLigne $rendezVous)
     {
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous ne pouvez pas annuler un rendez-vous.");
+
         $etaitConfirme = $rendezVous->statut === 'confirme';
 
         $rendezVous->update(['statut' => 'annule']);

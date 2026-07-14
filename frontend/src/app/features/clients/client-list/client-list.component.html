@@ -52,6 +52,7 @@
         </a>
         <button
           mat-icon-button
+          *appHasRole="['admin', 'avocat', 'assistant']"
           [disabled]="(client.dossiers_count ?? 0) > 0"
           [matTooltip]="(client.dossiers_count ?? 0) > 0 ? 'Ce client a des dossiers associés, suppression impossible' : ''"
           (click)="supprimer(client)"

@@ -84,6 +84,47 @@ class StagiairePermissionsTest extends TestCase
             ->assertOk();
     }
 
+    public function test_stagiaire_ne_peut_pas_supprimer_un_client(): void
+    {
+        $stagiaire = User::factory()->create(['role' => 'stagiaire']);
+        $client = \App\Models\Client::factory()->create();
+
+        $this->actingAs($stagiaire, 'sanctum')
+            ->deleteJson("/api/clients/{$client->id}")
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('clients', ['id' => $client->id]);
+    }
+
+    public function test_stagiaire_ne_peut_pas_confirmer_un_rendez_vous(): void
+    {
+        $stagiaire = User::factory()->create(['role' => 'stagiaire']);
+        $rendezVous = \App\Models\RendezVousEnLigne::factory()->create(['statut' => 'demande']);
+
+        $this->actingAs($stagiaire, 'sanctum')
+            ->postJson("/api/rendez-vous/{$rendezVous->id}/confirmer", ['montant_consultation' => 150])
+            ->assertStatus(403);
+    }
+
+    public function test_stagiaire_ne_peut_pas_annuler_un_rendez_vous(): void
+    {
+        $stagiaire = User::factory()->create(['role' => 'stagiaire']);
+        $rendezVous = \App\Models\RendezVousEnLigne::factory()->create(['statut' => 'confirme']);
+
+        $this->actingAs($stagiaire, 'sanctum')
+            ->postJson("/api/rendez-vous/{$rendezVous->id}/annuler")
+            ->assertStatus(403);
+    }
+
+    public function test_assistant_peut_toujours_confirmer_un_rendez_vous(): void
+    {
+        $assistant = User::factory()->create(['role' => 'assistant']);
+        $rendezVous = \App\Models\RendezVousEnLigne::factory()->create(['statut' => 'demande']);
+
+        $this->actingAs($assistant, 'sanctum')
+            ->postJson("/api/rendez-vous/{$rendezVous->id}/confirmer", ['montant_consultation' => 150])
+            ->assertOk();
+    }
     public function test_peut_assigner_un_assistant_et_un_stagiaire_simultanement(): void
     {
         $admin = User::factory()->admin()->create();

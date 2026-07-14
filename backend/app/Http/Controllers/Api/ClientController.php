@@ -72,8 +72,10 @@ class ClientController extends Controller
         return response()->json($client);
     }
 
-    public function destroy(Client $client)
+    public function destroy(Request $request, Client $client)
     {
+        abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous ne pouvez pas supprimer un client.");
+
         abort_if(
             $client->dossiers()->exists(),
             422,

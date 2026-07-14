@@ -11,13 +11,14 @@ import { RendezVousService } from '../../../core/services/rendez-vous.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { RendezVous } from '../../../core/models/rendez-vous.model';
+import { HasRoleDirective } from '../../../core/directives/has-role.directive';
 
 @Component({
   selector: 'app-rendez-vous-list',
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    MatTableModule, MatButtonModule, MatIconModule, MatChipsModule, MatPaginatorModule, MatSortModule,
+    MatTableModule, MatButtonModule, MatIconModule, MatChipsModule, MatPaginatorModule, MatSortModule, HasRoleDirective,
   ],
   templateUrl: './rendez-vous-list.component.html',
 })

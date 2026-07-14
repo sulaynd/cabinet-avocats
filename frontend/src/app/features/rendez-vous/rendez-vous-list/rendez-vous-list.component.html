@@ -37,12 +37,14 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let r">
-        <button mat-icon-button *ngIf="r.statut === 'demande'" (click)="ouvrirPopupConfirmation(r)" title="Confirmer">
-          <mat-icon>check_circle</mat-icon>
-        </button>
-        <button mat-icon-button *ngIf="r.statut !== 'annule'" (click)="annuler(r.id)" title="Annuler">
-          <mat-icon>cancel</mat-icon>
-        </button>
+        <ng-container *appHasRole="['admin', 'avocat', 'assistant']">
+          <button mat-icon-button *ngIf="r.statut === 'demande'" (click)="ouvrirPopupConfirmation(r)" title="Confirmer">
+            <mat-icon>check_circle</mat-icon>
+          </button>
+          <button mat-icon-button *ngIf="r.statut !== 'annule'" (click)="annuler(r.id)" title="Annuler">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </ng-container>
       </td>
     </ng-container>
 
