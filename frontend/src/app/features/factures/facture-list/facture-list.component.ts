@@ -42,6 +42,22 @@ export class FactureListComponent implements OnInit, AfterViewInit {
   readonly colonnes = ['numero', 'client', 'dossier', 'emission', 'montant', 'statut', 'actions'];
   readonly statuts: StatutFacture[] = ['brouillon', 'envoyee', 'payee', 'en_retard', 'annulee'];
 
+  readonly libellesStatut: Record<string, string> = {
+    brouillon: 'Facture non envoyée et non payée',
+    envoyee: 'Facture envoyée et non payée',
+    payee: 'Facture payée',
+    en_retard: 'Facture en retard',
+    annulee: 'Facture annulée',
+  };
+
+  readonly libellesStatutCourts: Record<string, string> = {
+    brouillon: 'Non envoyée',
+    envoyee: 'Envoyée',
+    payee: 'Payée',
+    en_retard: 'En retard',
+    annulee: 'Annulée',
+  };
+
   constructor(
     private factureService: FactureService,
     private notification: NotificationService,

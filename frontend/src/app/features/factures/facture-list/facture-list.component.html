@@ -4,7 +4,7 @@
       <mat-label>Statut</mat-label>
       <mat-select [(ngModel)]="statutFiltre" (selectionChange)="charger()">
         <mat-option value="">Tous les statuts</mat-option>
-        <mat-option *ngFor="let s of statuts" [value]="s">{{ s }}</mat-option>
+        <mat-option *ngFor="let s of statuts" [value]="s">{{ libellesStatut[s] }}</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -43,7 +43,7 @@
 
     <ng-container matColumnDef="statut">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
-      <td mat-cell *matCellDef="let f"><mat-chip [class]="'chip-statut-' + f.statut">{{ f.statut }}</mat-chip></td>
+      <td mat-cell *matCellDef="let f"><mat-chip [class]="'chip-statut-' + f.statut">{{ libellesStatutCourts[f.statut] }}</mat-chip></td>
     </ng-container>
 
     <ng-container matColumnDef="actions">

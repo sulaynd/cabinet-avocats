@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 // Envoie les rappels d'échéances (audiences, RDV client, délais...) dont le
 // délai de rappel configuré est atteint, tous les jours à 8h.
 Schedule::command('echeances:envoyer-rappels')->dailyAt('08:00');
+
+// Bascule automatiquement les factures envoyées et non payées vers "en
+// retard" une fois leur date d'échéance dépassée, tous les jours à 7h.
+Schedule::command('factures:marquer-en-retard')->dailyAt('07:00');
