@@ -393,6 +393,7 @@ tr.ligne-en-attente:hover td[mat-cell] { background: #ede2c4 !important; }
 .chip-statut-clos, .chip-statut-realisee, .chip-statut-payee { background: var(--success-bg) !important; color: var(--success) !important; }
 .chip-statut-archive, .chip-statut-annulee, .chip-statut-brouillon { background: var(--neutral-bg) !important; color: var(--slate) !important; }
 .chip-statut-en_retard { background: var(--danger-bg) !important; color: var(--danger) !important; }
+.echeance-depassee { color: var(--danger); font-weight: 600; }
 
 .dossier-form-material {
   max-width: 680px;

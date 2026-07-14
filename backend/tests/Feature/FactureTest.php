@@ -83,4 +83,38 @@ class FactureTest extends TestCase
             ->deleteJson("/api/factures/{$facture->id}")
             ->assertNoContent();
     }
+
+    public function test_creation_refusee_si_echeance_avant_emission(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $dossier = Dossier::factory()->create();
+
+        $this->actingAs($admin, 'sanctum')->postJson('/api/factures', [
+            'dossier_id' => $dossier->id,
+            'client_id' => $dossier->client_id,
+            'date_emission' => '2026-07-12',
+            'date_echeance' => '2026-07-09',
+            'lignes' => [['description' => 'Test', 'quantite' => 1, 'prix_unitaire' => 100]],
+        ])->assertStatus(422);
+    }
+
+    public function test_modification_refusee_si_echeance_avant_emission_existante(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $facture = Facture::factory()->create(['date_emission' => '2026-07-12']);
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/factures/{$facture->id}", ['date_echeance' => '2026-07-09'])
+            ->assertStatus(422);
+    }
+
+    public function test_modification_autorisee_si_echeance_apres_emission(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $facture = Facture::factory()->create(['date_emission' => '2026-07-12']);
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/factures/{$facture->id}", ['date_echeance' => '2026-07-30'])
+            ->assertOk();
+    }
 }

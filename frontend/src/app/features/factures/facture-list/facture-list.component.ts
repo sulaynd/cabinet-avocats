@@ -39,7 +39,7 @@ export class FactureListComponent implements OnInit, AfterViewInit {
   totalFactures = 0;
   taillePage = 20;
 
-  readonly colonnes = ['numero', 'client', 'dossier', 'emission', 'montant', 'statut', 'actions'];
+  readonly colonnes = ['numero', 'client', 'dossier', 'emission', 'echeance', 'montant', 'statut', 'actions'];
   readonly statuts: StatutFacture[] = ['brouillon', 'envoyee', 'payee', 'en_retard', 'annulee'];
 
   readonly libellesStatut: Record<string, string> = {
@@ -75,6 +75,7 @@ export class FactureListComponent implements OnInit, AfterViewInit {
         case 'client': return this.nomClient(facture).toLowerCase();
         case 'dossier': return facture.dossier?.reference?.toLowerCase() ?? '';
         case 'emission': return facture.date_emission;
+        case 'echeance': return facture.date_echeance ?? '';
         case 'montant': return facture.montant_ttc;
         default: return (facture as any)[colonne] ?? '';
       }

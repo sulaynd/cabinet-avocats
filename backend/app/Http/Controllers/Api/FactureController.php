@@ -36,7 +36,7 @@ class FactureController extends Controller
             'dossier_id' => 'required|exists:dossiers,id',
             'client_id' => 'required|exists:clients,id',
             'date_emission' => 'required|date',
-            'date_echeance' => 'nullable|date',
+            'date_echeance' => 'nullable|date|after_or_equal:date_emission',
             'taux_tps' => 'nullable|numeric|min:0|max:100',
             'taux_tvq' => 'nullable|numeric|min:0|max:100',
             'lignes' => 'required|array|min:1',
@@ -99,6 +99,18 @@ class FactureController extends Controller
             'taux_tvq' => 'numeric|min:0|max:100',
             'statut' => [Rule::in(['brouillon', 'envoyee', 'payee', 'en_retard', 'annulee'])],
         ]);
+
+        // L'échéance ne peut jamais précéder l'émission — on compare contre la
+        // nouvelle date d'émission si elle est envoyée dans la même requête,
+        // sinon contre celle déjà enregistrée.
+        if (! empty($data['date_echeance'])) {
+            $emissionDeReference = $data['date_emission'] ?? $facture->date_emission;
+            abort_if(
+                $emissionDeReference && \Carbon\Carbon::parse($data['date_echeance'])->lt(\Carbon\Carbon::parse($emissionDeReference)),
+                422,
+                "La date d'échéance ne peut pas être antérieure à la date d'émission."
+            );
+        }
 
         $facture->update($data);
         $facture->recalculerMontants();

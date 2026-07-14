@@ -45,6 +45,14 @@ export class DossierDetailComponent implements OnInit {
     autre: 'Autre',
   };
 
+  readonly libellesStatutFacture: Record<string, string> = {
+    brouillon: 'Non envoyée',
+    envoyee: 'Envoyée',
+    payee: 'Payée',
+    en_retard: 'En retard',
+    annulee: 'Annulée',
+  };
+
   fichierSelectionne: File | null = null;
   typeDocumentSelectionne: TypeDocument = 'autre';
   necessiteSignatureSelectionne = false;

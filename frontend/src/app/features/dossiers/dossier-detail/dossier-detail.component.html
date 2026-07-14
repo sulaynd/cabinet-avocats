@@ -269,6 +269,7 @@
         <tr>
           <th>Numéro</th>
           <th>Émission</th>
+          <th>Échéance</th>
           <th>Montant TTC</th>
           <th>Statut</th>
           <th>Actions</th>
@@ -278,8 +279,14 @@
         <tr *ngFor="let facture of dossier.factures">
           <td>{{ facture.numero }}</td>
           <td>{{ facture.date_emission | date: 'dd/MM/yyyy':'UTC' }}</td>
+          <td>
+            <span *ngIf="facture.date_echeance" [class.echeance-depassee]="facture.statut === 'en_retard'">
+              {{ facture.date_echeance | date: 'dd/MM/yyyy':'UTC' }}
+            </span>
+            <span *ngIf="!facture.date_echeance">—</span>
+          </td>
           <td>{{ facture.montant_ttc | number: '1.2-2' }} $</td>
-          <td><span class="badge statut-{{ facture.statut }}">{{ facture.statut }}</span></td>
+          <td><span class="badge statut-{{ facture.statut }}">{{ libellesStatutFacture[facture.statut] || facture.statut }}</span></td>
           <td>
             <button mat-icon-button class="bouton-pdf-grand" (click)="telechargerFacturePdf(facture.id, facture.numero)" title="Télécharger le PDF">
               <mat-icon class="icone-pdf-grande">picture_as_pdf</mat-icon>
