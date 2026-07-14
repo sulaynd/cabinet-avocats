@@ -33,6 +33,7 @@ export class ParametresCabinetComponent implements OnInit {
     adresse: this.fb.control(''),
     telephone: this.fb.control(''),
     email: this.fb.control('', Validators.email),
+    taux_horaire_defaut: this.fb.control(null as number | null),
   });
 
   constructor(
@@ -49,6 +50,7 @@ export class ParametresCabinetComponent implements OnInit {
           adresse: c.adresse ?? '',
           telephone: c.telephone ?? '',
           email: c.email ?? '',
+          taux_horaire_defaut: c.taux_horaire_defaut ?? null,
         });
         this.photoUrl = c.photo_fondateur_url ?? null;
         this.chargement = false;

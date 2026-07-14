@@ -150,4 +150,25 @@ class FactureTest extends TestCase
 
         $this->assertNotNull($reponse->json('date_echeance'));
     }
+
+    public function test_taux_du_cabinet_utilise_en_dernier_recours_si_rien_dautre_nest_configure(): void
+    {
+        \App\Models\CabinetSetting::instance()->update(['taux_horaire_defaut' => 150]);
+
+        $avocat = User::factory()->avocat()->create(['taux_horaire_defaut' => null]);
+        $dossier = Dossier::factory()->create(['avocat_id' => $avocat->id, 'mode_facturation' => 'horaire', 'taux_horaire' => null]);
+        \App\Models\TempsPasse::factory()->create([
+            'dossier_id' => $dossier->id,
+            'user_id' => $avocat->id,
+            'facturable' => true,
+            'facture_id' => null,
+            'duree_secondes' => 3600, // 1 heure pile
+        ]);
+
+        $reponse = $this->actingAs($avocat, 'sanctum')
+            ->postJson("/api/dossiers/{$dossier->id}/factures/generer-depuis-temps")
+            ->assertCreated();
+
+        $this->assertEquals(150, $reponse->json('lignes.0.prix_unitaire'));
+    }
 }

@@ -37,6 +37,8 @@ export class DossierFormComponent implements OnInit {
   assistants: Utilisateur[] = [];
   enregistrement = false;
 
+  private tauxHoraireModifieManuellement = false;
+
   get estStagiaire(): boolean {
     return this.auth.currentUser()?.role === 'stagiaire';
   }
@@ -116,8 +118,41 @@ export class DossierFormComponent implements OnInit {
     this.userService.liste({ role: 'avocat', per_page: 100 }).subscribe((res) => (this.avocats = res.data));
     this.userService.liste({ role: 'assistant,stagiaire', per_page: 100 }).subscribe((res) => (this.assistants = res.data));
 
+    this.form.get('taux_horaire')?.valueChanges.subscribe(() => {
+      this.tauxHoraireModifieManuellement = true;
+    });
+
+    this.form.get('avocat_id')?.valueChanges.subscribe((avocatId) => {
+      const avocat = this.avocats.find((a) => a.id === avocatId);
+      const tauxParDefaut = avocat?.taux_horaire_defaut;
+      const controleTaux = this.form.get('taux_horaire');
+
+      if (tauxParDefaut) {
+        // L'avocat a un taux par défaut configuré : on le propose (sans écraser
+        // une valeur déjà saisie manuellement), et le champ redevient facultatif.
+        if (!this.tauxHoraireModifieManuellement) {
+          controleTaux?.setValue(tauxParDefaut, { emitEvent: false });
+        }
+        controleTaux?.clearValidators();
+      } else {
+        // Aucun taux par défaut pour cet avocat : la saisie devient obligatoire,
+        // pour éviter une facture calculée à 0$ faute de taux nulle part.
+        controleTaux?.setValidators(Validators.required);
+      }
+      controleTaux?.updateValueAndValidity({ emitEvent: false });
+    });
+
     const idParam = this.route.snapshot.paramMap.get('id');
     this.dossierId = idParam ? Number(idParam) : null;
+
+    if (!this.dossierId) {
+      // Venant d'un rendez-vous confirmé : pré-remplit le client et l'avocat
+      // souhaité par le client, pour éviter d'avoir à les rechercher à nouveau.
+      const clientIdParam = this.route.snapshot.queryParamMap.get('client_id');
+      const avocatIdParam = this.route.snapshot.queryParamMap.get('avocat_id');
+      if (clientIdParam) this.form.patchValue({ client_id: Number(clientIdParam) });
+      if (avocatIdParam) this.form.patchValue({ avocat_id: Number(avocatIdParam) });
+    }
 
     if (!this.peutAssigner) {
       if (this.dossierId) {

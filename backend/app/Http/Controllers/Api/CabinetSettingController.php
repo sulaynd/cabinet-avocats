@@ -37,6 +37,7 @@ class CabinetSettingController extends Controller
             'adresse' => 'nullable|string|max:255',
             'telephone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
+            'taux_horaire_defaut' => 'nullable|numeric|min:0',
         ]);
 
         $parametres = CabinetSetting::instance();

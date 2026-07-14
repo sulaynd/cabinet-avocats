@@ -9,7 +9,7 @@ class CabinetSetting extends Model
 {
     protected $table = 'cabinet_settings';
 
-    protected $fillable = ['ical_token_equipe', 'nom', 'adresse', 'telephone', 'email', 'photo_fondateur_chemin'];
+    protected $fillable = ['ical_token_equipe', 'nom', 'adresse', 'telephone', 'email', 'photo_fondateur_chemin', 'taux_horaire_defaut'];
     protected $appends = ['photo_fondateur_url'];
 
     /** URL publique de la photo du fondateur (null si aucune photo téléversée). */

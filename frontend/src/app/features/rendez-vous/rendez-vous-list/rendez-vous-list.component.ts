@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,7 +18,7 @@ import { HasRoleDirective } from '../../../core/directives/has-role.directive';
   selector: 'app-rendez-vous-list',
   standalone: true,
   imports: [
-    CommonModule, FormsModule,
+    CommonModule, FormsModule, RouterLink,
     MatTableModule, MatButtonModule, MatIconModule, MatChipsModule, MatPaginatorModule, MatSortModule, HasRoleDirective,
   ],
   templateUrl: './rendez-vous-list.component.html',

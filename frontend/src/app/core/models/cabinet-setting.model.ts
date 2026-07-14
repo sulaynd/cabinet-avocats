@@ -4,4 +4,5 @@ export interface CoordonneesCabinet {
   telephone: string | null;
   email: string | null;
   photo_fondateur_url?: string | null;
+  taux_horaire_defaut?: number | null;
 }

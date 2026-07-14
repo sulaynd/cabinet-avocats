@@ -44,6 +44,15 @@
           <button mat-icon-button *ngIf="r.statut !== 'annule'" (click)="annuler(r.id)" title="Annuler">
             <mat-icon>cancel</mat-icon>
           </button>
+          <a
+            mat-icon-button
+            *ngIf="r.statut === 'confirme' && r.client_id"
+            [routerLink]="['/dossiers/nouveau']"
+            [queryParams]="{ client_id: r.client_id, avocat_id: r.avocat_id }"
+            title="Créer un dossier pour ce client"
+          >
+            <mat-icon>folder_open</mat-icon>
+          </a>
         </ng-container>
       </td>
     </ng-container>

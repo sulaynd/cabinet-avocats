@@ -85,7 +85,10 @@ class FacturationAutomatique
 
         foreach ($tempsParUtilisateur as $entrees) {
             $utilisateur = $entrees->first()->user;
-            $taux = $dossier->taux_horaire ?? $utilisateur->taux_horaire_defaut ?? 0;
+            $taux = $dossier->taux_horaire
+                ?? $utilisateur->taux_horaire_defaut
+                ?? \App\Models\CabinetSetting::instance()->taux_horaire_defaut
+                ?? 0;
             $heures = round($entrees->sum('duree_secondes') / 3600, 2);
 
             $facture->lignes()->create([
