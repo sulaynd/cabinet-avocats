@@ -151,4 +151,30 @@ class DossierTest extends TestCase
             ->putJson("/api/dossiers/{$dossier->id}", ['mode_facturation' => 'forfait', 'montant_forfait' => 2500])
             ->assertOk();
     }
+
+    public function test_numerotation_se_base_sur_le_maximum_pas_sur_le_compte(): void
+    {
+        // Reproduit le bug réel rencontré : un dossier au milieu de la
+        // séquence supprimé ne doit jamais faire regénérer une référence
+        // déjà utilisée (contrainte d'unicité en base).
+        $admin = User::factory()->admin()->create();
+        $client = \App\Models\Client::factory()->create();
+        $avocat = User::factory()->avocat()->create();
+        $annee = now()->year;
+
+        Dossier::factory()->create(['reference' => "DOS-{$annee}-0001"]);
+        Dossier::factory()->create(['reference' => "DOS-{$annee}-0002"]);
+        Dossier::factory()->create(['reference' => "DOS-{$annee}-0006"]);
+
+        $reponse = $this->actingAs($admin, 'sanctum')->postJson('/api/dossiers', [
+            'client_id' => $client->id,
+            'avocat_id' => $avocat->id,
+            'titre' => 'Test numérotation',
+            'type_affaire' => 'autre',
+            'mode_facturation' => 'horaire',
+        ]);
+
+        $reponse->assertCreated();
+        $this->assertEquals("DOS-{$annee}-0007", $reponse->json('reference'));
+    }
 }

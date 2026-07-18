@@ -256,8 +256,17 @@ class DossierController extends Controller
     private function genererReference(): string
     {
         $annee = now()->year;
-        $dernier = Dossier::where('reference', 'like', "DOS-{$annee}-%")->count() + 1;
 
-        return sprintf('DOS-%d-%04d', $annee, $dernier);
+        // Basé sur le MAXIMUM du suffixe existant, pas un simple compte — un
+        // dossier supprimé ferait autrement retomber le compte en arrière et
+        // regénérer une référence déjà utilisée (contrainte d'unicité en
+        // base). Extraction faite en PHP plutôt qu'en SQL brut, pour rester
+        // portable entre MySQL (production) et SQLite (tests).
+        $dernierSuffixe = Dossier::where('reference', 'like', "DOS-{$annee}-%")
+            ->get()
+            ->map(fn ($d) => (int) substr($d->reference, -4))
+            ->max() ?? 0;
+
+        return sprintf('DOS-%d-%04d', $annee, $dernierSuffixe + 1);
     }
 }

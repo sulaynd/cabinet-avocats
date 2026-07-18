@@ -1,4 +1,4 @@
-<form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form-material">
+<form [formGroup]="form" (ngSubmit)="soumettre()" class="dossier-form-material formulaire-large">
   <h2>{{ questionnaireId ? 'Modifier le questionnaire' : 'Nouveau questionnaire' }}</h2>
 
   <mat-form-field appearance="outline" class="champ-pleine-largeur">
@@ -27,20 +27,20 @@
   <div formArrayName="champs">
     <div *ngFor="let champ of champs.controls; let i = index" [formGroupName]="i" class="ligne-champ-questionnaire">
       <mat-form-field appearance="outline" class="col-cle">
-        <mat-label>Clé</mat-label>
-        <input matInput formControlName="cle" placeholder="situation_familiale" />
+        <mat-label>Identifiant interne (sans espace)</mat-label>
+        <input matInput formControlName="cle" placeholder="situation_familiale" matTooltip="Jamais vu par le client — sert seulement à identifier la réponse en base" />
       </mat-form-field>
       <mat-form-field appearance="outline" class="col-label">
-        <mat-label>Question posée au client</mat-label>
-        <input matInput formControlName="label" />
+        <mat-label>Texte de la question affichée au client</mat-label>
+        <input matInput formControlName="label" placeholder="Ex: Quelle est votre situation familiale actuelle ?" />
       </mat-form-field>
       <mat-form-field appearance="outline" class="col-type">
-        <mat-label>Type</mat-label>
+        <mat-label>Type de réponse attendue</mat-label>
         <mat-select formControlName="type">
-          <mat-option value="texte">Texte court</mat-option>
-          <mat-option value="zone_texte">Texte long</mat-option>
-          <mat-option value="choix">Choix (options séparées par virgule)</mat-option>
-          <mat-option value="case">Case à cocher</mat-option>
+          <mat-option value="texte">Texte court (une ligne)</mat-option>
+          <mat-option value="zone_texte">Texte long (paragraphe)</mat-option>
+          <mat-option value="choix">Choix parmi des options</mat-option>
+          <mat-option value="case">Case à cocher (oui/non)</mat-option>
         </mat-select>
       </mat-form-field>
       <mat-form-field appearance="outline" class="col-options" *ngIf="champ.value.type === 'choix'">

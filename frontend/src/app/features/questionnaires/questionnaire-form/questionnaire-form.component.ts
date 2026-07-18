@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { QuestionnaireService } from '../../../core/services/questionnaire.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { TypeChampQuestionnaire } from '../../../core/models/questionnaire.model';
@@ -17,7 +18,7 @@ import { TypeChampQuestionnaire } from '../../../core/models/questionnaire.model
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule,
-    MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, MatCheckboxModule,
+    MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, MatCheckboxModule, MatTooltipModule,
   ],
   templateUrl: './questionnaire-form.component.html',
 })

@@ -470,9 +470,9 @@ tr.ligne-en-attente:hover td[mat-cell] { background: #ede2c4 !important; }
 
 /* ---- Constructeur de champs de questionnaire ---- */
 .ligne-champ-questionnaire { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-.ligne-champ-questionnaire .col-cle { width: 160px; }
+.ligne-champ-questionnaire .col-cle { width: 200px; }
 .ligne-champ-questionnaire .col-label { flex: 2; }
-.ligne-champ-questionnaire .col-type { width: 170px; }
+.ligne-champ-questionnaire .col-type { width: 200px; }
 
 .form-communication-material { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; margin-bottom: 18px; }
 .form-communication-material .col-type { width: 140px; }
@@ -772,6 +772,7 @@ tr.ligne-en-attente:hover td[mat-cell] { background: #ede2c4 !important; }
 .texte-fondateur h2 { font-family: Georgia, serif; font-size: 24px; color: var(--ink); margin: 0 0 6px; }
 .titre-fondateur { color: var(--brass); font-size: 13.5px; font-weight: 600; margin: 0 0 14px; }
 .texte-fondateur p:not(.titre-fondateur) { color: var(--slate); font-size: 14.5px; line-height: 1.7; margin: 0; }
+.qualifications-fondateur { font-style: italic; font-size: 13px !important; margin: 0 0 16px !important; }
 
 @media (max-width: 640px) {
   .section-fondateur { flex-direction: column; text-align: center; gap: 20px; padding: 40px 20px; }
