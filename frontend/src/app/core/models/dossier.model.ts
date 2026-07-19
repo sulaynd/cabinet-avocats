@@ -2,6 +2,7 @@ import { Client } from './client.model';
 import { Echeance } from './echeance.model';
 import { DocumentFile } from './document.model';
 import { Facture } from './facture.model';
+import { Intervenant } from './intervenant.model';
 
 export type TypeAffaire =
   | 'immigration_mobilite'
@@ -46,6 +47,7 @@ export interface Dossier {
   echeances?: Echeance[];
   documents?: DocumentFile[];
   factures?: Facture[];
+  intervenants?: Intervenant[];
   created_at?: string;
   updated_at?: string;
 }

@@ -6,6 +6,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { DossierService } from '../../../core/services/dossier.service';
 import { DocumentService } from '../../../core/services/document.service';
+import { IntervenantService } from '../../../core/services/intervenant.service';
+import { Intervenant, IntervenantPayload, FonctionIntervenant } from '../../../core/models/intervenant.model';
 import { FactureService } from '../../../core/services/facture.service';
 import { EcheanceService } from '../../../core/services/echeance.service';
 import { TempsPasseService } from '../../../core/services/temps-passe.service';
@@ -85,6 +87,7 @@ export class DossierDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private dossierService: DossierService,
     private documentService: DocumentService,
+    private intervenantService: IntervenantService,
     private factureService: FactureService,
     private echeanceService: EcheanceService,
     private tempsPasseService: TempsPasseService,
@@ -210,6 +213,115 @@ export class DossierDetailComponent implements OnInit {
             this.charger();
           },
           error: (err) => this.notification.erreur(err?.error?.message || 'Impossible de supprimer ce document.'),
+        });
+      });
+  }
+
+  // --- Intervenants externes (carnet d'adresses partagé du cabinet) ---
+  readonly fonctionsIntervenant: { valeur: FonctionIntervenant; libelle: string }[] = [
+    { valeur: 'avocat_adverse', libelle: 'Avocat adverse' },
+    { valeur: 'expert', libelle: 'Expert' },
+    { valeur: 'greffier', libelle: 'Greffier/Greffe' },
+    { valeur: 'huissier', libelle: 'Huissier' },
+    { valeur: 'mediateur_arbitre', libelle: 'Médiateur/Arbitre' },
+    { valeur: 'notaire', libelle: 'Notaire' },
+    { valeur: 'autre', libelle: 'Autre' },
+  ];
+
+  formulaireIntervenantOuvert = false;
+  intervenantEnEdition: Intervenant | null = null;
+  intervenantForm: IntervenantPayload = { nom: '', fonction: 'autre', organisation: '', email: '', telephone: '', notes: '' };
+
+  // Recherche dans le répertoire partagé, pour lier un intervenant déjà
+  // existant plutôt que d'en recréer un doublon (ex: le même avocat adverse
+  // revient sur un autre dossier).
+  rechercheIntervenant = '';
+  resultatsRechercheIntervenant: Intervenant[] = [];
+  rechercheIntervenantEnCours = false;
+
+  libelleFonctionIntervenant(fonction: FonctionIntervenant): string {
+    return this.fonctionsIntervenant.find((f) => f.valeur === fonction)?.libelle ?? fonction;
+  }
+
+  ouvrirFormulaireIntervenant(intervenant?: Intervenant): void {
+    this.intervenantEnEdition = intervenant ?? null;
+    this.intervenantForm = intervenant
+      ? { nom: intervenant.nom, fonction: intervenant.fonction, organisation: intervenant.organisation, email: intervenant.email, telephone: intervenant.telephone, notes: intervenant.notes }
+      : { nom: '', fonction: 'autre', organisation: '', email: '', telephone: '', notes: '' };
+    this.rechercheIntervenant = '';
+    this.resultatsRechercheIntervenant = [];
+    this.formulaireIntervenantOuvert = true;
+  }
+
+  fermerFormulaireIntervenant(): void {
+    this.formulaireIntervenantOuvert = false;
+    this.intervenantEnEdition = null;
+  }
+
+  rechercherIntervenant(): void {
+    if (this.rechercheIntervenant.trim().length < 2) {
+      this.resultatsRechercheIntervenant = [];
+      return;
+    }
+    this.rechercheIntervenantEnCours = true;
+    this.intervenantService.rechercherRepertoire(this.rechercheIntervenant).subscribe({
+      next: (resultats) => {
+        this.rechercheIntervenantEnCours = false;
+        this.resultatsRechercheIntervenant = resultats;
+      },
+      error: () => (this.rechercheIntervenantEnCours = false),
+    });
+  }
+
+  lierIntervenantExistant(intervenant: Intervenant): void {
+    this.intervenantService.lier(this.dossierId, intervenant.id).subscribe({
+      next: () => {
+        this.notification.succes(`${intervenant.nom} ajouté au dossier.`);
+        this.fermerFormulaireIntervenant();
+        this.charger();
+      },
+      error: (err) => this.notification.erreur(err?.error?.message || "Impossible de lier cet intervenant."),
+    });
+  }
+
+  enregistrerIntervenant(): void {
+    if (!this.intervenantForm.nom.trim()) {
+      this.notification.erreur('Le nom est obligatoire.');
+      return;
+    }
+
+    // En modification, la fiche est partagée : le changement s'appliquera à
+    // tous les dossiers où cet intervenant est déjà lié.
+    const requete = this.intervenantEnEdition
+      ? this.intervenantService.modifier(this.intervenantEnEdition.id, this.intervenantForm)
+      : this.intervenantService.creerEtLier(this.dossierId, this.intervenantForm);
+
+    requete.subscribe({
+      next: () => {
+        this.notification.succes('Intervenant enregistré.');
+        this.fermerFormulaireIntervenant();
+        this.charger();
+      },
+      error: (err) => this.notification.erreur(err?.error?.message || "Impossible d'enregistrer cet intervenant."),
+    });
+  }
+
+  delierIntervenant(intervenant: Intervenant): void {
+    this.confirmService
+      .demander({
+        titre: 'Retirer cet intervenant du dossier ?',
+        message: `"${intervenant.nom}" sera retiré de ce dossier uniquement — il reste dans le répertoire du cabinet et sur ses autres dossiers éventuels.`,
+        libelleConfirmer: 'Retirer',
+        destructif: true,
+      })
+      .subscribe((confirme) => {
+        if (!confirme) return;
+        this.intervenantService.delier(this.dossierId, intervenant.id).subscribe({
+          next: () => {
+            this.notification.succes('Intervenant retiré du dossier.');
+            this.charger();
+          },
+          error: (err) => this.notification.erreur(err?.error?.message || 'Impossible de retirer cet intervenant.'),
         });
       });
   }

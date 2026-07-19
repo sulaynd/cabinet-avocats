@@ -402,6 +402,16 @@ tr.ligne-en-attente:hover td[mat-cell] { background: #ede2c4 !important; }
 }
 .bandeau-avertissement mat-icon { font-size: 18px; width: 18px; height: 18px; flex: none; }
 
+.resultats-recherche-intervenant {
+  list-style: none; margin: 0 0 14px; padding: 0;
+  border: 1px solid var(--line); border-radius: 2px; max-height: 160px; overflow-y: auto;
+}
+.resultats-recherche-intervenant li {
+  padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid var(--line);
+}
+.resultats-recherche-intervenant li:last-child { border-bottom: none; }
+.resultats-recherche-intervenant li:hover { background: var(--paper); }
+
 .dossier-form-material {
   max-width: 680px;
   margin: 0 auto;

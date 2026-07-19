@@ -123,6 +123,108 @@
     </ng-template>
   </section>
 
+  <!-- INTERVENANTS EXTERNES -->
+  <section class="section-dossier">
+    <div class="section-entete">
+      <h3>Intervenants externes</h3>
+      <button mat-button (click)="ouvrirFormulaireIntervenant()">
+        <mat-icon>person_add</mat-icon> Ajouter un intervenant
+      </button>
+    </div>
+
+    <table *ngIf="(dossier.intervenants?.length ?? 0) > 0; else aucunIntervenant">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Fonction</th>
+          <th>Organisation</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of dossier.intervenants">
+          <td>{{ i.nom }}</td>
+          <td>{{ libelleFonctionIntervenant(i.fonction) }}</td>
+          <td>{{ i.organisation }}</td>
+          <td>{{ i.email }}</td>
+          <td>{{ i.telephone }}</td>
+          <td>
+            <button mat-icon-button (click)="ouvrirFormulaireIntervenant(i)" title="Modifier">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="delierIntervenant(i)" title="Retirer de ce dossier">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #aucunIntervenant>
+      <p>Aucun intervenant externe enregistré pour ce dossier (avocat adverse, expert, greffier...).</p>
+    </ng-template>
+  </section>
+
+  <div class="overlay" *ngIf="formulaireIntervenantOuvert" (click)="fermerFormulaireIntervenant()">
+    <div class="modale" (click)="$event.stopPropagation()">
+      <h3>{{ intervenantEnEdition ? 'Modifier' : 'Ajouter' }} un intervenant</h3>
+
+      <ng-container *ngIf="!intervenantEnEdition">
+        <label>
+          Rechercher un intervenant déjà existant (répertoire du cabinet)
+          <input type="text" [(ngModel)]="rechercheIntervenant" (ngModelChange)="rechercherIntervenant()" placeholder="Nom ou organisation..." />
+        </label>
+        <ul class="resultats-recherche-intervenant" *ngIf="resultatsRechercheIntervenant.length">
+          <li *ngFor="let r of resultatsRechercheIntervenant" (click)="lierIntervenantExistant(r)">
+            <strong>{{ r.nom }}</strong> — {{ libelleFonctionIntervenant(r.fonction) }}
+            <span *ngIf="r.organisation">({{ r.organisation }})</span>
+          </li>
+        </ul>
+        <p class="permission-note" *ngIf="rechercheIntervenant.length >= 2 && !rechercheIntervenantEnCours && !resultatsRechercheIntervenant.length">
+          Aucun résultat — remplissez le formulaire ci-dessous pour en créer un nouveau.
+        </p>
+        <hr />
+        <p class="permission-note">Ou créer un nouvel intervenant :</p>
+      </ng-container>
+
+      <p class="permission-note" *ngIf="intervenantEnEdition">
+        Cette fiche est partagée — la modifier changera aussi son affichage sur les autres dossiers où elle est liée.
+      </p>
+
+      <label>
+        Nom
+        <input type="text" [(ngModel)]="intervenantForm.nom" placeholder="Ex: Me Tremblay" />
+      </label>
+      <label>
+        Fonction
+        <select [(ngModel)]="intervenantForm.fonction">
+          <option *ngFor="let f of fonctionsIntervenant" [value]="f.valeur">{{ f.libelle }}</option>
+        </select>
+      </label>
+      <label>
+        Organisation (facultatif)
+        <input type="text" [(ngModel)]="intervenantForm.organisation" placeholder="Ex: Cabinet Tremblay & Associés" />
+      </label>
+      <label>
+        Email (facultatif)
+        <input type="email" [(ngModel)]="intervenantForm.email" />
+      </label>
+      <label>
+        Téléphone (facultatif)
+        <input type="text" [(ngModel)]="intervenantForm.telephone" />
+      </label>
+      <label>
+        Notes (facultatif)
+        <textarea rows="2" [(ngModel)]="intervenantForm.notes"></textarea>
+      </label>
+      <div class="modale-pied">
+        <button mat-button (click)="fermerFormulaireIntervenant()">Annuler</button>
+        <button mat-raised-button color="primary" (click)="enregistrerIntervenant()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
   <!-- COMMUNICATIONS -->
   <app-communications-panel *ngIf="!estStagiaire" [dossierId]="dossier.id"></app-communications-panel>
   <p class="permission-note" *ngIf="estStagiaire">Les communications avec le client ne sont pas accessibles aux stagiaires.</p>

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TemoignageController;
 use App\Http\Controllers\Api\TableauDeBordController;
 use App\Http\Controllers\Api\MembreEquipeController;
 use App\Http\Controllers\Api\CommunicationController;
+use App\Http\Controllers\Api\IntervenantController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\DossierController;
 use App\Http\Controllers\Api\EcheanceController;
@@ -128,6 +129,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('dossiers/{dossier}/communications', [CommunicationController::class, 'store']);
     Route::put('communications/{communication}', [CommunicationController::class, 'update']);
     Route::delete('communications/{communication}', [CommunicationController::class, 'destroy']);
+
+    // Carnet d'adresses partagé du cabinet (avocat adverse, expert...), réutilisable entre dossiers.
+    Route::get('intervenants', [IntervenantController::class, 'index']);
+    Route::post('intervenants', [IntervenantController::class, 'store']);
+    Route::put('intervenants/{intervenant}', [IntervenantController::class, 'update']);
+    Route::delete('intervenants/{intervenant}', [IntervenantController::class, 'destroy']);
+
+    Route::get('dossiers/{dossier}/intervenants', [IntervenantController::class, 'pourDossier']);
+    Route::post('dossiers/{dossier}/intervenants', [IntervenantController::class, 'creerEtLier']);
+    Route::post('dossiers/{dossier}/intervenants/{intervenant}/lier', [IntervenantController::class, 'lier']);
+    Route::delete('dossiers/{dossier}/intervenants/{intervenant}', [IntervenantController::class, 'delier']);
 
     // Chronométrage et temps passé sur un dossier.
     Route::get('dossiers/{dossier}/temps', [TempsPasseController::class, 'index']);
