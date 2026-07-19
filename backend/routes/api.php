@@ -44,12 +44,12 @@ Route::post('/login', function (Request $request) {
     $token = $user->createToken('spa')->plainTextToken;
 
     return response()->json(['user' => $user, 'token' => $token]);
-})->middleware('throttle:5,1');
+})->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
 
 // Récupération de mot de passe côté cabinet — limité contre les abus (spam
 // d'emails ou tentatives de deviner des adresses existantes).
-Route::post('/mot-de-passe-oublie', [MotDePasseOublieController::class, 'demander'])->middleware('throttle:5,1');
-Route::post('/reinitialiser-mot-de-passe', [MotDePasseOublieController::class, 'reinitialiser'])->middleware('throttle:5,1');
+Route::post('/mot-de-passe-oublie', [MotDePasseOublieController::class, 'demander'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
+Route::post('/reinitialiser-mot-de-passe', [MotDePasseOublieController::class, 'reinitialiser'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
 
 // Flux iCal publics : consommés par des logiciels d'agenda externes (Google Calendar,
 // Outlook, Apple Calendar...) qui ne savent pas envoyer de token Bearer. La sécurité
@@ -60,26 +60,26 @@ Route::get('/ical/equipe/{token}.ics', [IcalController::class, 'equipe']);
 // Prise de rendez-vous en ligne : routes publiques consommées par le site vitrine.
 // Lecture limitée large (le calendrier peut être rafraîchi souvent en navigant),
 // la soumission elle-même est plus stricte pour éviter le spam de demandes.
-Route::middleware('throttle:30,1')->group(function () {
+Route::middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':30,1')->group(function () {
     Route::get('/public/avocats', [RendezVousPublicController::class, 'avocats']);
     Route::get('/public/creneaux', [RendezVousPublicController::class, 'creneauxDisponibles']);
 });
-Route::post('/public/rendez-vous', [RendezVousPublicController::class, 'reserver'])->middleware('throttle:5,60');
+Route::post('/public/rendez-vous', [RendezVousPublicController::class, 'reserver'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,60');
 
 // Connexion au portail client (guard séparé des comptes internes du cabinet).
-Route::post('/portail/connexion', [PortailAuthController::class, 'login'])->middleware('throttle:5,1');
-Route::post('/portail/mot-de-passe-oublie', [PortailAuthController::class, 'demanderReinitialisation'])->middleware('throttle:5,1');
-Route::post('/portail/reinitialiser-mot-de-passe', [PortailAuthController::class, 'reinitialiser'])->middleware('throttle:5,1');
+Route::post('/portail/connexion', [PortailAuthController::class, 'login'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
+Route::post('/portail/mot-de-passe-oublie', [PortailAuthController::class, 'demanderReinitialisation'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
+Route::post('/portail/reinitialiser-mot-de-passe', [PortailAuthController::class, 'reinitialiser'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
 
 // Questionnaire de pré-consultation : page publique ouverte depuis le lien reçu par email.
-Route::middleware('throttle:20,1')->group(function () {
+Route::middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':20,1')->group(function () {
     Route::get('/questionnaire/{token}', [QuestionnairePublicController::class, 'afficher']);
     Route::post('/questionnaire/{token}', [QuestionnairePublicController::class, 'soumettre']);
 });
 
 // Coordonnées du cabinet — public, utilisé par les pages de connexion (cabinet
 // et portail) et le questionnaire public pour afficher le nom avant tout login.
-Route::middleware('throttle:60,1')->group(function () {
+Route::middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':60,1')->group(function () {
     Route::get('/parametres-cabinet/public', [CabinetSettingController::class, 'public']);
     Route::get('/membres-equipe/public', [MembreEquipeController::class, 'public']);
     Route::get('/temoignages/public', [TemoignageController::class, 'public']);
