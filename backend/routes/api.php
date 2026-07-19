@@ -125,6 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('dossiers/{dossier}/reponses-questionnaires', [ReponseQuestionnaireController::class, 'index']);
     Route::post('dossiers/{dossier}/renvoyer-questionnaire', [ReponseQuestionnaireController::class, 'renvoyer']);
 
+    Route::post('echeances/verifier-conflits', [EcheanceController::class, 'verifierConflits']);
     Route::apiResource('echeances', EcheanceController::class);
 
     // Historique des communications (appels, emails, courriers, réunions, notes) par dossier.

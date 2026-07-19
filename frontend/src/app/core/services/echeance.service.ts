@@ -29,4 +29,12 @@ export class EcheanceService {
   supprimer(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  verifierConflits(dossierId: number, dateHeure: string, exclureId?: number | null): Observable<any[]> {
+    return this.http.post<any[]>(`${this.apiUrl}/verifier-conflits`, {
+      dossier_id: dossierId,
+      date_heure: dateHeure,
+      exclure_id: exclureId ?? null,
+    });
+  }
 }

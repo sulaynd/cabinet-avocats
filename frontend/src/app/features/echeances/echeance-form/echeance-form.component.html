@@ -29,6 +29,17 @@
     </mat-form-field>
   </div>
 
+  <p class="bandeau-avertissement" *ngIf="conflitsDetectes.length">
+    <mat-icon>warning</mat-icon>
+    <span>
+      Conflit d'horaire détecté — cet intervenant a déjà :
+      <strong *ngFor="let c of conflitsDetectes">
+        « {{ c.titre }} » ({{ c.dossier_reference }} — {{ c.dossier_titre }}) le {{ c.date_heure | date: 'dd/MM/yyyy à HH:mm' }}.
+      </strong>
+      Vous pouvez tout de même enregistrer si ce chevauchement est volontaire.
+    </span>
+  </p>
+
   <mat-form-field appearance="outline" class="champ-pleine-largeur">
     <mat-label>Lieu</mat-label>
     <input matInput formControlName="lieu" placeholder="Ex: TGI Paris, salle 3" />

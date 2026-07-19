@@ -26,6 +26,8 @@ export class EcheanceFormComponent implements OnInit {
   echeanceId: number | null = null;
   dossiers: Dossier[] = [];
   enregistrement = false;
+  conflitsDetectes: { id: number; titre: string; date_heure: string; dossier_reference: string; dossier_titre: string }[] = [];
+  verificationConflitsEnCours = false;
 
   readonly types = ['audience', 'delai_procedural', 'rdv_client', 'autre'];
   readonly rappels = [
@@ -80,6 +82,31 @@ export class EcheanceFormComponent implements OnInit {
         });
       });
     }
+
+    // Vérifie les conflits d'horaire dès que le dossier, la date/heure ou le
+    // type change — avertit sans jamais bloquer l'enregistrement, au cas où
+    // le double engagement serait volontaire (ex: un bref suivi téléphonique).
+    ['dossier_id', 'date_heure', 'type'].forEach((champ) => {
+      this.form.get(champ)?.valueChanges.subscribe(() => this.verifierConflits());
+    });
+  }
+
+  verifierConflits(): void {
+    const { dossier_id, date_heure, type } = this.form.value;
+    this.conflitsDetectes = [];
+
+    if (!dossier_id || !date_heure || (type !== 'audience' && type !== 'rdv_client')) {
+      return;
+    }
+
+    this.verificationConflitsEnCours = true;
+    this.echeanceService.verifierConflits(dossier_id, date_heure, this.echeanceId).subscribe({
+      next: (conflits) => {
+        this.verificationConflitsEnCours = false;
+        this.conflitsDetectes = conflits;
+      },
+      error: () => (this.verificationConflitsEnCours = false),
+    });
   }
 
   annuler(): void {

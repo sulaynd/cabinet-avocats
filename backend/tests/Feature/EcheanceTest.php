@@ -53,4 +53,115 @@ class EcheanceTest extends TestCase
             'statut' => 'a_venir',
         ])->assertStatus(422);
     }
+
+    public function test_detecte_un_conflit_pour_le_meme_avocat(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $avocat = User::factory()->avocat()->create();
+        $dossier1 = Dossier::factory()->create(['avocat_id' => $avocat->id]);
+        $dossier2 = Dossier::factory()->create(['avocat_id' => $avocat->id]);
+
+        \App\Models\Echeance::factory()->create([
+            'dossier_id' => $dossier1->id,
+            'type' => 'audience',
+            'statut' => 'a_venir',
+            'date_heure' => '2026-08-10 10:00:00',
+        ]);
+
+        $reponse = $this->actingAs($admin, 'sanctum')->postJson('/api/echeances/verifier-conflits', [
+            'dossier_id' => $dossier2->id,
+            'date_heure' => '2026-08-10 10:30:00',
+        ])->assertOk();
+
+        $this->assertCount(1, $reponse->json());
+    }
+
+    public function test_aucun_conflit_si_avocats_differents(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $avocat1 = User::factory()->avocat()->create();
+        $avocat2 = User::factory()->avocat()->create();
+        $dossier1 = Dossier::factory()->create(['avocat_id' => $avocat1->id]);
+        $dossier2 = Dossier::factory()->create(['avocat_id' => $avocat2->id]);
+
+        \App\Models\Echeance::factory()->create([
+            'dossier_id' => $dossier1->id,
+            'type' => 'audience',
+            'statut' => 'a_venir',
+            'date_heure' => '2026-08-10 10:00:00',
+        ]);
+
+        $reponse = $this->actingAs($admin, 'sanctum')->postJson('/api/echeances/verifier-conflits', [
+            'dossier_id' => $dossier2->id,
+            'date_heure' => '2026-08-10 10:30:00',
+        ])->assertOk();
+
+        $this->assertCount(0, $reponse->json());
+    }
+
+    public function test_aucun_conflit_hors_de_la_fenetre_dune_heure(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $avocat = User::factory()->avocat()->create();
+        $dossier1 = Dossier::factory()->create(['avocat_id' => $avocat->id]);
+        $dossier2 = Dossier::factory()->create(['avocat_id' => $avocat->id]);
+
+        \App\Models\Echeance::factory()->create([
+            'dossier_id' => $dossier1->id,
+            'type' => 'audience',
+            'statut' => 'a_venir',
+            'date_heure' => '2026-08-10 10:00:00',
+        ]);
+
+        $reponse = $this->actingAs($admin, 'sanctum')->postJson('/api/echeances/verifier-conflits', [
+            'dossier_id' => $dossier2->id,
+            'date_heure' => '2026-08-10 13:00:00',
+        ])->assertOk();
+
+        $this->assertCount(0, $reponse->json());
+    }
+
+    public function test_delai_procedural_najoute_jamais_de_conflit(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $avocat = User::factory()->avocat()->create();
+        $dossier1 = Dossier::factory()->create(['avocat_id' => $avocat->id]);
+        $dossier2 = Dossier::factory()->create(['avocat_id' => $avocat->id]);
+
+        \App\Models\Echeance::factory()->create([
+            'dossier_id' => $dossier1->id,
+            'type' => 'delai_procedural',
+            'statut' => 'a_venir',
+            'date_heure' => '2026-08-10 10:00:00',
+        ]);
+
+        $reponse = $this->actingAs($admin, 'sanctum')->postJson('/api/echeances/verifier-conflits', [
+            'dossier_id' => $dossier2->id,
+            'date_heure' => '2026-08-10 10:00:00',
+        ])->assertOk();
+
+        $this->assertCount(0, $reponse->json());
+    }
+
+    public function test_exclut_lecheance_en_cours_de_modification(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $avocat = User::factory()->avocat()->create();
+        $dossier = Dossier::factory()->create(['avocat_id' => $avocat->id]);
+
+        $echeance = \App\Models\Echeance::factory()->create([
+            'dossier_id' => $dossier->id,
+            'type' => 'audience',
+            'statut' => 'a_venir',
+            'date_heure' => '2026-08-10 10:00:00',
+        ]);
+
+        $reponse = $this->actingAs($admin, 'sanctum')->postJson('/api/echeances/verifier-conflits', [
+            'dossier_id' => $dossier->id,
+            'date_heure' => '2026-08-10 10:00:00',
+            'exclure_id' => $echeance->id,
+        ])->assertOk();
+
+        $this->assertCount(0, $reponse->json());
+    }
 }

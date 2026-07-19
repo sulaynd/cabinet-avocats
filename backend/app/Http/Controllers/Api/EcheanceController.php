@@ -10,6 +10,32 @@ use Illuminate\Validation\Rule;
 
 class EcheanceController extends Controller
 {
+    /** Vérifie si un créneau (audience/RDV client) entre en conflit avec une
+     * autre échéance déjà prévue pour les mêmes intervenants du dossier —
+     * appelé par le frontend avant l'enregistrement, à titre d'avertissement
+     * (n'empêche pas l'enregistrement si l'utilisateur choisit de continuer). */
+    public function verifierConflits(Request $request)
+    {
+        $data = $request->validate([
+            'dossier_id' => 'required|exists:dossiers,id',
+            'date_heure' => 'required|date',
+            'exclure_id' => 'nullable|exists:echeances,id',
+        ]);
+
+        $dossier = Dossier::findOrFail($data['dossier_id']);
+        $userIds = [$dossier->avocat_id, $dossier->assistant_id, $dossier->stagiaire_id];
+
+        $conflits = Echeance::conflitsPour($userIds, \Carbon\Carbon::parse($data['date_heure']), $data['exclure_id'] ?? null);
+
+        return response()->json($conflits->map(fn ($e) => [
+            'id' => $e->id,
+            'titre' => $e->titre,
+            'date_heure' => $e->date_heure,
+            'dossier_reference' => $e->dossier->reference,
+            'dossier_titre' => $e->dossier->titre,
+        ]));
+    }
+
     public function index(Request $request)
     {
         $echeances = Echeance::query()
