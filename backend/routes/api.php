@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TemoignageController;
 use App\Http\Controllers\Api\TableauDeBordController;
 use App\Http\Controllers\Api\MembreEquipeController;
 use App\Http\Controllers\Api\CommunicationController;
+use App\Http\Controllers\Api\DebourseController;
 use App\Http\Controllers\Api\IntervenantController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\DossierController;
@@ -149,6 +150,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('temps/{temps}/arreter', [TempsPasseController::class, 'arreter']);
     Route::put('temps/{temps}', [TempsPasseController::class, 'update']);
     Route::delete('temps/{temps}', [TempsPasseController::class, 'destroy']);
+
+    Route::get('dossiers/{dossier}/debourses', [DebourseController::class, 'index']);
+    Route::post('dossiers/{dossier}/debourses', [DebourseController::class, 'store']);
+    Route::put('debourses/{debourse}', [DebourseController::class, 'update']);
+    Route::delete('debourses/{debourse}', [DebourseController::class, 'destroy']);
 
     // Liens d'abonnement iCal (agenda personnel + agenda collectif du cabinet).
     Route::get('ical/mes-liens', [IcalController::class, 'mesLiens']);

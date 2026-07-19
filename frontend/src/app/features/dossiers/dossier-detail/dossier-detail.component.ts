@@ -8,6 +8,8 @@ import { DossierService } from '../../../core/services/dossier.service';
 import { DocumentService } from '../../../core/services/document.service';
 import { IntervenantService } from '../../../core/services/intervenant.service';
 import { Intervenant, IntervenantPayload, FonctionIntervenant } from '../../../core/models/intervenant.model';
+import { DebourseService } from '../../../core/services/debourse.service';
+import { Debourse, DeboursePayload, CategorieDebourse } from '../../../core/models/debourse.model';
 import { FactureService } from '../../../core/services/facture.service';
 import { EcheanceService } from '../../../core/services/echeance.service';
 import { TempsPasseService } from '../../../core/services/temps-passe.service';
@@ -88,6 +90,7 @@ export class DossierDetailComponent implements OnInit {
     private dossierService: DossierService,
     private documentService: DocumentService,
     private intervenantService: IntervenantService,
+    private debourseService: DebourseService,
     private factureService: FactureService,
     private echeanceService: EcheanceService,
     private tempsPasseService: TempsPasseService,
@@ -322,6 +325,79 @@ export class DossierDetailComponent implements OnInit {
             this.charger();
           },
           error: (err) => this.notification.erreur(err?.error?.message || 'Impossible de retirer cet intervenant.'),
+        });
+      });
+  }
+
+  // --- Déboursés (frais de cour, déplacements, photocopies...) ---
+  readonly categoriesDebourse: { valeur: CategorieDebourse; libelle: string }[] = [
+    { valeur: 'frais_cour', libelle: 'Frais de cour' },
+    { valeur: 'deplacement', libelle: 'Déplacement' },
+    { valeur: 'photocopie', libelle: 'Photocopie' },
+    { valeur: 'autre', libelle: 'Autre' },
+  ];
+
+  formulaireDebourseOuvert = false;
+  debourseEnEdition: Debourse | null = null;
+  debourseForm: DeboursePayload = { categorie: 'autre', description: '', montant: 0, date_debourse: this.aujourdhuiIso() };
+
+  private aujourdhuiIso(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  libelleCategorieDebourse(categorie: CategorieDebourse): string {
+    return this.categoriesDebourse.find((c) => c.valeur === categorie)?.libelle ?? categorie;
+  }
+
+  get totalDebourseNonFactures(): number {
+    return (this.dossier?.debourses ?? []).filter((d) => !d.facture_id).reduce((s, d) => s + Number(d.montant), 0);
+  }
+
+  ouvrirFormulaireDebourse(debourse?: Debourse): void {
+    this.debourseEnEdition = debourse ?? null;
+    this.debourseForm = debourse
+      ? { categorie: debourse.categorie, description: debourse.description, montant: Number(debourse.montant), date_debourse: debourse.date_debourse }
+      : { categorie: 'autre', description: '', montant: 0, date_debourse: this.aujourdhuiIso() };
+    this.formulaireDebourseOuvert = true;
+  }
+
+  fermerFormulaireDebourse(): void {
+    this.formulaireDebourseOuvert = false;
+    this.debourseEnEdition = null;
+  }
+
+  enregistrerDebourse(): void {
+    if (!this.debourseForm.description.trim() || !this.debourseForm.montant) {
+      this.notification.erreur('La description et le montant sont obligatoires.');
+      return;
+    }
+
+    const requete = this.debourseEnEdition
+      ? this.debourseService.modifier(this.debourseEnEdition.id, this.debourseForm)
+      : this.debourseService.creer(this.dossierId, this.debourseForm);
+
+    requete.subscribe({
+      next: () => {
+        this.notification.succes('Déboursé enregistré.');
+        this.fermerFormulaireDebourse();
+        this.charger();
+      },
+      error: (err) => this.notification.erreur(err?.error?.message || "Impossible d'enregistrer ce déboursé."),
+    });
+  }
+
+  supprimerDebourse(debourse: Debourse): void {
+    this.confirmService
+      .demander({ titre: 'Supprimer ce déboursé ?', message: `"${debourse.description}" sera retiré du dossier.`, libelleConfirmer: 'Supprimer', destructif: true })
+      .subscribe((confirme) => {
+        if (!confirme) return;
+        this.debourseService.supprimer(debourse.id).subscribe({
+          next: () => {
+            this.notification.succes('Déboursé supprimé.');
+            this.charger();
+          },
+          error: (err) => this.notification.erreur(err?.error?.message || 'Impossible de supprimer ce déboursé.'),
         });
       });
   }

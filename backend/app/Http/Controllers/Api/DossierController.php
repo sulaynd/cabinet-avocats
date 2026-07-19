@@ -104,7 +104,7 @@ class DossierController extends Controller
     {
         abort_unless($request->user()->can('view', $dossier), 403, "Ce dossier ne vous est pas assigné.");
 
-        return response()->json($dossier->load(['client', 'avocat', 'assistant', 'stagiaire', 'echeances', 'documents', 'factures', 'intervenants']));
+        return response()->json($dossier->load(['client', 'avocat', 'assistant', 'stagiaire', 'echeances', 'documents', 'factures', 'intervenants', 'debourses.user']));
     }
 
     public function update(Request $request, Dossier $dossier)

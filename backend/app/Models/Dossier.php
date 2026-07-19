@@ -89,6 +89,16 @@ class Dossier extends Model
         return $this->tempsPasses()->where('facturable', true)->whereNull('facture_id')->whereNotNull('termine_a');
     }
 
+    public function debourses(): HasMany
+    {
+        return $this->hasMany(Debourse::class);
+    }
+
+    public function debourseNonFactures(): HasMany
+    {
+        return $this->debourses()->whereNull('facture_id');
+    }
+
     /**
      * Restreint la requête aux dossiers visibles par cet utilisateur :
      * - un admin voit tout ;

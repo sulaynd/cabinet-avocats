@@ -41,6 +41,26 @@ class FacturationAutomatique
         return $facture;
     }
 
+    /** Ajoute les déboursés non encore facturés (frais de cour, déplacements,
+     * photocopies...) comme lignes supplémentaires — peu importe le mode de
+     * facturation (horaire ou forfaitaire), ce sont des frais réels à
+     * rembourser au cabinet, distincts des honoraires eux-mêmes. */
+    private static function ajouterDebourses(Facture $facture, Dossier $dossier): void
+    {
+        $debourses = $dossier->debourseNonFactures()->get();
+
+        foreach ($debourses as $debourse) {
+            $facture->lignes()->create([
+                'description' => "Déboursé — {$debourse->description}",
+                'quantite' => 1,
+                'prix_unitaire' => $debourse->montant,
+                'montant' => $debourse->montant,
+            ]);
+        }
+
+        $debourses->each->update(['facture_id' => $facture->id]);
+    }
+
     private static function genererFactureForfait(Dossier $dossier): Facture
     {
         $facture = Facture::create([
@@ -60,6 +80,8 @@ class FacturationAutomatique
             'montant' => $dossier->montant_forfait ?? 0,
         ]);
 
+        self::ajouterDebourses($facture, $dossier);
+
         $facture->recalculerMontants();
 
         return $facture;
@@ -68,8 +90,9 @@ class FacturationAutomatique
     private static function genererFactureHoraire(Dossier $dossier): ?Facture
     {
         $tempsParUtilisateur = $dossier->tempsNonFactures()->with('user')->get()->groupBy('user_id');
+        $debourses = $dossier->debourseNonFactures()->get();
 
-        if ($tempsParUtilisateur->isEmpty()) {
+        if ($tempsParUtilisateur->isEmpty() && $debourses->isEmpty()) {
             return null;
         }
 
@@ -100,6 +123,8 @@ class FacturationAutomatique
 
             $entrees->each->update(['facture_id' => $facture->id, 'taux_horaire_applique' => $taux]);
         }
+
+        self::ajouterDebourses($facture, $dossier);
 
         $facture->recalculerMontants();
 

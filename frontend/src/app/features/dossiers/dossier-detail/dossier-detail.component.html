@@ -352,6 +352,85 @@
     <ng-template #aucunTemps><p class="vide">Aucun temps enregistré pour ce dossier.</p></ng-template>
   </section>
 
+  <!-- DÉBOURSÉS -->
+  <section class="section-dossier">
+    <div class="section-entete">
+      <h3>Déboursés</h3>
+      <ng-container *ngIf="dossier.statut !== 'clos'">
+        <button mat-button *appHasRole="['admin', 'avocat', 'assistant']" (click)="ouvrirFormulaireDebourse()">
+          <mat-icon>add</mat-icon> Ajouter un déboursé
+        </button>
+      </ng-container>
+    </div>
+
+    <p class="permission-note" *ngIf="totalDebourseNonFactures > 0">
+      Total non facturé : {{ totalDebourseNonFactures | number: '1.2-2' }} $ — sera automatiquement ajouté à la prochaine facture générée.
+    </p>
+
+    <table *ngIf="(dossier.debourses?.length ?? 0) > 0; else aucunDebourse">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Catégorie</th>
+          <th>Description</th>
+          <th>Montant</th>
+          <th>Enregistré par</th>
+          <th>Statut</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of dossier.debourses">
+          <td>{{ d.date_debourse | date: 'dd/MM/yyyy':'UTC' }}</td>
+          <td>{{ libelleCategorieDebourse(d.categorie) }}</td>
+          <td>{{ d.description }}</td>
+          <td>{{ d.montant | number: '1.2-2' }} $</td>
+          <td>{{ d.user?.name }}</td>
+          <td><span class="badge" [class.badge-payee]="d.facture_id">{{ d.facture_id ? 'Facturé' : 'Non facturé' }}</span></td>
+          <td>
+            <ng-container *ngIf="!d.facture_id">
+              <button mat-icon-button (click)="ouvrirFormulaireDebourse(d)" title="Modifier">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="supprimerDebourse(d)" title="Supprimer">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #aucunDebourse><p class="vide">Aucun déboursé enregistré pour ce dossier (frais de cour, déplacements, photocopies...).</p></ng-template>
+  </section>
+
+  <div class="overlay" *ngIf="formulaireDebourseOuvert" (click)="fermerFormulaireDebourse()">
+    <div class="modale" (click)="$event.stopPropagation()">
+      <h3>{{ debourseEnEdition ? 'Modifier' : 'Ajouter' }} un déboursé</h3>
+      <label>
+        Catégorie
+        <select [(ngModel)]="debourseForm.categorie">
+          <option *ngFor="let c of categoriesDebourse" [value]="c.valeur">{{ c.libelle }}</option>
+        </select>
+      </label>
+      <label>
+        Description
+        <input type="text" [(ngModel)]="debourseForm.description" placeholder="Ex: Frais de dépôt à la cour" />
+      </label>
+      <label>
+        Montant ($)
+        <input type="number" step="0.01" min="0.01" [(ngModel)]="debourseForm.montant" />
+      </label>
+      <label>
+        Date
+        <input type="date" [(ngModel)]="debourseForm.date_debourse" />
+      </label>
+      <div class="modale-pied">
+        <button mat-button (click)="fermerFormulaireDebourse()">Annuler</button>
+        <button mat-raised-button color="primary" (click)="enregistrerDebourse()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
   <!-- FACTURES -->
   <section class="section-dossier">
     <div class="section-entete">

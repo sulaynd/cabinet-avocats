@@ -3,6 +3,7 @@ import { Echeance } from './echeance.model';
 import { DocumentFile } from './document.model';
 import { Facture } from './facture.model';
 import { Intervenant } from './intervenant.model';
+import { Debourse } from './debourse.model';
 
 export type TypeAffaire =
   | 'immigration_mobilite'
@@ -48,6 +49,7 @@ export interface Dossier {
   documents?: DocumentFile[];
   factures?: Facture[];
   intervenants?: Intervenant[];
+  debourses?: Debourse[];
   created_at?: string;
   updated_at?: string;
 }
