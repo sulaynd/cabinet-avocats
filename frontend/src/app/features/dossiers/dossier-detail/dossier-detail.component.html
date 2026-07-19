@@ -229,6 +229,29 @@
   <app-communications-panel *ngIf="!estStagiaire" [dossierId]="dossier.id"></app-communications-panel>
   <p class="permission-note" *ngIf="estStagiaire">Les communications avec le client ne sont pas accessibles aux stagiaires.</p>
 
+  <!-- FUSION DOCUMENTAIRE -->
+  <section class="section-dossier" *ngIf="modelesDocuments.length && !estStagiaire">
+    <div class="section-entete">
+      <h3>Générer un document</h3>
+    </div>
+    <div class="ligne-champs-membre">
+      <label style="flex: 1;">
+        Modèle
+        <select [(ngModel)]="modeleSelectionne">
+          <option [ngValue]="null">-- Choisir un modèle --</option>
+          <option *ngFor="let m of modelesDocuments" [value]="m.id">{{ m.nom }}</option>
+        </select>
+      </label>
+      <button mat-raised-button color="primary" [disabled]="generationDocumentEnCours" (click)="genererDocument()" style="align-self: flex-end;">
+        <mat-icon>description</mat-icon> {{ generationDocumentEnCours ? 'Génération...' : 'Générer' }}
+      </button>
+    </div>
+    <p class="permission-note">
+      Le document sera automatiquement rempli avec les données de ce dossier, téléchargé, et ajouté
+      ci-dessous à la liste des documents.
+    </p>
+  </section>
+
   <!-- DOCUMENTS -->
   <section class="section-dossier">
     <div class="section-entete">

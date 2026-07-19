@@ -1,0 +1,64 @@
+<div class="equipe-admin">
+  <div class="section-entete">
+    <div>
+      <h2>Modèles de documents</h2>
+      <p class="permission-note">
+        Téléversez un document Word (.docx) contenant des variables au format
+        <code>&#36;{client_nom}</code> (dollar suivi d'une accolade) — elles seront automatiquement
+        remplacées par les données du dossier lors de la génération.
+      </p>
+    </div>
+    <a mat-button routerLink="/parametres-cabinet"><mat-icon>arrow_back</mat-icon> Coordonnées du cabinet</a>
+  </div>
+
+  <div class="carte-membre">
+    <div class="champs-membre" style="flex: 1;">
+      <div class="ligne-champs-membre">
+        <label>Nom du modèle<input type="text" [(ngModel)]="nomFormulaire" placeholder="Ex: Mise en demeure" /></label>
+        <label>
+          Type d'affaire (facultatif — laisser vide pour un modèle générique)
+          <select [(ngModel)]="typeAffaireFormulaire">
+            <option [ngValue]="null">Générique (tous types)</option>
+            <option *ngFor="let t of typesAffaire" [value]="t.valeur">{{ t.libelle }}</option>
+          </select>
+        </label>
+      </div>
+      <label>Description (facultatif)<textarea [(ngModel)]="descriptionFormulaire" rows="2"></textarea></label>
+      <label>
+        Fichier Word (.docx)
+        <input type="file" accept=".docx" (change)="selectionnerFichier($event)" />
+      </label>
+    </div>
+    <div class="actions-carte-membre">
+      <button mat-raised-button color="primary" [disabled]="televersementEnCours" (click)="televerser()">
+        <mat-icon>upload</mat-icon> {{ televersementEnCours ? 'Téléversement...' : 'Téléverser' }}
+      </button>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 30px;">Variables disponibles</h3>
+  <p class="permission-note">
+    <code *ngFor="let v of variablesDisponibles" style="margin-right: 10px;">&#36;{{ '{' }}{{ v }}{{ '}' }}</code>
+  </p>
+
+  <h3 style="margin-top: 30px;">Modèles existants</h3>
+  <p *ngIf="chargement">Chargement...</p>
+  <table *ngIf="!chargement && modeles.length">
+    <thead>
+      <tr><th>Nom</th><th>Type d'affaire</th><th>Fichier</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let m of modeles">
+        <td>{{ m.nom }}</td>
+        <td>{{ libelleTypeAffaire(m.type_affaire) }}</td>
+        <td>{{ m.nom_original }}</td>
+        <td>
+          <button mat-icon-button (click)="supprimer(m)" title="Supprimer">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p *ngIf="!chargement && !modeles.length">Aucun modèle de document pour l'instant.</p>
+</div>

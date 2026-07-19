@@ -60,6 +60,10 @@
         <mat-icon>article</mat-icon>
         <span>Actualités</span>
       </a>
+      <a class="lien-nav" *appHasRole="['admin']" routerLink="/modeles-documents" routerLinkActive="actif" style="margin-bottom: 8px;">
+        <mat-icon>description</mat-icon>
+        <span>Modèles de documents</span>
+      </a>
       <a class="lien-nav" *appHasRole="['admin']" routerLink="/parametres-cabinet" routerLinkActive="actif" style="margin-bottom: 8px;">
         <mat-icon>settings</mat-icon>
         <span>Paramètres</span>

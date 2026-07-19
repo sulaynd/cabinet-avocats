@@ -197,6 +197,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/parametres/actualites/actualites.component').then((m) => m.ActualitesComponent),
       },
+
+      // Modèles de documents (fusion documentaire) — admin uniquement
+      {
+        path: 'modeles-documents',
+        canActivate: [roleGuard],
+        data: { roles: ['admin'] },
+        loadComponent: () =>
+          import('./features/parametres/modeles-documents/modeles-documents.component').then((m) => m.ModelesDocumentsComponent),
+      },
     ],
   },
 

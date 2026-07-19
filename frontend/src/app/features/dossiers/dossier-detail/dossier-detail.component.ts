@@ -10,6 +10,8 @@ import { IntervenantService } from '../../../core/services/intervenant.service';
 import { Intervenant, IntervenantPayload, FonctionIntervenant } from '../../../core/models/intervenant.model';
 import { DebourseService } from '../../../core/services/debourse.service';
 import { Debourse, DeboursePayload, CategorieDebourse } from '../../../core/models/debourse.model';
+import { ModeleDocumentService } from '../../../core/services/modele-document.service';
+import { ModeleDocument } from '../../../core/models/modele-document.model';
 import { FactureService } from '../../../core/services/facture.service';
 import { EcheanceService } from '../../../core/services/echeance.service';
 import { TempsPasseService } from '../../../core/services/temps-passe.service';
@@ -91,6 +93,7 @@ export class DossierDetailComponent implements OnInit {
     private documentService: DocumentService,
     private intervenantService: IntervenantService,
     private debourseService: DebourseService,
+    private modeleDocumentService: ModeleDocumentService,
     private factureService: FactureService,
     private echeanceService: EcheanceService,
     private tempsPasseService: TempsPasseService,
@@ -141,6 +144,7 @@ export class DossierDetailComponent implements OnInit {
       },
       error: () => (this.chargement = false),
     });
+    this.modeleDocumentService.pourDossier(this.dossierId).subscribe((m) => (this.modelesDocuments = m));
   }
 
   nomClient(): string {
@@ -400,6 +404,37 @@ export class DossierDetailComponent implements OnInit {
           error: (err) => this.notification.erreur(err?.error?.message || 'Impossible de supprimer ce déboursé.'),
         });
       });
+  }
+
+  // --- Fusion documentaire (génération depuis un modèle Word) ---
+  modelesDocuments: ModeleDocument[] = [];
+  modeleSelectionne: number | null = null;
+  generationDocumentEnCours = false;
+
+  genererDocument(): void {
+    if (!this.modeleSelectionne) {
+      this.notification.erreur('Choisissez un modèle de document.');
+      return;
+    }
+
+    this.generationDocumentEnCours = true;
+    this.modeleDocumentService.generer(this.dossierId, this.modeleSelectionne).subscribe({
+      next: (blob) => {
+        this.generationDocumentEnCours = false;
+        const modele = this.modelesDocuments.find((m) => m.id === this.modeleSelectionne);
+        const lien = document.createElement('a');
+        lien.href = URL.createObjectURL(blob);
+        lien.download = `${modele?.nom ?? 'document'}.docx`;
+        lien.click();
+        URL.revokeObjectURL(lien.href);
+        this.notification.succes('Document généré et ajouté aux documents du dossier.');
+        this.charger();
+      },
+      error: (err) => {
+        this.generationDocumentEnCours = false;
+        this.notification.erreur(err?.error?.message || 'Impossible de générer ce document.');
+      },
+    });
   }
 
   formaterTaille(octets?: number): string {
