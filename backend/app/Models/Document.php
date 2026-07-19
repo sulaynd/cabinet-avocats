@@ -15,11 +15,13 @@ class Document extends Model
     protected $fillable = [
         'dossier_id', 'nom_original', 'chemin', 'type', 'taille', 'uploaded_by',
         'necessite_signature', 'signe_le', 'signature_nom', 'signature_ip',
+        'partage_externe', 'collaborateur_externe_id',
     ];
 
     protected $casts = [
         'necessite_signature' => 'boolean',
         'signe_le' => 'datetime',
+        'partage_externe' => 'boolean',
     ];
 
     public function estSigne(): bool
@@ -35,5 +37,10 @@ class Document extends Model
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    public function collaborateurExterne(): BelongsTo
+    {
+        return $this->belongsTo(CollaborateurExterne::class);
     }
 }

@@ -24,4 +24,8 @@ export class DocumentService {
   supprimer(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  partagerExterne(id: number, partage: boolean): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/partager-externe`, { partage_externe: partage });
+  }
 }

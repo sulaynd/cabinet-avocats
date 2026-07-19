@@ -225,6 +225,69 @@
     </div>
   </div>
 
+  <!-- COLLABORATEURS EXTERNES -->
+  <section class="section-dossier">
+    <div class="section-entete">
+      <h3>Collaborateurs externes</h3>
+      <button mat-button (click)="ouvrirFormulaireCollaborateur()">
+        <mat-icon>person_add</mat-icon> Ajouter un collaborateur
+      </button>
+    </div>
+
+    <table *ngIf="collaborateursExternes.length; else aucunCollaborateur">
+      <thead>
+        <tr><th>Nom</th><th>Organisation</th><th>Email</th><th>Accès portail</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of collaborateursExternes">
+          <td>{{ c.nom }}</td>
+          <td>{{ c.organisation }}</td>
+          <td>{{ c.email }}</td>
+          <td>
+            <span class="badge" [class.badge-payee]="c.portail_active_le">{{ c.portail_active_le ? 'Activé' : 'Non activé' }}</span>
+          </td>
+          <td>
+            <button mat-icon-button *ngIf="!c.portail_active_le" (click)="activerAccesCollaborateur(c)" title="Activer l'accès portail">
+              <mat-icon>key</mat-icon>
+            </button>
+            <button mat-icon-button (click)="delierCollaborateur(c)" title="Retirer de ce dossier">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #aucunCollaborateur><p class="vide">Aucun collaborateur externe lié à ce dossier.</p></ng-template>
+  </section>
+
+  <div class="overlay" *ngIf="formulaireCollaborateurOuvert" (click)="fermerFormulaireCollaborateur()">
+    <div class="modale" (click)="$event.stopPropagation()">
+      <h3>Ajouter un collaborateur externe</h3>
+
+      <label>
+        Rechercher un collaborateur déjà existant (répertoire du cabinet)
+        <input type="text" [(ngModel)]="rechercheCollaborateur" (ngModelChange)="rechercherCollaborateur()" placeholder="Nom, organisation ou email..." />
+      </label>
+      <ul class="resultats-recherche-intervenant" *ngIf="resultatsRechercheCollaborateur.length">
+        <li *ngFor="let r of resultatsRechercheCollaborateur" (click)="lierCollaborateurExistant(r)">
+          <strong>{{ r.nom }}</strong> <span *ngIf="r.organisation">({{ r.organisation }})</span> — {{ r.email }}
+        </li>
+      </ul>
+      <hr />
+      <p class="permission-note">Ou créer un nouveau collaborateur :</p>
+
+      <label>Nom<input type="text" [(ngModel)]="collaborateurForm.nom" placeholder="Ex: Me Gagnon" /></label>
+      <label>Email<input type="email" [(ngModel)]="collaborateurForm.email" /></label>
+      <label>Organisation (facultatif)<input type="text" [(ngModel)]="collaborateurForm.organisation" /></label>
+      <label>Téléphone (facultatif)<input type="text" [(ngModel)]="collaborateurForm.telephone" /></label>
+
+      <div class="modale-pied">
+        <button mat-button (click)="fermerFormulaireCollaborateur()">Annuler</button>
+        <button mat-raised-button color="primary" (click)="creerEtLierCollaborateur()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
   <!-- COMMUNICATIONS -->
   <app-communications-panel *ngIf="!estStagiaire" [dossierId]="dossier.id"></app-communications-panel>
   <p class="permission-note" *ngIf="estStagiaire">Les communications avec le client ne sont pas accessibles aux stagiaires.</p>
@@ -280,6 +343,7 @@
           <th>Taille</th>
           <th>Ajouté le</th>
           <th>Signature</th>
+          <th>Partage externe</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -295,6 +359,12 @@
             <span *ngIf="document.necessite_signature && document.signe_le" class="badge badge-payee">
               Signé le {{ document.signe_le | date: 'dd/MM/yyyy' }}
             </span>
+          </td>
+          <td>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 13px;">
+              <input type="checkbox" [checked]="document.partage_externe" (change)="basculerPartageExterne(document, $any($event.target).checked)" />
+              Partagé
+            </label>
           </td>
           <td>
             <button mat-icon-button (click)="telechargerDocument(document.id, document.nom_original)" title="Télécharger">

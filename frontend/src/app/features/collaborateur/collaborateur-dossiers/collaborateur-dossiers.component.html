@@ -1,0 +1,35 @@
+<div class="portail-dossiers">
+  <div class="topbar">
+    <div>
+      <h1>Mon espace collaborateur</h1>
+    </div>
+    <div class="actions-topbar">
+      <a mat-button routerLink="/collaborateur/changer-mot-de-passe">
+        <mat-icon>lock_reset</mat-icon> Changer mon mot de passe
+      </a>
+      <button mat-stroked-button (click)="deconnexion()">
+        <mat-icon>logout</mat-icon> Se déconnecter
+      </button>
+    </div>
+  </div>
+
+  <h3>Dossiers partagés avec vous</h3>
+  <p *ngIf="chargement">Chargement...</p>
+  <table *ngIf="!chargement && dossiers.length">
+    <thead>
+      <tr><th>Référence</th><th>Titre</th><th></th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of dossiers">
+        <td><span class="ref-stamp">{{ d.reference }}</span></td>
+        <td>{{ d.titre }}</td>
+        <td>
+          <a mat-button color="primary" [routerLink]="['/collaborateur/dossiers', d.id]">
+            <mat-icon>folder_open</mat-icon> Ouvrir
+          </a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p *ngIf="!chargement && !dossiers.length">Aucun dossier ne vous a encore été partagé.</p>
+</div>

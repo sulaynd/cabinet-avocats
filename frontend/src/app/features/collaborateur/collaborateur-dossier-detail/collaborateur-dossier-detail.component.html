@@ -1,0 +1,37 @@
+<div class="portail-dossiers">
+  <div class="topbar">
+    <div>
+      <a mat-button routerLink="/collaborateur/mes-dossiers"><mat-icon>arrow_back</mat-icon> Mes dossiers</a>
+    </div>
+  </div>
+
+  <p *ngIf="erreur" class="erreur">{{ erreur }}</p>
+
+  <div *ngIf="!chargement">
+    <h3>Téléverser un document</h3>
+    <div class="ligne-champs-membre">
+      <input type="file" (change)="selectionnerFichier($event)" />
+      <button mat-raised-button color="primary" [disabled]="!fichierSelectionne || televersementEnCours" (click)="televerser()">
+        <mat-icon>upload</mat-icon> {{ televersementEnCours ? 'Envoi...' : 'Envoyer' }}
+      </button>
+    </div>
+
+    <h3 style="margin-top: 30px;">Documents partagés</h3>
+    <table *ngIf="documents.length">
+      <thead>
+        <tr><th>Nom</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of documents">
+          <td>{{ d.nom_original }}</td>
+          <td>
+            <button mat-icon-button (click)="telecharger(d)" title="Télécharger">
+              <mat-icon>download</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!documents.length">Aucun document partagé avec vous pour ce dossier pour l'instant.</p>
+  </div>
+</div>

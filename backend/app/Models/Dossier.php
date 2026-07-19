@@ -53,6 +53,11 @@ class Dossier extends Model
         return $this->belongsToMany(Intervenant::class);
     }
 
+    public function collaborateursExternes(): BelongsToMany
+    {
+        return $this->belongsToMany(CollaborateurExterne::class, 'dossier_collaborateur_externe');
+    }
+
     public function echeances(): HasMany
     {
         return $this->hasMany(Echeance::class);

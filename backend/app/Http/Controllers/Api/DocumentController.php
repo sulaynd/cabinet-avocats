@@ -55,6 +55,18 @@ class DocumentController extends Controller
         return response()->json($document);
     }
 
+    /** Marque (ou démarque) un document comme partagé avec les collaborateurs
+     * externes liés à ce dossier — opt-in explicite, document par document. */
+    public function partagerExterne(Request $request, Document $document)
+    {
+        abort_unless($request->user()->can('view', $document->dossier), 403, "Ce dossier ne vous est pas assigné.");
+
+        $data = $request->validate(['partage_externe' => 'required|boolean']);
+        $document->update($data);
+
+        return response()->json($document);
+    }
+
     public function destroy(Request $request, Document $document)
     {
         abort_unless($request->user()->can('view', $document->dossier), 403, "Ce dossier ne vous est pas assigné.");

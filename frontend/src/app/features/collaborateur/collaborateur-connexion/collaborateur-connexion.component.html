@@ -1,0 +1,29 @@
+<div class="ecran-connexion">
+  <form [formGroup]="form" (ngSubmit)="soumettre()" class="portail-login-material dossier-form-material">
+    <div class="marque">
+      <div class="nom">Espace collaborateur<small>{{ cabinet?.nom }}</small></div>
+    </div>
+
+    <mat-form-field appearance="outline" class="champ-pleine-largeur">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="champ-pleine-largeur">
+      <mat-label>Mot de passe</mat-label>
+      <input matInput type="password" formControlName="password" />
+    </mat-form-field>
+
+    <p class="erreur" *ngIf="erreur">{{ erreur }}</p>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || chargement" class="champ-pleine-largeur">
+      {{ chargement ? 'Connexion...' : 'Se connecter' }}
+    </button>
+
+    <p class="sync-note">Vos identifiants vous ont été communiqués par le cabinet lors de l'activation de votre accès.</p>
+
+    <p class="note-login">
+      <a routerLink="/collaborateur/mot-de-passe-oublie">Mot de passe oublié ?</a>
+    </p>
+  </form>
+</div>

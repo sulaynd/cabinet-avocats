@@ -22,6 +22,7 @@ import { ShellComponent } from './core/shell/shell.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { portailAuthGuard } from './core/guards/portail-auth.guard';
+import { collaborateurAuthGuard } from './core/guards/collaborateur-auth.guard';
 
 export const routes: Routes = [
   // Page d'accueil publique (site vitrine du cabinet) — remplace la racine "/".
@@ -91,6 +92,53 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/portail/portail-temoignage/portail-temoignage.component').then(
         (m) => m.PortailTemoignageComponent
+      ),
+  },
+
+  // Portail collaborateur externe — authentification et espace séparés du cabinet et du portail client.
+  {
+    path: 'collaborateur/connexion',
+    loadComponent: () =>
+      import('./features/collaborateur/collaborateur-connexion/collaborateur-connexion.component').then(
+        (m) => m.CollaborateurConnexionComponent
+      ),
+  },
+  {
+    path: 'collaborateur/mot-de-passe-oublie',
+    loadComponent: () =>
+      import('./features/collaborateur/collaborateur-mot-de-passe-oublie/collaborateur-mot-de-passe-oublie.component').then(
+        (m) => m.CollaborateurMotDePasseOublieComponent
+      ),
+  },
+  {
+    path: 'collaborateur/reinitialiser-mot-de-passe',
+    loadComponent: () =>
+      import(
+        './features/collaborateur/collaborateur-reinitialiser-mot-de-passe/collaborateur-reinitialiser-mot-de-passe.component'
+      ).then((m) => m.CollaborateurReinitialiserMotDePasseComponent),
+  },
+  {
+    path: 'collaborateur/changer-mot-de-passe',
+    canActivate: [collaborateurAuthGuard],
+    loadComponent: () =>
+      import('./features/collaborateur/collaborateur-changer-mot-de-passe/collaborateur-changer-mot-de-passe.component').then(
+        (m) => m.CollaborateurChangerMotDePasseComponent
+      ),
+  },
+  {
+    path: 'collaborateur/mes-dossiers',
+    canActivate: [collaborateurAuthGuard],
+    loadComponent: () =>
+      import('./features/collaborateur/collaborateur-dossiers/collaborateur-dossiers.component').then(
+        (m) => m.CollaborateurDossiersComponent
+      ),
+  },
+  {
+    path: 'collaborateur/dossiers/:id',
+    canActivate: [collaborateurAuthGuard],
+    loadComponent: () =>
+      import('./features/collaborateur/collaborateur-dossier-detail/collaborateur-dossier-detail.component').then(
+        (m) => m.CollaborateurDossierDetailComponent
       ),
   },
 

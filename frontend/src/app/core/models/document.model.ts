@@ -7,9 +7,11 @@ export interface DocumentFile {
   chemin: string;
   type: TypeDocument;
   taille?: number;
-  uploaded_by: number;
+  uploaded_by: number | null;
   necessite_signature?: boolean;
   signe_le?: string | null;
   signature_nom?: string | null;
   created_at?: string;
+  partage_externe?: boolean;
+  collaborateur_externe_id?: number | null;
 }

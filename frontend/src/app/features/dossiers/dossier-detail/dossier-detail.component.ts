@@ -12,6 +12,8 @@ import { DebourseService } from '../../../core/services/debourse.service';
 import { Debourse, DeboursePayload, CategorieDebourse } from '../../../core/models/debourse.model';
 import { ModeleDocumentService } from '../../../core/services/modele-document.service';
 import { ModeleDocument } from '../../../core/models/modele-document.model';
+import { CollaborateurExterneService } from '../../../core/services/collaborateur-externe.service';
+import { CollaborateurExterne } from '../../../core/models/collaborateur-externe.model';
 import { FactureService } from '../../../core/services/facture.service';
 import { EcheanceService } from '../../../core/services/echeance.service';
 import { TempsPasseService } from '../../../core/services/temps-passe.service';
@@ -94,6 +96,7 @@ export class DossierDetailComponent implements OnInit {
     private intervenantService: IntervenantService,
     private debourseService: DebourseService,
     private modeleDocumentService: ModeleDocumentService,
+    private collaborateurExterneService: CollaborateurExterneService,
     private factureService: FactureService,
     private echeanceService: EcheanceService,
     private tempsPasseService: TempsPasseService,
@@ -145,6 +148,7 @@ export class DossierDetailComponent implements OnInit {
       error: () => (this.chargement = false),
     });
     this.modeleDocumentService.pourDossier(this.dossierId).subscribe((m) => (this.modelesDocuments = m));
+    this.collaborateurExterneService.pourDossier(this.dossierId).subscribe((c) => (this.collaborateursExternes = c));
   }
 
   nomClient(): string {
@@ -434,6 +438,95 @@ export class DossierDetailComponent implements OnInit {
         this.generationDocumentEnCours = false;
         this.notification.erreur(err?.error?.message || 'Impossible de générer ce document.');
       },
+    });
+  }
+
+  // --- Collaborateurs externes (co-conseil...) ---
+  collaborateursExternes: CollaborateurExterne[] = [];
+  formulaireCollaborateurOuvert = false;
+  collaborateurForm = { nom: '', email: '', organisation: '', telephone: '' };
+  rechercheCollaborateur = '';
+  resultatsRechercheCollaborateur: CollaborateurExterne[] = [];
+
+  ouvrirFormulaireCollaborateur(): void {
+    this.collaborateurForm = { nom: '', email: '', organisation: '', telephone: '' };
+    this.rechercheCollaborateur = '';
+    this.resultatsRechercheCollaborateur = [];
+    this.formulaireCollaborateurOuvert = true;
+  }
+
+  fermerFormulaireCollaborateur(): void {
+    this.formulaireCollaborateurOuvert = false;
+  }
+
+  rechercherCollaborateur(): void {
+    if (this.rechercheCollaborateur.trim().length < 2) {
+      this.resultatsRechercheCollaborateur = [];
+      return;
+    }
+    this.collaborateurExterneService.rechercherRepertoire(this.rechercheCollaborateur).subscribe((r) => (this.resultatsRechercheCollaborateur = r));
+  }
+
+  lierCollaborateurExistant(collaborateur: CollaborateurExterne): void {
+    this.collaborateurExterneService.lier(this.dossierId, collaborateur.id).subscribe({
+      next: () => {
+        this.notification.succes(`${collaborateur.nom} ajouté au dossier.`);
+        this.fermerFormulaireCollaborateur();
+        this.charger();
+      },
+      error: (err) => this.notification.erreur(err?.error?.message || 'Impossible de lier ce collaborateur.'),
+    });
+  }
+
+  creerEtLierCollaborateur(): void {
+    if (!this.collaborateurForm.nom.trim() || !this.collaborateurForm.email.trim()) {
+      this.notification.erreur('Le nom et l\'email sont obligatoires.');
+      return;
+    }
+    this.collaborateurExterneService.creerEtLier(this.dossierId, this.collaborateurForm).subscribe({
+      next: () => {
+        this.notification.succes('Collaborateur ajouté au dossier.');
+        this.fermerFormulaireCollaborateur();
+        this.charger();
+      },
+      error: (err) => this.notification.erreur(err?.error?.message || "Impossible d'ajouter ce collaborateur."),
+    });
+  }
+
+  activerAccesCollaborateur(collaborateur: CollaborateurExterne): void {
+    this.collaborateurExterneService.activer(collaborateur.id).subscribe({
+      next: () => this.notification.succes(`Accès envoyé par email à ${collaborateur.nom}.`),
+      error: (err) => this.notification.erreur(err?.error?.message || "Impossible d'activer cet accès."),
+    });
+  }
+
+  delierCollaborateur(collaborateur: CollaborateurExterne): void {
+    this.confirmService
+      .demander({
+        titre: 'Retirer ce collaborateur du dossier ?',
+        message: `"${collaborateur.nom}" ne verra plus les documents partagés de ce dossier.`,
+        libelleConfirmer: 'Retirer',
+        destructif: true,
+      })
+      .subscribe((confirme) => {
+        if (!confirme) return;
+        this.collaborateurExterneService.delier(this.dossierId, collaborateur.id).subscribe({
+          next: () => {
+            this.notification.succes('Collaborateur retiré du dossier.');
+            this.charger();
+          },
+          error: (err) => this.notification.erreur(err?.error?.message || 'Impossible de retirer ce collaborateur.'),
+        });
+      });
+  }
+
+  basculerPartageExterne(doc: any, partage: boolean): void {
+    this.documentService.partagerExterne(doc.id, partage).subscribe({
+      next: () => {
+        this.notification.succes(partage ? 'Document partagé avec les collaborateurs.' : 'Partage retiré.');
+        this.charger();
+      },
+      error: (err) => this.notification.erreur(err?.error?.message || 'Impossible de modifier le partage.'),
     });
   }
 

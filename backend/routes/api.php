@@ -12,6 +12,9 @@ use App\Http\Controllers\Api\CommunicationController;
 use App\Http\Controllers\Api\DebourseController;
 use App\Http\Controllers\Api\ModeleDocumentController;
 use App\Http\Controllers\Api\FusionDocumentController;
+use App\Http\Controllers\Api\CollaborateurAuthController;
+use App\Http\Controllers\Api\CollaborateurExterneController;
+use App\Http\Controllers\Api\CollaborateurPortailController;
 use App\Http\Controllers\Api\IntervenantController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\DossierController;
@@ -74,6 +77,11 @@ Route::post('/public/rendez-vous', [RendezVousPublicController::class, 'reserver
 Route::post('/portail/connexion', [PortailAuthController::class, 'login'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
 Route::post('/portail/mot-de-passe-oublie', [PortailAuthController::class, 'demanderReinitialisation'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
 Route::post('/portail/reinitialiser-mot-de-passe', [PortailAuthController::class, 'reinitialiser'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
+
+// Connexion au portail collaborateur externe (co-conseil...), garde séparé.
+Route::post('/collaborateur/connexion', [CollaborateurAuthController::class, 'login'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
+Route::post('/collaborateur/mot-de-passe-oublie', [CollaborateurAuthController::class, 'demanderReinitialisation'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
+Route::post('/collaborateur/reinitialiser-mot-de-passe', [CollaborateurAuthController::class, 'reinitialiser'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,1');
 
 // Questionnaire de pré-consultation : page publique ouverte depuis le lien reçu par email.
 Route::middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':20,1')->group(function () {
@@ -144,6 +152,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('dossiers/{dossier}/intervenants', [IntervenantController::class, 'creerEtLier']);
     Route::post('dossiers/{dossier}/intervenants/{intervenant}/lier', [IntervenantController::class, 'lier']);
     Route::delete('dossiers/{dossier}/intervenants/{intervenant}', [IntervenantController::class, 'delier']);
+
+    // Collaborateurs externes (co-conseil, etc.) — répertoire partagé et liaison par dossier.
+    Route::get('collaborateurs-externes', [CollaborateurExterneController::class, 'index']);
+    Route::post('collaborateurs-externes', [CollaborateurExterneController::class, 'store']);
+    Route::put('collaborateurs-externes/{collaborateurExterne}', [CollaborateurExterneController::class, 'update']);
+    Route::delete('collaborateurs-externes/{collaborateurExterne}', [CollaborateurExterneController::class, 'destroy']);
+    Route::post('collaborateurs-externes/{collaborateurExterne}/activer', [CollaborateurExterneController::class, 'activer']);
+
+    Route::get('dossiers/{dossier}/collaborateurs-externes', [CollaborateurExterneController::class, 'pourDossier']);
+    Route::post('dossiers/{dossier}/collaborateurs-externes', [CollaborateurExterneController::class, 'creerEtLier']);
+    Route::post('dossiers/{dossier}/collaborateurs-externes/{collaborateurExterne}/lier', [CollaborateurExterneController::class, 'lier']);
+    Route::delete('dossiers/{dossier}/collaborateurs-externes/{collaborateurExterne}', [CollaborateurExterneController::class, 'delier']);
+
+    Route::post('documents/{document}/partager-externe', [DocumentController::class, 'partagerExterne']);
 
     // Chronométrage et temps passé sur un dossier.
     Route::get('dossiers/{dossier}/temps', [TempsPasseController::class, 'index']);
@@ -220,4 +242,16 @@ Route::middleware(['auth:sanctum', 'portail'])->prefix('portail')->group(functio
     Route::post('/documents/{document}/signer', [PortailController::class, 'signerDocument']);
     Route::post('/temoignage', [TemoignageController::class, 'soumettreDepuisPortail']);
     Route::get('/mon-temoignage', [TemoignageController::class, 'monTemoignage']);
+});
+
+// Espace portail collaborateur externe : mêmes tokens Sanctum, mais middleware
+// dédié qui vérifie que le token appartient bien à un CollaborateurExterne.
+Route::middleware(['auth:sanctum', \App\Http\Middleware\EnsurePortailCollaborateur::class])->prefix('collaborateur')->group(function () {
+    Route::post('/deconnexion', [CollaborateurAuthController::class, 'logout']);
+    Route::get('/moi', [CollaborateurAuthController::class, 'moi']);
+    Route::post('/changer-mot-de-passe', [CollaborateurAuthController::class, 'changerMotDePasse']);
+    Route::get('/mes-dossiers', [CollaborateurPortailController::class, 'dossiers']);
+    Route::get('/dossiers/{dossier}/documents', [CollaborateurPortailController::class, 'documents']);
+    Route::post('/dossiers/{dossier}/documents', [CollaborateurPortailController::class, 'televerser']);
+    Route::get('/documents/{document}/telecharger', [CollaborateurPortailController::class, 'telecharger']);
 });
