@@ -177,4 +177,66 @@ class DossierTest extends TestCase
         $reponse->assertCreated();
         $this->assertEquals("DOS-{$annee}-0007", $reponse->json('reference'));
     }
+
+    public function test_suggere_lavocat_specialise_avec_le_moins_de_dossiers(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $specialiste = User::factory()->avocat()->create(['specialites' => ['immigration_mobilite']]);
+        $generaliste = User::factory()->avocat()->create(['specialites' => null]);
+
+        // Le généraliste a moins de dossiers, mais n'est pas spécialisé.
+        Dossier::factory()->create(['avocat_id' => $specialiste->id, 'statut' => 'ouvert']);
+        Dossier::factory()->create(['avocat_id' => $specialiste->id, 'statut' => 'ouvert']);
+        // Généraliste : aucun dossier.
+
+        $reponse = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/dossiers/suggerer-avocat?type_affaire=immigration_mobilite')
+            ->assertOk();
+
+        $this->assertEquals($specialiste->id, $reponse->json('avocat_id'));
+    }
+
+    public function test_departage_par_charge_de_travail_entre_specialistes(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $charge = User::factory()->avocat()->create(['specialites' => ['action_humanitaire']]);
+        $libre = User::factory()->avocat()->create(['specialites' => ['action_humanitaire']]);
+
+        Dossier::factory()->create(['avocat_id' => $charge->id, 'statut' => 'ouvert']);
+        Dossier::factory()->create(['avocat_id' => $charge->id, 'statut' => 'en_cours']);
+
+        $reponse = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/dossiers/suggerer-avocat?type_affaire=action_humanitaire')
+            ->assertOk();
+
+        $this->assertEquals($libre->id, $reponse->json('avocat_id'));
+    }
+
+    public function test_retombe_sur_tous_les_avocats_si_aucun_specialiste(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $avocat = User::factory()->avocat()->create(['specialites' => ['notaire_civil']]);
+
+        $reponse = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/dossiers/suggerer-avocat?type_affaire=action_humanitaire')
+            ->assertOk();
+
+        $this->assertEquals($avocat->id, $reponse->json('avocat_id'));
+    }
+
+    public function test_les_dossiers_clos_ne_comptent_pas_dans_la_charge(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $chargeMaisClos = User::factory()->avocat()->create();
+        $libre = User::factory()->avocat()->create();
+
+        Dossier::factory()->count(5)->create(['avocat_id' => $chargeMaisClos->id, 'statut' => 'clos']);
+
+        $reponse = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/dossiers/suggerer-avocat')
+            ->assertOk();
+
+        // Les deux ont 0 dossier ouvert — le premier de la liste (ordre naturel) est retourné.
+        $this->assertContains($reponse->json('avocat_id'), [$chargeMaisClos->id, $libre->id]);
+    }
 }

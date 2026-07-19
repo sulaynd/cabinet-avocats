@@ -10,6 +10,51 @@ use Illuminate\Validation\Rule;
 
 class DossierController extends Controller
 {
+    /**
+     * Suggère l'avocat à assigner à un nouveau dossier : priorité aux
+     * avocats dont les spécialités déclarées incluent ce type d'affaire
+     * (sinon tous les avocats sont éligibles), puis départage par la charge
+     * de travail la plus faible (nombre de dossiers actuellement ouverts,
+     * indicateur plus stable que le temps non facturé). Reste une simple
+     * suggestion, modifiable librement par l'admin avant l'enregistrement.
+     */
+    public function suggererAvocat(Request $request)
+    {
+        $typeAffaire = $request->query('type_affaire');
+
+        $avocats = \App\Models\User::where('role', 'avocat')->get();
+
+        $specialises = $typeAffaire
+            ? $avocats->filter(fn ($a) => in_array($typeAffaire, $a->specialites ?? []))
+            : collect();
+
+        $candidats = $specialises->isNotEmpty() ? $specialises : $avocats;
+
+        if ($candidats->isEmpty()) {
+            return response()->json(['avocat_id' => null, 'raison' => "Aucun avocat disponible."]);
+        }
+
+        $statutsActifs = ['ouvert', 'en_cours', 'en_attente'];
+
+        $meilleur = $candidats
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'nom' => $a->name,
+                'nb_dossiers_ouverts' => Dossier::where('avocat_id', $a->id)->whereIn('statut', $statutsActifs)->count(),
+                'specialise' => $specialises->contains('id', $a->id),
+            ])
+            ->sortBy('nb_dossiers_ouverts')
+            ->first();
+
+        return response()->json([
+            'avocat_id' => $meilleur['id'],
+            'nom' => $meilleur['nom'],
+            'raison' => $meilleur['specialise']
+                ? "Spécialisé dans ce type d'affaire, {$meilleur['nb_dossiers_ouverts']} dossier(s) ouvert(s) actuellement."
+                : "Aucun avocat spécialisé trouvé — suggestion basée sur la charge de travail ({$meilleur['nb_dossiers_ouverts']} dossier(s) ouvert(s)).",
+        ]);
+    }
+
     public function index(Request $request)
     {
         $dossiers = Dossier::query()

@@ -14,4 +14,5 @@ export interface Utilisateur {
   bio_publique?: string | null;
   photo_url?: string | null;
   doit_changer_mot_de_passe?: boolean;
+  specialites?: string[] | null;
 }

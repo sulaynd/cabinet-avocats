@@ -16,7 +16,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'role', 'phone', 'taux_horaire_defaut',
         'afficher_equipe_publique', 'titre_public', 'bio_publique', 'ordre_equipe', 'photo_chemin',
-        'doit_changer_mot_de_passe',
+        'doit_changer_mot_de_passe', 'specialites',
     ];
 
     protected $appends = ['photo_url'];
@@ -41,6 +41,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'afficher_equipe_publique' => 'boolean',
             'doit_changer_mot_de_passe' => 'boolean',
+            'specialites' => 'array',
         ];
     }
 

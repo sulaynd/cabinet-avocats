@@ -70,4 +70,10 @@ export class DossierService {
   genererFactureDepuisTemps(id: number): Observable<Facture> {
     return this.http.post<Facture>(`${this.apiUrl}/${id}/factures/generer-depuis-temps`, {});
   }
+
+  /** Suggère l'avocat à assigner selon la spécialité et la charge de travail — simple suggestion, jamais imposée. */
+  suggererAvocat(typeAffaire?: string): Observable<{ avocat_id: number | null; nom?: string; raison?: string }> {
+    const params: Record<string, string> = typeAffaire ? { type_affaire: typeAffaire } : {};
+    return this.http.get<{ avocat_id: number | null; nom?: string; raison?: string }>(`${this.apiUrl}/suggerer-avocat`, { params });
+  }
 }

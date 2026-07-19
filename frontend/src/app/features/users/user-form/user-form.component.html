@@ -24,6 +24,14 @@
       </mat-select>
     </mat-form-field>
 
+    <mat-form-field appearance="outline" class="champ-pleine-largeur" *ngIf="form.value.role === 'avocat'">
+      <mat-label>Spécialités (facultatif)</mat-label>
+      <mat-select formControlName="specialites" multiple>
+        <mat-option *ngFor="let t of typesAffaire" [value]="t.valeur">{{ t.libelle }}</mat-option>
+      </mat-select>
+      <mat-hint>Utilisées pour suggérer cet avocat en priorité à la création d'un dossier de ce type — laisser vide pour un généraliste</mat-hint>
+    </mat-form-field>
+
     <mat-form-field appearance="outline">
       <mat-label>Téléphone</mat-label>
       <input matInput formControlName="phone" />

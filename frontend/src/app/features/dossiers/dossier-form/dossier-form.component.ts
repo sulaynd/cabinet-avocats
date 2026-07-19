@@ -38,6 +38,8 @@ export class DossierFormComponent implements OnInit {
   enregistrement = false;
 
   private tauxHoraireModifieManuellement = false;
+  private avocatModifieManuellement = false;
+  suggestionAvocat: { nom: string; raison: string } | null = null;
 
   get estStagiaire(): boolean {
     return this.auth.currentUser()?.role === 'stagiaire';
@@ -123,6 +125,8 @@ export class DossierFormComponent implements OnInit {
     });
 
     this.form.get('avocat_id')?.valueChanges.subscribe((avocatId) => {
+      this.avocatModifieManuellement = true;
+
       const avocat = this.avocats.find((a) => a.id === avocatId);
       const tauxParDefaut = avocat?.taux_horaire_defaut;
       const controleTaux = this.form.get('taux_horaire');
@@ -162,6 +166,21 @@ export class DossierFormComponent implements OnInit {
       const avocatIdParam = this.route.snapshot.queryParamMap.get('avocat_id');
       if (clientIdParam) this.form.patchValue({ client_id: Number(clientIdParam) });
       if (avocatIdParam) this.form.patchValue({ avocat_id: Number(avocatIdParam) });
+
+      // Suggestion d'assignation automatique (spécialité, puis charge de
+      // travail) — uniquement à la création, et seulement tant que l'admin
+      // n'a pas lui-même choisi un avocat (ou qu'il n'a pas déjà été
+      // pré-rempli depuis un rendez-vous confirmé ci-dessus). Ne fait jamais
+      // qu'une suggestion : le champ reste modifiable librement.
+      this.form.get('type_affaire')?.valueChanges.subscribe((typeAffaire) => {
+        if (this.avocatModifieManuellement) return;
+        this.dossierService.suggererAvocat(typeAffaire).subscribe((suggestion) => {
+          if (suggestion.avocat_id && !this.avocatModifieManuellement) {
+            this.form.get('avocat_id')?.setValue(suggestion.avocat_id, { emitEvent: false });
+            this.suggestionAvocat = { nom: suggestion.nom ?? '', raison: suggestion.raison ?? '' };
+          }
+        });
+      });
     }
 
     if (!this.peutAssigner) {

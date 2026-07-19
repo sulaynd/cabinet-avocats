@@ -120,6 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('clients', ClientController::class);
     Route::get('clients/{client}/dossiers', [ClientController::class, 'dossiers']);
 
+    Route::get('dossiers/suggerer-avocat', [DossierController::class, 'suggererAvocat']);
     Route::apiResource('dossiers', DossierController::class);
     Route::get('dossiers/{dossier}/echeances', [DossierController::class, 'echeances']);
     Route::get('dossiers/{dossier}/documents', [DossierController::class, 'documents']);

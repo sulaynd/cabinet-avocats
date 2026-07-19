@@ -26,6 +26,7 @@
       <mat-select formControlName="avocat_id">
         <mat-option *ngFor="let avocat of avocats" [value]="avocat.id">{{ avocat.name }}</mat-option>
       </mat-select>
+      <mat-hint *ngIf="suggestionAvocat">Suggestion : {{ suggestionAvocat.raison }}</mat-hint>
     </mat-form-field>
 
     <mat-form-field appearance="outline">

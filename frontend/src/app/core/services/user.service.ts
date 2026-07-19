@@ -18,6 +18,7 @@ export interface UtilisateurPayload {
   role: Utilisateur['role'];
   phone?: string;
   taux_horaire_defaut?: number | null;
+  specialites?: string[];
 }
 
 @Injectable({ providedIn: 'root' })

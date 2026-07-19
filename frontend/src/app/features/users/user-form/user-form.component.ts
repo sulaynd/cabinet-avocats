@@ -30,6 +30,14 @@ export class UserFormComponent implements OnInit {
   apercuFichier: string | null = null;
 
   readonly roles: Role[] = ['admin', 'avocat', 'assistant', 'stagiaire'];
+  readonly typesAffaire: { valeur: string; libelle: string }[] = [
+    { valeur: 'immigration_mobilite', libelle: 'Immigration & mobilité internationale' },
+    { valeur: 'recrutement_international', libelle: 'Recrutement international' },
+    { valeur: 'cooperation_internationale', libelle: 'Coopération internationale' },
+    { valeur: 'developpement_international', libelle: 'Développement international' },
+    { valeur: 'action_humanitaire', libelle: 'Action humanitaire' },
+    { valeur: 'conseils_strategiques', libelle: 'Services-conseils stratégiques' },
+  ];
 
   private fb = inject(FormBuilder);
 
@@ -43,6 +51,10 @@ export class UserFormComponent implements OnInit {
     afficher_equipe_publique: this.fb.nonNullable.control(false),
     titre_public: this.fb.nonNullable.control(''),
     bio_publique: this.fb.nonNullable.control(''),
+    // Types d'affaire dans lesquels l'avocat se spécialise — sert à la
+    // suggestion d'assignation automatique des nouveaux dossiers. Vide =
+    // généraliste, éligible à tous les types dans la suggestion.
+    specialites: this.fb.nonNullable.control([] as string[]),
   });
 
   constructor(
@@ -69,6 +81,7 @@ export class UserFormComponent implements OnInit {
           afficher_equipe_publique: utilisateur.afficher_equipe_publique ?? false,
           titre_public: utilisateur.titre_public ?? '',
           bio_publique: utilisateur.bio_publique ?? '',
+          specialites: utilisateur.specialites ?? [],
         });
         this.photoUrl = utilisateur.photo_url ?? null;
       });
