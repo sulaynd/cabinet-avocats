@@ -192,8 +192,10 @@ export class DossierFormComponent implements OnInit {
       // souhaité par le client, pour éviter d'avoir à les rechercher à nouveau.
       const clientIdParam = this.route.snapshot.queryParamMap.get('client_id');
       const avocatIdParam = this.route.snapshot.queryParamMap.get('avocat_id');
+      const typeAffaireParam = this.route.snapshot.queryParamMap.get('type_affaire');
       if (clientIdParam) this.form.patchValue({ client_id: Number(clientIdParam) });
       if (avocatIdParam) this.form.patchValue({ avocat_id: Number(avocatIdParam) });
+      if (typeAffaireParam) this.form.patchValue({ type_affaire: typeAffaireParam });
 
       // Suggestion d'assignation automatique (spécialité, puis charge de
       // travail) — uniquement à la création, et seulement tant que l'admin

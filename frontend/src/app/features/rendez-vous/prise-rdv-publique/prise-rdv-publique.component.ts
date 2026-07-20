@@ -2,16 +2,9 @@ import { Component, OnInit, ViewChild, ElementRef, inject } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { Location } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RendezVousService } from '../../../core/services/rendez-vous.service';
-import { environment } from '../../../../environments/environment';
-
-interface AvocatPublic {
-  id: number;
-  name: string;
-}
 
 @Component({
   selector: 'app-prise-rdv-publique',
@@ -22,7 +15,6 @@ interface AvocatPublic {
 export class PriseRdvPubliqueComponent implements OnInit {
   @ViewChild('joursScroll') joursScroll?: ElementRef<HTMLDivElement>;
 
-  avocats: AvocatPublic[] = [];
   creneaux: string[] = [];
   creneauChoisi: string | null = null;
   jourChoisi: string | null = null;
@@ -34,18 +26,32 @@ export class PriseRdvPubliqueComponent implements OnInit {
   private fb = inject(FormBuilder);
   private location = inject(Location);
 
+  readonly typesAffaire = [
+    { valeur: 'immigration_mobilite', libelle: 'Immigration & mobilité internationale' },
+    { valeur: 'recrutement_international', libelle: 'Recrutement international' },
+    { valeur: 'cooperation_internationale', libelle: 'Coopération internationale' },
+    { valeur: 'developpement_international', libelle: 'Développement international' },
+    { valeur: 'action_humanitaire', libelle: 'Action humanitaire' },
+    { valeur: 'conseils_strategiques', libelle: 'Services-conseils stratégiques' },
+    { valeur: 'autre', libelle: 'Autre' },
+  ];
+
+  // Le client ne choisit plus l'avocat lui-même : il décrit son besoin (type
+  // de dossier et motif, tous deux obligatoires), et le cabinet assigne
+  // l'avocat le plus approprié à la confirmation, selon les disponibilités
+  // réelles de chacun.
   form = this.fb.group({
-    avocat_id: [null as number | null, Validators.required],
+    type_affaire: ['', Validators.required],
     nom: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     telephone: ['', Validators.required],
     adresse: [''],
     code_postal: [''],
     ville: [''],
-    motif: [''],
+    motif: ['', Validators.required],
   });
 
-  constructor(private rendezVousService: RendezVousService, private http: HttpClient) {}
+  constructor(private rendezVousService: RendezVousService) {}
 
   /** Ce widget est une vraie page (pas une modale) : "fermer" revient simplement
    * à la page précédente (typiquement l'écran de connexion, d'où vient l'aperçu). */
@@ -54,12 +60,9 @@ export class PriseRdvPubliqueComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Endpoint public listant les avocats du cabinet (à créer côté API si besoin ;
-    // en attendant, on peut aussi coder en dur la liste des praticiens du cabinet).
-    this.http.get<AvocatPublic[]>(`${environment.apiUrl}/public/avocats`).subscribe({
-      next: (a) => (this.avocats = a),
-      error: () => (this.avocats = []),
-    });
+    // Les créneaux sont désormais génériques (horaires du cabinet), plus
+    // besoin d'attendre le choix d'un avocat pour les charger.
+    this.chargerCreneaux();
   }
 
   /**
@@ -101,8 +104,6 @@ export class PriseRdvPubliqueComponent implements OnInit {
   }
 
   chargerCreneaux(): void {
-    const avocatId = this.form.value.avocat_id;
-    if (!avocatId) return;
     this.chargementCreneaux = true;
     this.creneauChoisi = null;
     this.jourChoisi = null;
@@ -114,7 +115,7 @@ export class PriseRdvPubliqueComponent implements OnInit {
     const debut = versDateLocale(new Date());
     const fin = versDateLocale(new Date(Date.now() + 30 * 86400000));
 
-    this.rendezVousService.creneauxDisponibles(avocatId, debut, fin).subscribe({
+    this.rendezVousService.creneauxDisponibles(debut, fin).subscribe({
       next: (c) => {
         this.creneaux = c;
         this.chargementCreneaux = false;

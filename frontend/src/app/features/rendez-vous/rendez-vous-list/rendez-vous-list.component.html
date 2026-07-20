@@ -48,7 +48,7 @@
             mat-icon-button
             *ngIf="r.statut === 'confirme' && r.client_id"
             [routerLink]="['/dossiers/nouveau']"
-            [queryParams]="{ client_id: r.client_id, avocat_id: r.avocat_id }"
+            [queryParams]="{ client_id: r.client_id, avocat_id: r.avocat_id, type_affaire: r.type_affaire }"
             title="Créer un dossier pour ce client"
           >
             <mat-icon>folder_open</mat-icon>
@@ -87,6 +87,17 @@
         <p class="permission-note">
           {{ rendezVousAConfirmer.nom }} — {{ rendezVousAConfirmer.date_heure | date: 'dd/MM/yyyy HH:mm' }}
         </p>
+        <p class="permission-note" *ngIf="rendezVousAConfirmer.motif">
+          <strong>Motif :</strong> {{ rendezVousAConfirmer.motif }}
+        </p>
+        <label>
+          Avocat assigné
+          <select required [(ngModel)]="avocatIdPopup" #champAvocat="ngModel">
+            <option [ngValue]="null">-- Choisir selon le motif et les disponibilités --</option>
+            <option *ngFor="let a of avocats" [ngValue]="a.id">{{ a.name }}</option>
+          </select>
+        </label>
+        <p class="erreur" *ngIf="!avocatIdPopup && champAvocat.touched">L'avocat assigné est obligatoire.</p>
         <label>
           Montant ($/h)
           <input type="number" step="0.01" min="0" required [(ngModel)]="montantPopup" #champMontant="ngModel" />
@@ -105,7 +116,7 @@
       </div>
       <div class="modale-pied">
         <button mat-button (click)="fermerPopupConfirmation()">Annuler</button>
-        <button mat-raised-button color="primary" [disabled]="confirmationEnCours || !montantPopup" (click)="envoyerConfirmation()">
+        <button mat-raised-button color="primary" [disabled]="confirmationEnCours || !montantPopup || !avocatIdPopup" (click)="envoyerConfirmation()">
           {{ confirmationEnCours ? 'Envoi...' : 'Envoyer la confirmation' }}
         </button>
       </div>

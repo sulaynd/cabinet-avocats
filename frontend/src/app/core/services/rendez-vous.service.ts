@@ -22,8 +22,9 @@ export class RendezVousService {
     return this.http.get<Paginated<RendezVous>>(`${this.apiUrl}/rendez-vous`, { params: params as any });
   }
 
-  confirmer(id: number, montantConsultation?: number | null, lienRencontre?: string | null, dureeMinutes?: number | null): Observable<RendezVous> {
+  confirmer(id: number, avocatId: number, montantConsultation?: number | null, lienRencontre?: string | null, dureeMinutes?: number | null): Observable<RendezVous> {
     return this.http.post<RendezVous>(`${this.apiUrl}/rendez-vous/${id}/confirmer`, {
+      avocat_id: avocatId,
       montant_consultation: montantConsultation ?? null,
       lien_rencontre: lienRencontre ?? null,
       duree_minutes: dureeMinutes ?? 60,
@@ -35,13 +36,13 @@ export class RendezVousService {
   }
 
   // --- Widget public (site vitrine, sans authentification) ---
-  creneauxDisponibles(avocatId: number, dateDebut: string, dateFin: string): Observable<string[]> {
+  creneauxDisponibles(dateDebut: string, dateFin: string): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/public/creneaux`, {
-      params: { avocat_id: avocatId, date_debut: dateDebut, date_fin: dateFin },
+      params: { date_debut: dateDebut, date_fin: dateFin },
     });
   }
 
-  reserver(payload: { nom: string; email: string; telephone?: string; motif?: string; avocat_id: number; date_heure: string }): Observable<RendezVous> {
+  reserver(payload: { nom: string; email: string; telephone?: string; motif: string; type_affaire: string; date_heure: string }): Observable<RendezVous> {
     return this.http.post<RendezVous>(`${this.apiUrl}/public/rendez-vous`, payload);
   }
 }

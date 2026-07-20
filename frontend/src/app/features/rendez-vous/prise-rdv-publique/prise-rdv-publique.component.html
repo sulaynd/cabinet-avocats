@@ -13,21 +13,20 @@
     <ng-template #formulaire>
       <form [formGroup]="form" (ngSubmit)="reserver()" class="rdv-form">
         <label>
-          Avocat souhaité
-          <select formControlName="avocat_id" (change)="chargerCreneaux()">
-            <option [ngValue]="null">-- Sélectionner --</option>
-            <option *ngFor="let a of avocats" [ngValue]="a.id">{{ a.name }}</option>
+          Type de dossier<span class="requis">*</span>
+          <select formControlName="type_affaire">
+            <option value="" disabled>-- Sélectionner --</option>
+            <option *ngFor="let t of typesAffaire" [value]="t.valeur">{{ t.libelle }}</option>
           </select>
         </label>
 
-        <ng-container *ngIf="form.value.avocat_id">
-          <div class="chargement-creneaux" *ngIf="chargementCreneaux">Chargement des créneaux...</div>
+        <div class="chargement-creneaux" *ngIf="chargementCreneaux">Chargement des créneaux...</div>
 
-          <ng-container *ngIf="!chargementCreneaux && joursDisponibles.length">
-            <label class="etiquette-etape">Choisissez un jour</label>
-            <div class="rangee-jours">
-              <button type="button" mat-icon-button class="fleche-defilement" (click)="defilerJours('gauche')">
-                <mat-icon>chevron_left</mat-icon>
+        <ng-container *ngIf="!chargementCreneaux && joursDisponibles.length">
+          <label class="etiquette-etape">Choisissez un jour</label>
+          <div class="rangee-jours">
+            <button type="button" mat-icon-button class="fleche-defilement" (click)="defilerJours('gauche')">
+              <mat-icon>chevron_left</mat-icon>
               </button>
               <div class="jours-disponibles" #joursScroll>
                 <button
@@ -71,7 +70,7 @@
             <label>Code postal (facultatif)<input type="text" formControlName="code_postal" /></label>
             <label>Ville (facultatif)<input type="text" formControlName="ville" /></label>
           </div>
-          <label>Motif de la consultation (facultatif)<textarea formControlName="motif" rows="3"></textarea></label>
+          <label>Motif de la consultation<span class="requis">*</span><textarea formControlName="motif" rows="3" placeholder="Décrivez brièvement votre besoin, pour nous aider à vous orienter vers le bon avocat."></textarea></label>
 
           <div class="avertissement-cloture" *ngIf="!creneauChoisi && joursDisponibles.length">
             <mat-icon>info</mat-icon>
@@ -83,7 +82,6 @@
           <button type="submit" class="btn-primary" [disabled]="form.invalid || !creneauChoisi || reservationEnCours">
             {{ reservationEnCours ? 'Réservation...' : 'Confirmer la demande de rendez-vous' }}
           </button>
-        </ng-container>
       </form>
     </ng-template>
   </div>

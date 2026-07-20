@@ -32,12 +32,13 @@ class RendezVousController extends Controller
         abort_if($request->user()->estStagiaire(), 403, "En tant que stagiaire, vous ne pouvez pas confirmer un rendez-vous.");
 
         $data = $request->validate([
+            'avocat_id' => 'required|exists:users,id',
             'montant_consultation' => 'required|numeric|min:0',
             'lien_rencontre' => 'nullable|string|max:500',
             'duree_minutes' => ['required', Rule::in([30, 60, 90, 120, 150, 180])],
         ]);
 
-        $rendezVous->update(['statut' => 'confirme']);
+        $rendezVous->update(['statut' => 'confirme', 'avocat_id' => $data['avocat_id']]);
 
         Mail::to($rendezVous->email)->send(
             new RendezVousConfirmeMail($rendezVous->load('avocat'), $data['montant_consultation'] ?? null, $data['lien_rencontre'] ?? null, $data['duree_minutes'])

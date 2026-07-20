@@ -119,10 +119,11 @@ class StagiairePermissionsTest extends TestCase
     public function test_assistant_peut_toujours_confirmer_un_rendez_vous(): void
     {
         $assistant = User::factory()->create(['role' => 'assistant']);
+        $avocat = User::factory()->avocat()->create();
         $rendezVous = \App\Models\RendezVousEnLigne::factory()->create(['statut' => 'demande']);
 
         $this->actingAs($assistant, 'sanctum')
-            ->postJson("/api/rendez-vous/{$rendezVous->id}/confirmer", ['montant_consultation' => 150, 'duree_minutes' => 60])
+            ->postJson("/api/rendez-vous/{$rendezVous->id}/confirmer", ['avocat_id' => $avocat->id, 'montant_consultation' => 150, 'duree_minutes' => 60])
             ->assertOk();
     }
 

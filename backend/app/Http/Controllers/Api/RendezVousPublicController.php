@@ -11,6 +11,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 /**
  * Endpoints PUBLICS (pas d'authentification) consommés par le widget de prise
@@ -27,33 +28,22 @@ class RendezVousPublicController extends Controller
     }
 
     /**
-     * Calcule les créneaux disponibles d'un avocat sur une plage de dates,
-     * en excluant les rendez-vous déjà pris et les échéances existantes.
-     * Horaires de travail simplifiés : 9h-12h30 / 14h-18h, créneaux de 30 min.
+     * Calcule les créneaux disponibles sur une plage de dates, selon les
+     * horaires standards du cabinet (9h-12h30 / 14h-18h, créneaux de 30 min).
+     * Le client ne choisissant plus d'avocat précis à cette étape (voir
+     * reserver() ci-dessous), ces créneaux restent génériques — c'est au
+     * cabinet de vérifier la disponibilité réelle de l'avocat assigné au
+     * moment de confirmer la demande.
      */
     public function creneauxDisponibles(Request $request)
     {
         $data = $request->validate([
-            'avocat_id' => 'required|exists:users,id',
             'date_debut' => 'required|date',
             'date_fin' => 'required|date|after_or_equal:date_debut',
         ]);
 
-        $avocat = User::findOrFail($data['avocat_id']);
         $debut = Carbon::parse($data['date_debut'])->startOfDay();
         $fin = Carbon::parse($data['date_fin'])->endOfDay();
-
-        $occupes = collect();
-        RendezVousEnLigne::where('avocat_id', $avocat->id)
-            ->where('statut', '!=', 'annule')
-            ->whereBetween('date_heure', [$debut, $fin])
-            ->pluck('date_heure')
-            ->each(fn ($d) => $occupes->push($d->format('Y-m-d H:i')));
-
-        Echeance::whereHas('dossier', fn ($q) => $q->where('avocat_id', $avocat->id)->orWhere('assistant_id', $avocat->id))
-            ->whereBetween('date_heure', [$debut, $fin])
-            ->pluck('date_heure')
-            ->each(fn ($d) => $occupes->push(Carbon::parse($d)->format('Y-m-d H:i')));
 
         $creneaux = [];
         for ($jour = $debut->copy(); $jour->lte($fin); $jour->addDay()) {
@@ -66,7 +56,7 @@ class RendezVousPublicController extends Controller
                 $limite = $jour->copy()->setTimeFromTimeString($h2);
 
                 while ($curseur->lt($limite)) {
-                    if ($curseur->gt(now()) && ! $occupes->contains($curseur->format('Y-m-d H:i'))) {
+                    if ($curseur->gt(now())) {
                         $creneaux[] = $curseur->toIso8601String();
                     }
                     $curseur->addMinutes(30);
@@ -79,7 +69,9 @@ class RendezVousPublicController extends Controller
 
     /**
      * Réserve un créneau : crée (ou retrouve) automatiquement la fiche client,
-     * enregistre la demande de rendez-vous, et envoie un email de confirmation.
+     * enregistre la demande de rendez-vous (sans avocat assigné — voir
+     * RendezVousController::confirmer() pour l'assignation par le cabinet),
+     * et envoie un email de confirmation.
      */
     public function reserver(Request $request)
     {
@@ -90,19 +82,13 @@ class RendezVousPublicController extends Controller
             'adresse' => 'nullable|string|max:255',
             'code_postal' => 'nullable|string|max:20',
             'ville' => 'nullable|string|max:255',
-            'motif' => 'nullable|string|max:255',
-            'avocat_id' => 'required|exists:users,id',
+            'type_affaire' => ['required', Rule::in([
+                'immigration_mobilite', 'recrutement_international', 'cooperation_internationale',
+                'developpement_international', 'action_humanitaire', 'conseils_strategiques', 'autre',
+            ])],
+            'motif' => 'required|string|max:255',
             'date_heure' => 'required|date|after:now',
         ]);
-
-        $conflit = RendezVousEnLigne::where('avocat_id', $data['avocat_id'])
-            ->where('date_heure', $data['date_heure'])
-            ->where('statut', '!=', 'annule')
-            ->exists();
-
-        if ($conflit) {
-            return response()->json(['message' => "Ce créneau vient d'être réservé, merci d'en choisir un autre."], 409);
-        }
 
         // Recherche une fiche client existante par email, sinon en crée une automatiquement.
         [$prenom, $nom] = array_pad(explode(' ', $data['nom'], 2), 2, '');
@@ -123,15 +109,16 @@ class RendezVousPublicController extends Controller
             'nom' => $data['nom'],
             'email' => $data['email'],
             'telephone' => $data['telephone'] ?? null,
-            'motif' => $data['motif'] ?? null,
-            'avocat_id' => $data['avocat_id'],
+            'motif' => $data['motif'],
+            'type_affaire' => $data['type_affaire'],
+            'avocat_id' => null,
             'client_id' => $client->id,
             'date_heure' => $data['date_heure'],
             'statut' => 'demande',
         ]);
 
-        Mail::to($data['email'])->send(new ConfirmationRendezVousMail($rendezVous->load('avocat')));
+        Mail::to($data['email'])->send(new ConfirmationRendezVousMail($rendezVous));
 
-        return response()->json($rendezVous->load('avocat'), 201);
+        return response()->json($rendezVous, 201);
     }
 }

@@ -36,7 +36,8 @@
       <mat-option *ngFor="let t of typesAffaire" [value]="t.valeur">{{ t.libelle }}</mat-option>
     </mat-select>
   </mat-form-field>
-  <p class="permission-note" *ngIf="form.value.role === 'avocat'" style="margin: 0 0 20px;">
+  <p class="bandeau-suggestion" *ngIf="form.value.role === 'avocat'">
+    <mat-icon>info</mat-icon>
     Utilisées pour suggérer cet avocat en priorité à la création d'un dossier de ce type — laisser vide pour un généraliste.
   </p>
 

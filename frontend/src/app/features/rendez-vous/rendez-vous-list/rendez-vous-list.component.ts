@@ -9,6 +9,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { RendezVousService } from '../../../core/services/rendez-vous.service';
+import { UserService } from '../../../core/services/user.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { RendezVous } from '../../../core/models/rendez-vous.model';
@@ -36,12 +37,14 @@ export class RendezVousListComponent implements OnInit, AfterViewInit {
 
   constructor(
     private rendezVousService: RendezVousService,
+    private userService: UserService,
     private notification: NotificationService,
     private confirmService: ConfirmService
   ) {}
 
   ngOnInit(): void {
     this.charger();
+    this.userService.liste({ role: 'avocat', per_page: 100 }).subscribe((res) => (this.avocats = res.data));
   }
 
   ngAfterViewInit(): void {
@@ -77,6 +80,8 @@ export class RendezVousListComponent implements OnInit, AfterViewInit {
   montantPopup: number | null = null;
   lienPopup = '';
   dureePopup = 60;
+  avocatIdPopup: number | null = null;
+  avocats: { id: number; name: string }[] = [];
 
   readonly optionsDuree = [
     { valeur: 30, libelle: '30 minutes' },
@@ -93,6 +98,7 @@ export class RendezVousListComponent implements OnInit, AfterViewInit {
     this.montantPopup = null;
     this.lienPopup = '';
     this.dureePopup = 60;
+    this.avocatIdPopup = null;
   }
 
   fermerPopupConfirmation(): void {
@@ -100,10 +106,10 @@ export class RendezVousListComponent implements OnInit, AfterViewInit {
   }
 
   envoyerConfirmation(): void {
-    if (!this.rendezVousAConfirmer || !this.montantPopup) return;
+    if (!this.rendezVousAConfirmer || !this.montantPopup || !this.avocatIdPopup) return;
     this.confirmationEnCours = true;
 
-    this.rendezVousService.confirmer(this.rendezVousAConfirmer.id, this.montantPopup, this.lienPopup, this.dureePopup).subscribe({
+    this.rendezVousService.confirmer(this.rendezVousAConfirmer.id, this.avocatIdPopup, this.montantPopup, this.lienPopup, this.dureePopup).subscribe({
       next: () => {
         this.confirmationEnCours = false;
         this.notification.succes('Rendez-vous confirmé.');

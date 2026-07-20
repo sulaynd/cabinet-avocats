@@ -10,15 +10,13 @@
     <p>Votre demande de consultation a bien été enregistrée :</p>
 
     <ul>
-        <li><strong>Avec :</strong> {{ $rendezVous->avocat->name }}</li>
         <li><strong>Date :</strong> {{ $rendezVous->date_heure->translatedFormat('l d F Y à H:i') }}</li>
-        @if ($rendezVous->motif)
-            <li><strong>Motif :</strong> {{ $rendezVous->motif }}</li>
-        @endif
+        <li><strong>Motif :</strong> {{ $rendezVous->motif }}</li>
     </ul>
 
-    <p>Un membre du cabinet confirmera ce rendez-vous dans les plus brefs délais. Vous recevrez
-        un nouvel email de confirmation définitive.</p>
+    <p>Un membre du cabinet examinera votre demande et vous assignera l'avocat le plus approprié
+        selon votre besoin, puis confirmera ce rendez-vous dans les plus brefs délais. Vous recevrez
+        un nouvel email de confirmation définitive, précisant l'avocat qui vous accompagnera.</p>
 
     <p style="margin-top:30px; color:#8B93A1; font-size:12px;">
         {{ $cabinet->nom }} — {{ $cabinet->adresse }} — {{ $cabinet->telephone }}

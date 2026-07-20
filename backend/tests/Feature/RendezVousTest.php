@@ -29,10 +29,12 @@ class RendezVousTest extends TestCase
     {
         Mail::fake();
         $admin = User::factory()->admin()->create();
+        $avocat = User::factory()->avocat()->create();
         $rdv = RendezVousEnLigne::factory()->create();
 
         $this->actingAs($admin, 'sanctum')
             ->postJson("/api/rendez-vous/{$rdv->id}/confirmer", [
+                'avocat_id' => $avocat->id,
                 'montant_consultation' => 200,
                 'lien_rencontre' => 'https://meet.google.com/abc-defg-hij',
                 'duree_minutes' => 90,
@@ -40,6 +42,7 @@ class RendezVousTest extends TestCase
             ->assertOk();
 
         $this->assertEquals('confirme', $rdv->fresh()->statut);
+        $this->assertEquals($avocat->id, $rdv->fresh()->avocat_id);
         Mail::assertSent(RendezVousConfirmeMail::class, fn ($mail) => $mail->montantConsultation === 200.0 && $mail->dureeMinutes === 90);
     }
 
@@ -47,9 +50,11 @@ class RendezVousTest extends TestCase
     {
         Mail::fake();
         $admin = User::factory()->admin()->create();
+        $avocat = User::factory()->avocat()->create();
         $rdv = RendezVousEnLigne::factory()->create();
 
         $this->actingAs($admin, 'sanctum')->postJson("/api/rendez-vous/{$rdv->id}/confirmer", [
+            'avocat_id' => $avocat->id,
             'montant_consultation' => 150,
             'lien_rencontre' => 'https://teams.microsoft.com/xyz',
             'duree_minutes' => 60,

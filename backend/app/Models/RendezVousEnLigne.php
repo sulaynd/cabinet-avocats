@@ -13,7 +13,7 @@ class RendezVousEnLigne extends Model
     protected $table = 'rendezvous_en_ligne';
 
     protected $fillable = [
-        'nom', 'email', 'telephone', 'motif', 'avocat_id', 'client_id', 'date_heure', 'statut', 'montant_consultation',
+        'nom', 'email', 'telephone', 'motif', 'type_affaire', 'avocat_id', 'client_id', 'date_heure', 'statut',
     ];
 
     protected $casts = [

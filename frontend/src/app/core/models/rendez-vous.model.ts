@@ -7,9 +7,10 @@ export interface RendezVous {
   nom: string;
   email: string;
   telephone?: string;
-  motif?: string;
-  avocat_id: number;
-  avocat?: Avocat;
+  motif: string;
+  type_affaire: string;
+  avocat_id: number | null;
+  avocat?: Avocat | null;
   client_id?: number;
   date_heure: string;
   statut: StatutRendezVous;
