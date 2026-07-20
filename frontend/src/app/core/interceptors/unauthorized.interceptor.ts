@@ -8,15 +8,17 @@ import { catchError, throwError } from 'rxjs';
  * l'API renvoie 401 en cours d'utilisation (token expiré/révoqué), on nettoie
  * la session locale et on renvoie immédiatement vers /connexion, plutôt que
  * de laisser l'écran dans un état incohérent (données à moitié chargées).
- * Ne s'applique pas aux routes /portail/ (gérées par leur propre intercepteur/guard)
- * ni à /public/ ou aux liens à jeton, qui n'ont pas de notion de session à expirer.
+ * Ne s'applique pas aux routes /portail/ ou /collaborateur/ (chacune gérée
+ * par son propre intercepteur/guard) ni à /public/ ou aux liens à jeton, qui
+ * n'ont pas de notion de session à expirer.
  */
 export const unauthorizedInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   return next(req).pipe(
     catchError((erreur) => {
-      const estRoutePortailOuPublique = req.url.includes('/portail/') || req.url.includes('/public/');
+      const estRoutePortailOuPublique =
+        req.url.includes('/portail/') || req.url.includes('/public/') || req.url.includes('/collaborateur/');
 
       if (erreur.status === 401 && !estRoutePortailOuPublique && !req.url.includes('/login')) {
         localStorage.removeItem('token');

@@ -50,8 +50,8 @@ class DossierController extends Controller
             'avocat_id' => $meilleur['id'],
             'nom' => $meilleur['nom'],
             'raison' => $meilleur['specialise']
-                ? "Spécialisé dans ce type d'affaire, {$meilleur['nb_dossiers_ouverts']} dossier(s) ouvert(s) actuellement."
-                : "Aucun avocat spécialisé trouvé — suggestion basée sur la charge de travail ({$meilleur['nb_dossiers_ouverts']} dossier(s) ouvert(s)).",
+                ? "{$meilleur['nom']} est spécialisé dans ce type d'affaire, {$meilleur['nb_dossiers_ouverts']} dossier(s) ouvert(s) actuellement."
+                : "Aucun avocat spécialisé trouvé — {$meilleur['nom']} suggéré selon sa charge de travail ({$meilleur['nb_dossiers_ouverts']} dossier(s) ouvert(s)).",
         ]);
     }
 

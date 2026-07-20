@@ -20,13 +20,19 @@
     <input matInput formControlName="titre" />
   </mat-form-field>
 
+  <mat-form-field appearance="outline" class="champ-pleine-largeur">
+    <mat-label>Type d'affaire</mat-label>
+    <mat-select formControlName="type_affaire">
+      <mat-option *ngFor="let t of typesAffaire" [value]="t.valeur">{{ t.libelle }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
   <div class="ligne-champs">
     <mat-form-field appearance="outline">
       <mat-label>Avocat responsable</mat-label>
       <mat-select formControlName="avocat_id">
         <mat-option *ngFor="let avocat of avocats" [value]="avocat.id">{{ avocat.name }}</mat-option>
       </mat-select>
-      <mat-hint *ngIf="suggestionAvocat">Suggestion : {{ suggestionAvocat.raison }}</mat-hint>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
@@ -45,6 +51,10 @@
       </mat-select>
     </mat-form-field>
   </div>
+  <p class="bandeau-suggestion" *ngIf="suggestionAvocat">
+    <mat-icon>info</mat-icon>
+    Suggestion : {{ suggestionAvocat.raison }}
+  </p>
   <p class="permission-note" *ngIf="!peutAssigner && dossierId">
     L'assignation d'un dossier existant est réservée à l'administrateur.
   </p>
@@ -52,13 +62,6 @@
   <mat-checkbox formControlName="envoyer_questionnaire_accueil" *ngIf="!dossierId">
     Envoyer automatiquement un questionnaire de pré-consultation au client
   </mat-checkbox>
-
-  <mat-form-field appearance="outline" class="champ-pleine-largeur">
-    <mat-label>Type d'affaire</mat-label>
-    <mat-select formControlName="type_affaire">
-      <mat-option *ngFor="let t of typesAffaire" [value]="t.valeur">{{ t.libelle }}</mat-option>
-    </mat-select>
-  </mat-form-field>
 
   <div class="ligne-champs">
     <mat-form-field appearance="outline">

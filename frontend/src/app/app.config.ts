@@ -19,7 +19,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     { provide: LOCALE_ID, useValue: 'fr-CA' },
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor, portailAuthInterceptor, unauthorizedInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, portailAuthInterceptor, collaborateurAuthInterceptor, unauthorizedInterceptor])),
     provideAnimationsAsync(),
   ],
 };

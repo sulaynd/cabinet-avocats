@@ -374,6 +374,14 @@ tr.ligne-en-attente:hover td[mat-cell] { background: #ede2c4 !important; }
   color: #3F7A4E !important;
 }
 .bouton-ajouter-vert:hover { background: #EAF5EC !important; }
+
+.bandeau-suggestion {
+  display: flex; align-items: center; gap: 8px;
+  background: #EAF5EC; color: #3F7A4E;
+  padding: 10px 16px; border-radius: 4px;
+  font-size: 13px; margin: 0 0 20px;
+}
+.bandeau-suggestion mat-icon { font-size: 18px; width: 18px; height: 18px; flex: none; }
 .modale-tete { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .modale-tete h3 { margin: 0; font-size: 17px; }
 .modale-fermer { background: none; border: none; font-size: 19px; color: var(--slate); line-height: 1; cursor: pointer; }
