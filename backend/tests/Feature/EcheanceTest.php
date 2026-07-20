@@ -164,4 +164,23 @@ class EcheanceTest extends TestCase
 
         $this->assertCount(0, $reponse->json());
     }
+
+    public function test_la_date_heure_renvoyee_correspond_exactement_a_celle_saisie(): void
+    {
+        // Reproduit le bug réel : Carbon convertit par défaut en UTC lors de
+        // la sérialisation JSON (suffixe "Z"), décalant l'heure affichée par
+        // rapport à celle réellement saisie par l'utilisateur.
+        $admin = User::factory()->admin()->create();
+        $dossier = Dossier::factory()->create();
+
+        $reponse = $this->actingAs($admin, 'sanctum')->postJson('/api/echeances', [
+            'dossier_id' => $dossier->id,
+            'titre' => 'Test heure',
+            'type' => 'audience',
+            'date_heure' => '2026-07-21T10:00',
+            'statut' => 'a_venir',
+        ])->assertCreated();
+
+        $this->assertEquals('2026-07-21T10:00:00', $reponse->json('date_heure'));
+    }
 }

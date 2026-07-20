@@ -7,7 +7,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { EcheanceService } from '../../../core/services/echeance.service';
+import { merge, debounceTime, switchMap, of } from 'rxjs';
 import { DossierService } from '../../../core/services/dossier.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Dossier } from '../../../core/models/dossier.model';
@@ -19,6 +22,7 @@ import { Echeance } from '../../../core/models/echeance.model';
   imports: [
     CommonModule, ReactiveFormsModule,
     MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule,
+    MatDatepickerModule, MatNativeDateModule,
   ],
   templateUrl: './echeance-form.component.html',
 })
@@ -47,7 +51,11 @@ export class EcheanceFormComponent implements OnInit {
     dossier_id: this.fb.control(null as number | null, Validators.required),
     titre: this.fb.nonNullable.control('', Validators.required),
     type: this.fb.nonNullable.control('audience', Validators.required),
-    date_heure: this.fb.nonNullable.control('', Validators.required),
+    // Date (calendrier) et heure (sélecteur natif avec flèches) séparés —
+    // plutôt qu'un champ datetime-local unique, plus sujet aux erreurs de
+    // frappe (jour/mois/heure mélangés en tapant vite).
+    date_jour: this.fb.control(null as Date | null, Validators.required),
+    heure: this.fb.nonNullable.control('', Validators.required),
     lieu: this.fb.nonNullable.control(''),
     rappel_avant: [4320 as number | null],
   });
@@ -72,35 +80,83 @@ export class EcheanceFormComponent implements OnInit {
     if (idParam) {
       this.echeanceId = Number(idParam);
       this.echeanceService.obtenir(this.echeanceId).subscribe((echeance) => {
+        // "2026-07-21T10:30:00" → date_jour = Date(2026-07-21), heure = "10:30".
+        const [partieDate, partieHeure] = echeance.date_heure.split('T');
         this.form.patchValue({
           dossier_id: echeance.dossier_id,
           titre: echeance.titre,
           type: echeance.type,
-          date_heure: echeance.date_heure.substring(0, 16),
+          date_jour: this.parseLocalDate(partieDate),
+          heure: partieHeure.substring(0, 5),
           lieu: echeance.lieu ?? '',
           rappel_avant: echeance.rappel_avant ?? null,
         });
+        // patchValue seul ne suffit pas à révéler un conflit déjà existant à
+        // l'ouverture (les écouteurs ci-dessous ne réagissent qu'à un
+        // changement ultérieur) — on vérifie donc aussi une fois ici.
+        this.verifierConflits();
       });
     }
 
-    // Vérifie les conflits d'horaire dès que le dossier, la date/heure ou le
-    // type change — avertit sans jamais bloquer l'enregistrement, au cas où
-    // le double engagement serait volontaire (ex: un bref suivi téléphonique).
-    ['dossier_id', 'date_heure', 'type'].forEach((champ) => {
-      this.form.get(champ)?.valueChanges.subscribe(() => this.verifierConflits());
-    });
+    // Vérifie les conflits d'horaire dès que le dossier, la date, l'heure ou
+    // le type change — avertit sans jamais bloquer l'enregistrement, au cas
+    // où le double engagement serait volontaire (ex: un bref suivi
+    // téléphonique). debounceTime + switchMap : en tapant/choisissant vite,
+    // plusieurs requêtes partiraient sinon en rafale, et une réponse plus
+    // ancienne (avec une date encore incomplète) pourrait arriver après la
+    // bonne et effacer le résultat correct à l'écran.
+    merge(
+      this.form.get('dossier_id')!.valueChanges,
+      this.form.get('date_jour')!.valueChanges,
+      this.form.get('heure')!.valueChanges,
+      this.form.get('type')!.valueChanges
+    )
+      .pipe(
+        debounceTime(300),
+        switchMap(() => {
+          const dateHeure = this.combinerDateHeure();
+          const { dossier_id, type } = this.form.value;
+          if (!dossier_id || !dateHeure || (type !== 'audience' && type !== 'rdv_client')) {
+            this.conflitsDetectes = [];
+            return of(null);
+          }
+          this.verificationConflitsEnCours = true;
+          return this.echeanceService.verifierConflits(dossier_id, dateHeure, this.echeanceId);
+        })
+      )
+      .subscribe((conflits) => {
+        this.verificationConflitsEnCours = false;
+        if (conflits) this.conflitsDetectes = conflits;
+      });
+  }
+
+  /** Combine date_jour (Date) + heure ("HH:mm") en chaîne "YYYY-MM-DDTHH:mm",
+   * sans jamais passer par toISOString() (qui convertirait en UTC). */
+  private combinerDateHeure(): string | null {
+    const { date_jour, heure } = this.form.value;
+    if (!date_jour || !heure) return null;
+
+    const d = date_jour as Date;
+    const jour = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return `${jour}T${heure}`;
+  }
+
+  private parseLocalDate(chaineISO: string): Date {
+    const [annee, mois, jour] = chaineISO.split('-').map(Number);
+    return new Date(annee, mois - 1, jour);
   }
 
   verifierConflits(): void {
-    const { dossier_id, date_heure, type } = this.form.value;
+    const dateHeure = this.combinerDateHeure();
+    const { dossier_id, type } = this.form.value;
     this.conflitsDetectes = [];
 
-    if (!dossier_id || !date_heure || (type !== 'audience' && type !== 'rdv_client')) {
+    if (!dossier_id || !dateHeure || (type !== 'audience' && type !== 'rdv_client')) {
       return;
     }
 
     this.verificationConflitsEnCours = true;
-    this.echeanceService.verifierConflits(dossier_id, date_heure, this.echeanceId).subscribe({
+    this.echeanceService.verifierConflits(dossier_id, dateHeure, this.echeanceId).subscribe({
       next: (conflits) => {
         this.verificationConflitsEnCours = false;
         this.conflitsDetectes = conflits;
@@ -116,10 +172,10 @@ export class EcheanceFormComponent implements OnInit {
   soumettre(): void {
     if (this.form.invalid) return;
     this.enregistrement = true;
-    // Cast : dossier_id est `number | null` côté formulaire (nul tant que rien
-    // n'est sélectionné), mais Validators.required + le garde ci-dessus
-    // garantissent qu'il est bien renseigné à ce stade.
-    const data = this.form.value as Partial<Echeance>;
+
+    const dateHeure = this.combinerDateHeure();
+    const { dossier_id, titre, type, lieu, rappel_avant } = this.form.value;
+    const data = { dossier_id, titre, type, date_heure: dateHeure, lieu, rappel_avant } as unknown as Partial<Echeance>;
 
     const requete = this.echeanceId
       ? this.echeanceService.modifier(this.echeanceId, data)

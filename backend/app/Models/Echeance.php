@@ -19,6 +19,19 @@ class Echeance extends Model
         'rappel_envoye' => 'boolean',
     ];
 
+    /**
+     * Par défaut, Carbon convertit systématiquement en UTC lors de la
+     * sérialisation JSON (suffixe "Z"), même quand l'app utilise un fuseau
+     * local (America/Toronto). Ce champ représente une heure murale locale
+     * saisie telle quelle par l'utilisateur — on la restitue exactement sans
+     * conversion, pour que le frontend affiche toujours l'heure réellement
+     * saisie, peu importe l'écran.
+     */
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d\TH:i:s');
+    }
+
     public function dossier(): BelongsTo
     {
         return $this->belongsTo(Dossier::class);
