@@ -19,11 +19,12 @@ class CabinetSettingController extends Controller
         return response()->json(CabinetSetting::coordonneesPubliques());
     }
 
-    /** Coordonnées complètes — réservé à l'admin, pour l'écran de paramètres. */
+    /** Coordonnées complètes — tout le personnel authentifié peut consulter
+     * (ex: le taux horaire par défaut du cabinet, nécessaire pour savoir si
+     * le taux horaire d'un dossier est réellement obligatoire) ; seule la
+     * modification reste réservée à l'admin (voir update() ci-dessous). */
     public function show(Request $request)
     {
-        abort_unless($request->user()->role === 'admin', 403, 'Réservé aux administrateurs.');
-
         return response()->json(CabinetSetting::instance());
     }
 

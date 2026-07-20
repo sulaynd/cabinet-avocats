@@ -15,6 +15,7 @@ import { ClientService } from '../../../core/services/client.service';
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { CabinetSettingService } from '../../../core/services/cabinet-setting.service';
 import { Client } from '../../../core/models/client.model';
 import { Dossier } from '../../../core/models/dossier.model';
 import { Utilisateur } from '../../../core/models/user.model';
@@ -38,6 +39,8 @@ export class DossierFormComponent implements OnInit {
   enregistrement = false;
 
   private tauxHoraireModifieManuellement = false;
+  tauxHoraireObligatoire = false;
+  private tauxHoraireCabinet: number | null = null;
   private avocatModifieManuellement = false;
   suggestionAvocat: { nom: string; raison: string } | null = null;
 
@@ -98,6 +101,7 @@ export class DossierFormComponent implements OnInit {
     private userService: UserService,
     public auth: AuthService,
     private notification: NotificationService,
+    private cabinetSettingService: CabinetSettingService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -114,6 +118,8 @@ export class DossierFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.cabinetSettingService.obtenir().subscribe((c) => (this.tauxHoraireCabinet = c.taux_horaire_defaut ?? null));
+
     this.clientService.liste({ per_page: 100 }).subscribe((res) => (this.clients = res.data));
     // Le champ "avocat responsable" ne propose que les utilisateurs de rôle avocat ;
     // le champ "assistant traitant" (facultatif) ne propose que le rôle assistant.
@@ -126,6 +132,20 @@ export class DossierFormComponent implements OnInit {
 
     this.form.get('avocat_id')?.valueChanges.subscribe((avocatId) => {
       this.avocatModifieManuellement = true;
+      this.suggestionAvocat = null;
+
+      // Revérifie quand même la suggestion pour ce type d'affaire : si le
+      // choix manuel correspond exactement à ce que le système aurait
+      // suggéré, on réaffiche la bannière informative (sans jamais
+      // ré-imposer/écraser une sélection différente).
+      const typeAffaireActuel = this.form.value.type_affaire;
+      if (typeAffaireActuel && avocatId) {
+        this.dossierService.suggererAvocat(typeAffaireActuel).subscribe((suggestion) => {
+          if (suggestion.avocat_id === avocatId) {
+            this.suggestionAvocat = { nom: suggestion.nom ?? '', raison: suggestion.raison ?? '' };
+          }
+        });
+      }
 
       const avocat = this.avocats.find((a) => a.id === avocatId);
       const tauxParDefaut = avocat?.taux_horaire_defaut;
@@ -138,10 +158,18 @@ export class DossierFormComponent implements OnInit {
           controleTaux?.setValue(tauxParDefaut, { emitEvent: false });
         }
         controleTaux?.clearValidators();
+        this.tauxHoraireObligatoire = false;
+      } else if (this.tauxHoraireCabinet) {
+        // Ni le dossier ni l'avocat n'ont de taux — mais le cabinet a un taux
+        // par défaut en dernier recours (voir Paramètres) : la facture ne
+        // sera donc jamais à 0$ même sans saisie ici, le champ reste facultatif.
+        controleTaux?.clearValidators();
+        this.tauxHoraireObligatoire = false;
       } else {
-        // Aucun taux par défaut pour cet avocat : la saisie devient obligatoire,
-        // pour éviter une facture calculée à 0$ faute de taux nulle part.
+        // Aucun taux nulle part (ni dossier, ni avocat, ni cabinet) : la
+        // saisie devient obligatoire, pour éviter une facture à 0$.
         controleTaux?.setValidators(Validators.required);
+        this.tauxHoraireObligatoire = true;
       }
       controleTaux?.updateValueAndValidity({ emitEvent: false });
     });

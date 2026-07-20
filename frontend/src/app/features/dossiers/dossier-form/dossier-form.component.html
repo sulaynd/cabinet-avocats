@@ -73,7 +73,7 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" *ngIf="form.value.mode_facturation === 'horaire'">
-      <mat-label>Taux horaire du dossier ($/h, facultatif)</mat-label>
+      <mat-label>Taux horaire du dossier ($/h{{ tauxHoraireObligatoire ? ' — obligatoire, aucun taux par défaut (ni avocat, ni cabinet)' : ', facultatif' }})</mat-label>
       <input matInput type="number" step="0.01" formControlName="taux_horaire" placeholder="Défaut : taux de l'intervenant" />
     </mat-form-field>
 
