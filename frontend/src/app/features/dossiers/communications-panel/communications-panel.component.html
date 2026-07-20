@@ -1,7 +1,7 @@
 <div class="communications-panel">
   <div class="section-entete">
     <h3>Historique des communications</h3>
-    <button mat-button (click)="afficherFormulaire = !afficherFormulaire">
+    <button mat-stroked-button [class.bouton-ajouter-vert]="!afficherFormulaire" (click)="afficherFormulaire = !afficherFormulaire">
       <mat-icon>{{ afficherFormulaire ? 'close' : 'add' }}</mat-icon>
       {{ afficherFormulaire ? 'Annuler' : 'Ajouter une communication' }}
     </button>

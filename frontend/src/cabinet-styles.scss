@@ -367,6 +367,13 @@ tr.ligne-en-attente:hover td[mat-cell] { background: #ede2c4 !important; }
 /* ---- Modales génériques ---- */
 .overlay { position: fixed; inset: 0; background: rgba(20,24,30,.55); display: flex; align-items: center; justify-content: safe center; z-index: 40; padding: 24px; }
 .modale { background: var(--card); width: 480px; max-width: 100%; max-height: 90vh; overflow: auto; border-radius: 2px; }
+.modale-large { width: 600px; }
+
+.bouton-ajouter-vert {
+  border-color: #6FAE7C !important;
+  color: #3F7A4E !important;
+}
+.bouton-ajouter-vert:hover { background: #EAF5EC !important; }
 .modale-tete { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .modale-tete h3 { margin: 0; font-size: 17px; }
 .modale-fermer { background: none; border: none; font-size: 19px; color: var(--slate); line-height: 1; cursor: pointer; }

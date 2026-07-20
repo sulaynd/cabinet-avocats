@@ -79,7 +79,7 @@
   <section class="section-dossier">
     <div class="section-entete">
       <h3>Échéances</h3>
-      <a mat-button *ngIf="dossier.statut !== 'clos'" [routerLink]="['/echeances/nouvelle']" [queryParams]="{ dossier_id: dossier.id }">
+      <a mat-stroked-button class="bouton-ajouter-vert" *ngIf="dossier.statut !== 'clos'" [routerLink]="['/echeances/nouvelle']" [queryParams]="{ dossier_id: dossier.id }">
         <mat-icon>add</mat-icon> Ajouter une échéance
       </a>
     </div>
@@ -127,7 +127,7 @@
   <section class="section-dossier">
     <div class="section-entete">
       <h3>Intervenants externes</h3>
-      <button mat-button (click)="ouvrirFormulaireIntervenant()">
+      <button mat-stroked-button class="bouton-ajouter-vert" (click)="ouvrirFormulaireIntervenant()">
         <mat-icon>person_add</mat-icon> Ajouter un intervenant
       </button>
     </div>
@@ -162,62 +162,63 @@
       </tbody>
     </table>
     <ng-template #aucunIntervenant>
-      <p>Aucun intervenant externe enregistré pour ce dossier (avocat adverse, expert, greffier...).</p>
+      <p class="vide">Aucun intervenant externe enregistré pour ce dossier (avocat adverse, expert, greffier…).</p>
     </ng-template>
   </section>
 
   <div class="overlay" *ngIf="formulaireIntervenantOuvert" (click)="fermerFormulaireIntervenant()">
-    <div class="modale" (click)="$event.stopPropagation()">
-      <h3>{{ intervenantEnEdition ? 'Modifier' : 'Ajouter' }} un intervenant</h3>
+    <div class="modale modale-large" (click)="$event.stopPropagation()">
+      <div class="modale-tete">
+        <h3>{{ intervenantEnEdition ? 'Modifier' : 'Ajouter' }} un intervenant</h3>
+        <button mat-icon-button (click)="fermerFormulaireIntervenant()" title="Fermer">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modale-corps">
+        <ng-container *ngIf="!intervenantEnEdition">
+          <label>
+            Rechercher un intervenant déjà existant (répertoire du cabinet)
+            <input type="text" [(ngModel)]="rechercheIntervenant" (ngModelChange)="rechercherIntervenant()" placeholder="Nom ou organisation..." />
+          </label>
+          <ul class="resultats-recherche-intervenant" *ngIf="resultatsRechercheIntervenant.length">
+            <li *ngFor="let r of resultatsRechercheIntervenant" (click)="lierIntervenantExistant(r)">
+              <strong>{{ r.nom }}</strong> — {{ libelleFonctionIntervenant(r.fonction) }}
+              <span *ngIf="r.organisation">({{ r.organisation }})</span>
+            </li>
+          </ul>
+          <p class="permission-note" *ngIf="rechercheIntervenant.length >= 2 && !rechercheIntervenantEnCours && !resultatsRechercheIntervenant.length">
+            Aucun résultat — remplissez le formulaire ci-dessous pour en créer un nouveau.
+          </p>
+          <hr />
+          <p class="permission-note" style="margin-bottom: 14px;">Ou créer un nouvel intervenant :</p>
+        </ng-container>
 
-      <ng-container *ngIf="!intervenantEnEdition">
-        <label>
-          Rechercher un intervenant déjà existant (répertoire du cabinet)
-          <input type="text" [(ngModel)]="rechercheIntervenant" (ngModelChange)="rechercherIntervenant()" placeholder="Nom ou organisation..." />
-        </label>
-        <ul class="resultats-recherche-intervenant" *ngIf="resultatsRechercheIntervenant.length">
-          <li *ngFor="let r of resultatsRechercheIntervenant" (click)="lierIntervenantExistant(r)">
-            <strong>{{ r.nom }}</strong> — {{ libelleFonctionIntervenant(r.fonction) }}
-            <span *ngIf="r.organisation">({{ r.organisation }})</span>
-          </li>
-        </ul>
-        <p class="permission-note" *ngIf="rechercheIntervenant.length >= 2 && !rechercheIntervenantEnCours && !resultatsRechercheIntervenant.length">
-          Aucun résultat — remplissez le formulaire ci-dessous pour en créer un nouveau.
+        <p class="permission-note" *ngIf="intervenantEnEdition" style="margin-bottom: 14px;">
+          Cette fiche est partagée — la modifier changera aussi son affichage sur les autres dossiers où elle est liée.
         </p>
-        <hr />
-        <p class="permission-note">Ou créer un nouvel intervenant :</p>
-      </ng-container>
 
-      <p class="permission-note" *ngIf="intervenantEnEdition">
-        Cette fiche est partagée — la modifier changera aussi son affichage sur les autres dossiers où elle est liée.
-      </p>
-
-      <label>
-        Nom
-        <input type="text" [(ngModel)]="intervenantForm.nom" placeholder="Ex: Me Tremblay" />
-      </label>
-      <label>
-        Fonction
-        <select [(ngModel)]="intervenantForm.fonction">
-          <option *ngFor="let f of fonctionsIntervenant" [value]="f.valeur">{{ f.libelle }}</option>
-        </select>
-      </label>
-      <label>
-        Organisation (facultatif)
-        <input type="text" [(ngModel)]="intervenantForm.organisation" placeholder="Ex: Cabinet Tremblay & Associés" />
-      </label>
-      <label>
-        Email (facultatif)
-        <input type="email" [(ngModel)]="intervenantForm.email" />
-      </label>
-      <label>
-        Téléphone (facultatif)
-        <input type="text" [(ngModel)]="intervenantForm.telephone" />
-      </label>
-      <label>
-        Notes (facultatif)
-        <textarea rows="2" [(ngModel)]="intervenantForm.notes"></textarea>
-      </label>
+        <div class="ligne-champs-membre">
+          <label>Nom<input type="text" [(ngModel)]="intervenantForm.nom" placeholder="Ex: Me Tremblay" /></label>
+          <label>
+            Fonction
+            <select [(ngModel)]="intervenantForm.fonction">
+              <option *ngFor="let f of fonctionsIntervenant" [value]="f.valeur">{{ f.libelle }}</option>
+            </select>
+          </label>
+        </div>
+        <div class="ligne-champs-membre">
+          <label>Organisation (facultatif)<input type="text" [(ngModel)]="intervenantForm.organisation" placeholder="Ex: Cabinet Tremblay & Associés" /></label>
+          <label>Email (facultatif)<input type="email" [(ngModel)]="intervenantForm.email" /></label>
+        </div>
+        <label>
+          Téléphone (facultatif)
+          <input type="text" [(ngModel)]="intervenantForm.telephone" />
+        </label>
+        <label>
+          Notes (facultatif)
+          <textarea rows="2" [(ngModel)]="intervenantForm.notes"></textarea>
+        </label>
+      </div>
       <div class="modale-pied">
         <button mat-button (click)="fermerFormulaireIntervenant()">Annuler</button>
         <button mat-raised-button color="primary" (click)="enregistrerIntervenant()">Enregistrer</button>
@@ -229,7 +230,7 @@
   <section class="section-dossier">
     <div class="section-entete">
       <h3>Collaborateurs externes</h3>
-      <button mat-button (click)="ouvrirFormulaireCollaborateur()">
+      <button mat-stroked-button class="bouton-ajouter-vert" (click)="ouvrirFormulaireCollaborateur()">
         <mat-icon>person_add</mat-icon> Ajouter un collaborateur
       </button>
     </div>
@@ -261,26 +262,36 @@
   </section>
 
   <div class="overlay" *ngIf="formulaireCollaborateurOuvert" (click)="fermerFormulaireCollaborateur()">
-    <div class="modale" (click)="$event.stopPropagation()">
-      <h3>Ajouter un collaborateur externe</h3>
+    <div class="modale modale-large" (click)="$event.stopPropagation()">
+      <div class="modale-tete">
+        <h3>Ajouter un collaborateur externe</h3>
+        <button mat-icon-button (click)="fermerFormulaireCollaborateur()" title="Fermer">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modale-corps">
+        <label>
+          Rechercher un collaborateur déjà existant (répertoire du cabinet)
+          <input type="text" [(ngModel)]="rechercheCollaborateur" (ngModelChange)="rechercherCollaborateur()" placeholder="Nom, organisation ou email..." />
+        </label>
+        <ul class="resultats-recherche-intervenant" *ngIf="resultatsRechercheCollaborateur.length">
+          <li *ngFor="let r of resultatsRechercheCollaborateur" (click)="lierCollaborateurExistant(r)">
+            <strong>{{ r.nom }}</strong> <span *ngIf="r.organisation">({{ r.organisation }})</span> — {{ r.email }}
+          </li>
+        </ul>
 
-      <label>
-        Rechercher un collaborateur déjà existant (répertoire du cabinet)
-        <input type="text" [(ngModel)]="rechercheCollaborateur" (ngModelChange)="rechercherCollaborateur()" placeholder="Nom, organisation ou email..." />
-      </label>
-      <ul class="resultats-recherche-intervenant" *ngIf="resultatsRechercheCollaborateur.length">
-        <li *ngFor="let r of resultatsRechercheCollaborateur" (click)="lierCollaborateurExistant(r)">
-          <strong>{{ r.nom }}</strong> <span *ngIf="r.organisation">({{ r.organisation }})</span> — {{ r.email }}
-        </li>
-      </ul>
-      <hr />
-      <p class="permission-note">Ou créer un nouveau collaborateur :</p>
+        <hr />
+        <p class="permission-note" style="margin-bottom: 14px;">Ou créer un nouveau collaborateur :</p>
 
-      <label>Nom<input type="text" [(ngModel)]="collaborateurForm.nom" placeholder="Ex: Me Gagnon" /></label>
-      <label>Email<input type="email" [(ngModel)]="collaborateurForm.email" /></label>
-      <label>Organisation (facultatif)<input type="text" [(ngModel)]="collaborateurForm.organisation" /></label>
-      <label>Téléphone (facultatif)<input type="text" [(ngModel)]="collaborateurForm.telephone" /></label>
-
+        <div class="ligne-champs-membre">
+          <label>Nom<input type="text" [(ngModel)]="collaborateurForm.nom" placeholder="Ex: Me Gagnon" /></label>
+          <label>Email<input type="email" [(ngModel)]="collaborateurForm.email" /></label>
+        </div>
+        <div class="ligne-champs-membre">
+          <label>Organisation (facultatif)<input type="text" [(ngModel)]="collaborateurForm.organisation" /></label>
+          <label>Téléphone (facultatif)<input type="text" [(ngModel)]="collaborateurForm.telephone" /></label>
+        </div>
+      </div>
       <div class="modale-pied">
         <button mat-button (click)="fermerFormulaireCollaborateur()">Annuler</button>
         <button mat-raised-button color="primary" (click)="creerEtLierCollaborateur()">Enregistrer</button>
@@ -417,7 +428,7 @@
     <div class="ajout-manuel" *ngIf="dossier.statut !== 'clos'">
       <input type="number" min="1" placeholder="Minutes" [(ngModel)]="minutesManuelles" />
       <input type="text" placeholder="Description" [(ngModel)]="descriptionManuelle" />
-      <button mat-stroked-button (click)="ajouterTempsManuel()">
+      <button mat-stroked-button class="bouton-ajouter-vert" (click)="ajouterTempsManuel()">
         <mat-icon>add</mat-icon> Ajouter une entrée manuelle
       </button>
     </div>
@@ -450,7 +461,7 @@
     <div class="section-entete">
       <h3>Déboursés</h3>
       <ng-container *ngIf="dossier.statut !== 'clos'">
-        <button mat-button *appHasRole="['admin', 'avocat', 'assistant']" (click)="ouvrirFormulaireDebourse()">
+        <button mat-stroked-button class="bouton-ajouter-vert" *appHasRole="['admin', 'avocat', 'assistant']" (click)="ouvrirFormulaireDebourse()">
           <mat-icon>add</mat-icon> Ajouter un déboursé
         </button>
       </ng-container>
@@ -497,26 +508,26 @@
   </section>
 
   <div class="overlay" *ngIf="formulaireDebourseOuvert" (click)="fermerFormulaireDebourse()">
-    <div class="modale" (click)="$event.stopPropagation()">
-      <h3>{{ debourseEnEdition ? 'Modifier' : 'Ajouter' }} un déboursé</h3>
-      <label>
-        Catégorie
-        <select [(ngModel)]="debourseForm.categorie">
-          <option *ngFor="let c of categoriesDebourse" [value]="c.valeur">{{ c.libelle }}</option>
-        </select>
-      </label>
-      <label>
-        Description
-        <input type="text" [(ngModel)]="debourseForm.description" placeholder="Ex: Frais de dépôt à la cour" />
-      </label>
-      <label>
-        Montant ($)
-        <input type="number" step="0.01" min="0.01" [(ngModel)]="debourseForm.montant" />
-      </label>
-      <label>
-        Date
-        <input type="date" [(ngModel)]="debourseForm.date_debourse" />
-      </label>
+    <div class="modale modale-large" (click)="$event.stopPropagation()">
+      <div class="modale-tete">
+        <h3>{{ debourseEnEdition ? 'Modifier' : 'Ajouter' }} un déboursé</h3>
+        <button mat-icon-button (click)="fermerFormulaireDebourse()" title="Fermer">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="modale-corps">
+        <div class="ligne-champs-membre">
+          <label>
+            Catégorie
+            <select [(ngModel)]="debourseForm.categorie">
+              <option *ngFor="let c of categoriesDebourse" [value]="c.valeur">{{ c.libelle }}</option>
+            </select>
+          </label>
+          <label>Date<input type="date" [(ngModel)]="debourseForm.date_debourse" /></label>
+        </div>
+        <label>Description<input type="text" [(ngModel)]="debourseForm.description" placeholder="Ex: Frais de dépôt à la cour" /></label>
+        <label>Montant ($)<input type="number" step="0.01" min="0.01" [(ngModel)]="debourseForm.montant" /></label>
+      </div>
       <div class="modale-pied">
         <button mat-button (click)="fermerFormulaireDebourse()">Annuler</button>
         <button mat-raised-button color="primary" (click)="enregistrerDebourse()">Enregistrer</button>
@@ -529,7 +540,8 @@
     <div class="section-entete">
       <h3>Factures</h3>
       <a
-        mat-button
+        mat-stroked-button
+        class="bouton-ajouter-vert"
         *appHasRole="['admin', 'avocat']"
         [routerLink]="['/factures/nouvelle']"
         [queryParams]="{ dossier_id: dossier.id }"
