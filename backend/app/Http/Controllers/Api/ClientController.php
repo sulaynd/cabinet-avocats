@@ -59,7 +59,7 @@ class ClientController extends Controller
             'prenom' => 'required_if:type,particulier|nullable|string|max:255',
             'raison_sociale' => 'required_if:type,entreprise|nullable|string|max:255',
             'siret' => 'nullable|string|max:50',
-            'email' => 'required_if:type,particulier|nullable|email|max:255|unique:clients,email,' . $client->id,
+            'email' => 'nullable|email|max:255|unique:clients,email,' . $client->id,
             'telephone' => 'required_if:type,particulier|nullable|string|max:30',
             'adresse' => 'nullable|string|max:255',
             'code_postal' => 'nullable|string|max:20',

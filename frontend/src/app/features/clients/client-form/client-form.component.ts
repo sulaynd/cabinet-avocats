@@ -70,6 +70,11 @@ export class ClientFormComponent implements OnInit {
         this.form.patchValue(client);
         this.appliquerValidationSelonType(client.type);
         this.portailActiveLe = client.portail_active_le ?? null;
+        // L'email sert d'identifiant de connexion au portail client — le
+        // modifier après coup pourrait rompre l'accès existant sans que
+        // l'admin s'en rende compte. On le verrouille donc en modification
+        // (toujours modifiable librement à la création).
+        this.form.get('email')?.disable();
       });
     }
   }

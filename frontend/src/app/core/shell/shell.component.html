@@ -40,34 +40,43 @@
         <mat-icon>dashboard</mat-icon>
         <span>Tableau de bord</span>
       </a>
-      <a class="lien-nav" *appHasRole="['admin']" routerLink="/utilisateurs" routerLinkActive="actif" style="margin-bottom: 8px;">
+      <a class="lien-nav" *appHasRole="['admin']" (click)="basculerMenuAdministration()" style="margin-bottom: 4px; cursor: pointer;">
         <mat-icon>admin_panel_settings</mat-icon>
-        <span>Équipe</span>
+        <span>Administration</span>
+        <mat-icon style="margin-left: auto; font-size: 20px; width: 20px; height: 20px;">
+          {{ menuAdministrationOuvert ? 'expand_less' : 'expand_more' }}
+        </mat-icon>
       </a>
-      <a class="lien-nav" *appHasRole="['admin']" routerLink="/questionnaires" routerLinkActive="actif" style="margin-bottom: 8px;">
-        <mat-icon>assignment</mat-icon>
-        <span>Questionnaires</span>
-      </a>
-      <a class="lien-nav" *appHasRole="['admin']" routerLink="/temoignages" routerLinkActive="actif" style="margin-bottom: 8px;">
-        <mat-icon>format_quote</mat-icon>
-        <span>Témoignages</span>
-      </a>
-      <a class="lien-nav" *appHasRole="['admin']" routerLink="/carrieres" routerLinkActive="actif" style="margin-bottom: 8px;">
-        <mat-icon>work</mat-icon>
-        <span>Carrières</span>
-      </a>
-      <a class="lien-nav" *appHasRole="['admin']" routerLink="/actualites" routerLinkActive="actif" style="margin-bottom: 8px;">
-        <mat-icon>article</mat-icon>
-        <span>Actualités</span>
-      </a>
-      <a class="lien-nav" *appHasRole="['admin']" routerLink="/modeles-documents" routerLinkActive="actif" style="margin-bottom: 8px;">
-        <mat-icon>description</mat-icon>
-        <span>Modèles de documents</span>
-      </a>
-      <a class="lien-nav" *appHasRole="['admin']" routerLink="/types-affaire" routerLinkActive="actif" style="margin-bottom: 8px;">
-        <mat-icon>category</mat-icon>
-        <span>Types d'affaire</span>
-      </a>
+      <ng-container *ngIf="menuAdministrationOuvert">
+        <a class="lien-nav lien-nav-sous-menu" *appHasRole="['admin']" routerLink="/utilisateurs" routerLinkActive="actif">
+          <mat-icon>groups</mat-icon>
+          <span>Équipe</span>
+        </a>
+        <a class="lien-nav lien-nav-sous-menu" *appHasRole="['admin']" routerLink="/temoignages" routerLinkActive="actif">
+          <mat-icon>format_quote</mat-icon>
+          <span>Témoignages</span>
+        </a>
+        <a class="lien-nav lien-nav-sous-menu" *appHasRole="['admin']" routerLink="/questionnaires" routerLinkActive="actif">
+          <mat-icon>assignment</mat-icon>
+          <span>Questionnaires</span>
+        </a>
+        <a class="lien-nav lien-nav-sous-menu" *appHasRole="['admin']" routerLink="/carrieres" routerLinkActive="actif">
+          <mat-icon>work</mat-icon>
+          <span>Carrières</span>
+        </a>
+        <a class="lien-nav lien-nav-sous-menu" *appHasRole="['admin']" routerLink="/actualites" routerLinkActive="actif">
+          <mat-icon>article</mat-icon>
+          <span>Actualités</span>
+        </a>
+        <a class="lien-nav lien-nav-sous-menu" *appHasRole="['admin']" routerLink="/modeles-documents" routerLinkActive="actif">
+          <mat-icon>description</mat-icon>
+          <span>Modèles de documents</span>
+        </a>
+        <a class="lien-nav lien-nav-sous-menu" *appHasRole="['admin']" routerLink="/types-affaire" routerLinkActive="actif">
+          <mat-icon>category</mat-icon>
+          <span>Types d'affaire</span>
+        </a>
+      </ng-container>
       <a class="lien-nav" *appHasRole="['admin']" routerLink="/parametres-cabinet" routerLinkActive="actif" style="margin-bottom: 8px;">
         <mat-icon>settings</mat-icon>
         <span>Paramètres</span>

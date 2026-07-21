@@ -30,6 +30,14 @@ import { HasRoleDirective } from '../directives/has-role.directive';
 export class ShellComponent implements OnInit {
   cabinet: CoordonneesCabinet | null = null;
 
+  // Regroupe les écrans de configuration secondaires (équipe, contenu public,
+  // types d'affaire...) sous un seul menu repliable, pour alléger la barre
+  // latérale — ouvert par défaut si l'utilisateur est déjà sur l'un de ces écrans.
+  private readonly routesAdministration = [
+    '/utilisateurs', '/questionnaires', '/temoignages', '/carrieres', '/actualites', '/modeles-documents', '/types-affaire',
+  ];
+  menuAdministrationOuvert = false;
+
   constructor(
     public auth: AuthService,
     private router: Router,
@@ -41,6 +49,8 @@ export class ShellComponent implements OnInit {
     // visible par tous les rôles connectés, pas seulement l'administrateur.
     this.cabinetSettingService.public().subscribe((c) => (this.cabinet = c));
 
+    this.menuAdministrationOuvert = this.routesAdministration.some((r) => this.router.url.startsWith(r));
+
     // Filet de sécurité : si la page a été rechargée (le signal en mémoire
     // currentUser a été réinitialisé) ou si l'utilisateur a navigué
     // directement ici en contournant la redirection post-connexion.
@@ -49,6 +59,10 @@ export class ShellComponent implements OnInit {
         this.router.navigate(['/changer-mot-de-passe']);
       }
     });
+  }
+
+  basculerMenuAdministration(): void {
+    this.menuAdministrationOuvert = !this.menuAdministrationOuvert;
   }
 
   get utilisateur() {

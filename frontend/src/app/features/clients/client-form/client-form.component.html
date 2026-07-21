@@ -64,7 +64,8 @@
 
   <div class="section-portail-client" *ngIf="clientId">
     <h3>Accès au portail client</h3>
-    <p class="permission-note" *ngIf="portailActiveLe">
+    <p class="bandeau-suggestion" *ngIf="portailActiveLe">
+      <mat-icon>info</mat-icon>
       Accès activé le {{ portailActiveLe | date: 'dd/MM/yyyy à HH:mm' }}. Vous pouvez réinitialiser
       le mot de passe si le client l'a perdu.
     </p>
@@ -75,13 +76,13 @@
     <button
       mat-stroked-button
       type="button"
-      [disabled]="activationPortailEnCours || !form.value.email"
+      [disabled]="activationPortailEnCours || !form.get('email')?.value"
       (click)="activerPortail()"
     >
       <mat-icon>{{ portailActiveLe ? 'lock_reset' : 'person_add' }}</mat-icon>
       {{ activationPortailEnCours ? 'Envoi en cours...' : (portailActiveLe ? "Réinitialiser l'accès" : "Activer l'accès au portail") }}
     </button>
-    <p class="permission-note" *ngIf="!form.value.email">
+    <p class="permission-note" *ngIf="!form.get('email')?.value">
       Renseignez d'abord un email pour ce client.
     </p>
   </div>

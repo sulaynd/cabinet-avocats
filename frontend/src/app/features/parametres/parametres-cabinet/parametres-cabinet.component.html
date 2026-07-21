@@ -31,7 +31,8 @@
     <mat-label>Taux horaire par défaut du cabinet (facultatif)</mat-label>
     <input matInput type="number" step="0.01" formControlName="taux_horaire_defaut" placeholder="Ex: 200.00" />
   </mat-form-field>
-  <p class="permission-note" style="margin: -10px 0 20px;">
+  <p class="bandeau-avertissement">
+    <mat-icon>warning</mat-icon>
     Utilisé en dernier recours pour calculer une facture horaire, si ni le dossier ni la
     personne n'ont de taux configuré — évite qu'une facture se retrouve à 0$.
   </p>

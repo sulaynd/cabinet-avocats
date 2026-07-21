@@ -94,6 +94,19 @@
   }
 }
 
+// Éléments du sous-menu "Administration" — légèrement indentés et plus
+// discrets, pour bien montrer qu'ils sont regroupés sous ce menu parent.
+.lien-nav-sous-menu {
+  padding-left: 30px;
+  font-size: 12.5px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
 .shell-bas {
   padding-top: 14px;
   border-top: 1px solid #33404f;
