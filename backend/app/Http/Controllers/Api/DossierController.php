@@ -95,7 +95,9 @@ class DossierController extends Controller
             'assistant_id' => 'nullable|exists:users,id',
             'stagiaire_id' => 'nullable|exists:users,id',
             'titre' => 'required|string|max:255',
-            'type_affaire' => [Rule::in(['immigration_mobilite', 'recrutement_international', 'cooperation_internationale', 'developpement_international', 'action_humanitaire', 'conseils_strategiques', 'autre'])],
+            'type_affaire' => [Rule::in(\App\Models\TypeAffaire::pluck('slug'))],
+            'sous_categories_affaire' => 'nullable|array',
+            'sous_categories_affaire.*' => Rule::in(\App\Models\SousCategorieAffaire::pluck('slug')),
             'statut' => [Rule::in(['ouvert', 'en_cours', 'en_attente', 'clos', 'archive'])],
             'mode_facturation' => [Rule::in(['horaire', 'forfait'])],
             'taux_horaire' => 'nullable|numeric|min:0',
@@ -108,6 +110,8 @@ class DossierController extends Controller
             'description' => 'nullable|string',
             'envoyer_questionnaire_accueil' => 'boolean',
         ]);
+
+        $this->verifierSousCategorieObligatoire($data['type_affaire'] ?? null, $data['sous_categories_affaire'] ?? null);
 
         $envoyerQuestionnaire = $data['envoyer_questionnaire_accueil'] ?? true;
         unset($data['envoyer_questionnaire_accueil']);
@@ -162,7 +166,9 @@ class DossierController extends Controller
             'assistant_id' => 'nullable|exists:users,id',
             'stagiaire_id' => 'nullable|exists:users,id',
             'titre' => 'string|max:255',
-            'type_affaire' => [Rule::in(['immigration_mobilite', 'recrutement_international', 'cooperation_internationale', 'developpement_international', 'action_humanitaire', 'conseils_strategiques', 'autre'])],
+            'type_affaire' => [Rule::in(\App\Models\TypeAffaire::pluck('slug'))],
+            'sous_categories_affaire' => 'nullable|array',
+            'sous_categories_affaire.*' => Rule::in(\App\Models\SousCategorieAffaire::pluck('slug')),
             'statut' => [Rule::in(['ouvert', 'en_cours', 'en_attente', 'clos', 'archive'])],
             'mode_facturation' => [Rule::in(['horaire', 'forfait'])],
             'taux_horaire' => 'nullable|numeric|min:0',
@@ -188,6 +194,18 @@ class DossierController extends Controller
             422,
             "Le montant du forfait est obligatoire lorsque le mode de facturation est 'Forfait'."
         );
+
+        // Contrairement au forfait (où l'état réel doit toujours être valide,
+        // sous peine de facture à 0$), on ne vérifie ici que si la requête
+        // change activement le type d'affaire — pas rétroactivement sur des
+        // dossiers existants qui n'avaient pas encore ce champ, ce qui
+        // bloquerait à tort toute modification non liée (titre, statut...).
+        if (array_key_exists('type_affaire', $data)) {
+            $sousCategoriesEffectives = array_key_exists('sous_categories_affaire', $data)
+                ? $data['sous_categories_affaire']
+                : $dossier->sous_categories_affaire;
+            $this->verifierSousCategorieObligatoire($data['type_affaire'], $sousCategoriesEffectives);
+        }
 
         // Un stagiaire peut travailler sur un dossier au quotidien, mais la
         // décision de le clôturer ou de l'archiver reste réservée à l'avocat
@@ -313,5 +331,24 @@ class DossierController extends Controller
             ->max() ?? 0;
 
         return sprintf('DOS-%d-%04d', $annee, $dernierSuffixe + 1);
+    }
+
+    /** Vérifie qu'au moins une sous-catégorie est fournie si (et seulement
+     * si) le type d'affaire choisi a des sous-catégories actives définies —
+     * un type sans sous-catégorie configurée (ex: "Autre") n'exige rien. */
+    private function verifierSousCategorieObligatoire(?string $typeAffaireSlug, ?array $sousCategoriesFournies): void
+    {
+        if (! $typeAffaireSlug) {
+            return;
+        }
+
+        $typeAffaire = \App\Models\TypeAffaire::where('slug', $typeAffaireSlug)->first();
+        $possedeSousCategories = $typeAffaire && $typeAffaire->sousCategories()->where('actif', true)->exists();
+
+        abort_if(
+            $possedeSousCategories && empty($sousCategoriesFournies),
+            422,
+            "Au moins une sous-catégorie est obligatoire pour le type d'affaire '{$typeAffaire?->libelle}'."
+        );
     }
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\FusionDocumentController;
 use App\Http\Controllers\Api\CollaborateurAuthController;
 use App\Http\Controllers\Api\CollaborateurExterneController;
 use App\Http\Controllers\Api\CollaborateurPortailController;
+use App\Http\Controllers\Api\TypeAffaireController;
 use App\Http\Controllers\Api\IntervenantController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\DossierController;
@@ -70,6 +71,7 @@ Route::get('/ical/equipe/{token}.ics', [IcalController::class, 'equipe']);
 Route::middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':30,1')->group(function () {
     Route::get('/public/avocats', [RendezVousPublicController::class, 'avocats']);
     Route::get('/public/creneaux', [RendezVousPublicController::class, 'creneauxDisponibles']);
+    Route::get('/public/types-affaire', [TypeAffaireController::class, 'index']);
 });
 Route::post('/public/rendez-vous', [RendezVousPublicController::class, 'reserver'])->middleware(\App\Http\Middleware\ThrottlePublicRequests::class . ':5,60');
 
@@ -160,6 +162,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('collaborateurs-externes/{collaborateurExterne}', [CollaborateurExterneController::class, 'update']);
     Route::delete('collaborateurs-externes/{collaborateurExterne}', [CollaborateurExterneController::class, 'destroy']);
     Route::post('collaborateurs-externes/{collaborateurExterne}/activer', [CollaborateurExterneController::class, 'activer']);
+
+    // Types d'affaire et sous-catégories — gérables depuis l'admin (index déjà
+    // ouvert publiquement pour le rendez-vous en ligne, voir plus haut).
+    Route::post('types-affaire', [TypeAffaireController::class, 'store']);
+    Route::put('types-affaire/{typeAffaire}', [TypeAffaireController::class, 'update']);
+    Route::delete('types-affaire/{typeAffaire}', [TypeAffaireController::class, 'destroy']);
+    Route::post('types-affaire/{typeAffaire}/sous-categories', [TypeAffaireController::class, 'storeSousCategorie']);
+    Route::put('sous-categories-affaire/{sousCategorieAffaire}', [TypeAffaireController::class, 'updateSousCategorie']);
+    Route::delete('sous-categories-affaire/{sousCategorieAffaire}', [TypeAffaireController::class, 'destroySousCategorie']);
 
     Route::get('dossiers/{dossier}/collaborateurs-externes', [CollaborateurExterneController::class, 'pourDossier']);
     Route::post('dossiers/{dossier}/collaborateurs-externes', [CollaborateurExterneController::class, 'creerEtLier']);

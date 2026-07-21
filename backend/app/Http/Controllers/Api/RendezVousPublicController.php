@@ -82,13 +82,22 @@ class RendezVousPublicController extends Controller
             'adresse' => 'nullable|string|max:255',
             'code_postal' => 'nullable|string|max:20',
             'ville' => 'nullable|string|max:255',
-            'type_affaire' => ['required', Rule::in([
-                'immigration_mobilite', 'recrutement_international', 'cooperation_internationale',
-                'developpement_international', 'action_humanitaire', 'conseils_strategiques', 'autre',
-            ])],
+            'type_affaire' => ['required', Rule::in(\App\Models\TypeAffaire::pluck('slug'))],
+            'sous_categories_affaire' => 'nullable|array',
+            'sous_categories_affaire.*' => Rule::in(\App\Models\SousCategorieAffaire::pluck('slug')),
             'motif' => 'required|string|max:255',
             'date_heure' => 'required|date|after:now',
         ]);
+
+        // Au moins une sous-catégorie est obligatoire uniquement si le type
+        // d'affaire choisi a des sous-catégories actives définies.
+        $typeAffaire = \App\Models\TypeAffaire::where('slug', $data['type_affaire'])->first();
+        $possedeSousCategories = $typeAffaire && $typeAffaire->sousCategories()->where('actif', true)->exists();
+        abort_if(
+            $possedeSousCategories && empty($data['sous_categories_affaire'] ?? null),
+            422,
+            "Au moins une sous-catégorie est obligatoire pour le type d'affaire '{$typeAffaire?->libelle}'.",
+        );
 
         // Recherche une fiche client existante par email, sinon en crée une automatiquement.
         [$prenom, $nom] = array_pad(explode(' ', $data['nom'], 2), 2, '');
@@ -111,6 +120,7 @@ class RendezVousPublicController extends Controller
             'telephone' => $data['telephone'] ?? null,
             'motif' => $data['motif'],
             'type_affaire' => $data['type_affaire'],
+            'sous_categories_affaire' => $data['sous_categories_affaire'] ?? null,
             'avocat_id' => null,
             'client_id' => $client->id,
             'date_heure' => $data['date_heure'],

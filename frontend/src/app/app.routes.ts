@@ -254,6 +254,15 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/parametres/modeles-documents/modeles-documents.component').then((m) => m.ModelesDocumentsComponent),
       },
+
+      // Types d'affaire et sous-catégories — admin uniquement
+      {
+        path: 'types-affaire',
+        canActivate: [roleGuard],
+        data: { roles: ['admin'] },
+        loadComponent: () =>
+          import('./features/parametres/types-affaire/types-affaire.component').then((m) => m.TypesAffaireComponent),
+      },
     ],
   },
 

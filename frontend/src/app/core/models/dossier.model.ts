@@ -35,6 +35,7 @@ export interface Dossier {
   stagiaire?: Avocat;
   titre: string;
   type_affaire: TypeAffaire;
+  sous_categories_affaire?: string[] | null;
   statut: StatutDossier;
   mode_facturation: 'horaire' | 'forfait';
   taux_horaire?: number | null;

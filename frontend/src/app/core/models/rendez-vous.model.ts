@@ -9,6 +9,7 @@ export interface RendezVous {
   telephone?: string;
   motif: string;
   type_affaire: string;
+  sous_categories_affaire?: string[] | null;
   avocat_id: number | null;
   avocat?: Avocat | null;
   client_id?: number;

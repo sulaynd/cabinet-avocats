@@ -14,6 +14,7 @@ class Dossier extends Model
 
     protected $fillable = [
         'reference', 'client_id', 'avocat_id', 'assistant_id', 'stagiaire_id', 'titre', 'type_affaire',
+        'sous_categories_affaire',
         'statut', 'mode_facturation', 'taux_horaire', 'montant_forfait',
         'facturation_periodique', 'frequence_facturation', 'facturer_a_cloture', 'derniere_facturation_auto_le',
         'date_ouverture', 'date_cloture', 'description',
@@ -23,6 +24,7 @@ class Dossier extends Model
         'date_ouverture' => 'date:Y-m-d',
         'date_cloture' => 'date:Y-m-d',
         'derniere_facturation_auto_le' => 'datetime',
+        'sous_categories_affaire' => 'array',
     ];
 
     public function client(): BelongsTo

@@ -5,6 +5,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RendezVousService } from '../../../core/services/rendez-vous.service';
+import { TypeAffaireService } from '../../../core/services/type-affaire.service';
+import { TypeAffaire } from '../../../core/models/type-affaire.model';
 
 @Component({
   selector: 'app-prise-rdv-publique',
@@ -26,15 +28,9 @@ export class PriseRdvPubliqueComponent implements OnInit {
   private fb = inject(FormBuilder);
   private location = inject(Location);
 
-  readonly typesAffaire = [
-    { valeur: 'immigration_mobilite', libelle: 'Immigration & mobilité internationale' },
-    { valeur: 'recrutement_international', libelle: 'Recrutement international' },
-    { valeur: 'cooperation_internationale', libelle: 'Coopération internationale' },
-    { valeur: 'developpement_international', libelle: 'Développement international' },
-    { valeur: 'action_humanitaire', libelle: 'Action humanitaire' },
-    { valeur: 'conseils_strategiques', libelle: 'Services-conseils stratégiques' },
-    { valeur: 'autre', libelle: 'Autre' },
-  ];
+  // Chargés dynamiquement depuis l'API (gérables dans "Types d'affaire",
+  // menu admin) plutôt que codés en dur.
+  typesAffaire: TypeAffaire[] = [];
 
   // Le client ne choisit plus l'avocat lui-même : il décrit son besoin (type
   // de dossier et motif, tous deux obligatoires), et le cabinet assigne
@@ -42,6 +38,7 @@ export class PriseRdvPubliqueComponent implements OnInit {
   // réelles de chacun.
   form = this.fb.group({
     type_affaire: ['', Validators.required],
+    sous_categories_affaire: this.fb.nonNullable.control([] as string[]),
     nom: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     telephone: ['', Validators.required],
@@ -51,7 +48,7 @@ export class PriseRdvPubliqueComponent implements OnInit {
     motif: ['', Validators.required],
   });
 
-  constructor(private rendezVousService: RendezVousService) {}
+  constructor(private rendezVousService: RendezVousService, private typeAffaireService: TypeAffaireService) {}
 
   /** Ce widget est une vraie page (pas une modale) : "fermer" revient simplement
    * à la page précédente (typiquement l'écran de connexion, d'où vient l'aperçu). */
@@ -63,6 +60,36 @@ export class PriseRdvPubliqueComponent implements OnInit {
     // Les créneaux sont désormais génériques (horaires du cabinet), plus
     // besoin d'attendre le choix d'un avocat pour les charger.
     this.chargerCreneaux();
+    this.typeAffaireService.liste(true).subscribe((t) => (this.typesAffaire = t));
+
+    this.form.get('type_affaire')?.valueChanges.subscribe((type) => {
+      const controle = this.form.get('sous_categories_affaire');
+      const typeChoisi = this.typesAffaire.find((t) => t.slug === type);
+      const possedeSousCategories = (typeChoisi?.sous_categories ?? []).some((sc) => sc.actif);
+      if (possedeSousCategories) {
+        controle?.setValidators(Validators.required);
+      } else {
+        controle?.clearValidators();
+        controle?.setValue([], { emitEvent: false });
+      }
+      controle?.updateValueAndValidity({ emitEvent: false });
+    });
+  }
+
+  /** Sous-catégories actives du type d'affaire actuellement sélectionné. */
+  get sousCategoriesDuTypeChoisi(): { valeur: string; libelle: string }[] {
+    const type = this.typesAffaire.find((t) => t.slug === this.form.value.type_affaire);
+    return (type?.sous_categories ?? []).filter((sc) => sc.actif).map((sc) => ({ valeur: sc.slug, libelle: sc.libelle }));
+  }
+
+  estSousCategorieCochee(valeur: string): boolean {
+    return (this.form.value.sous_categories_affaire ?? []).includes(valeur);
+  }
+
+  basculerSousCategorie(valeur: string, coche: boolean): void {
+    const actuelles: string[] = this.form.value.sous_categories_affaire ?? [];
+    const nouvelles = coche ? [...actuelles, valeur] : actuelles.filter((v) => v !== valeur);
+    this.form.get('sous_categories_affaire')?.setValue(nouvelles);
   }
 
   /**

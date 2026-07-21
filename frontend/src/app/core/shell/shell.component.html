@@ -64,6 +64,10 @@
         <mat-icon>description</mat-icon>
         <span>Modèles de documents</span>
       </a>
+      <a class="lien-nav" *appHasRole="['admin']" routerLink="/types-affaire" routerLinkActive="actif" style="margin-bottom: 8px;">
+        <mat-icon>category</mat-icon>
+        <span>Types d'affaire</span>
+      </a>
       <a class="lien-nav" *appHasRole="['admin']" routerLink="/parametres-cabinet" routerLinkActive="actif" style="margin-bottom: 8px;">
         <mat-icon>settings</mat-icon>
         <span>Paramètres</span>

@@ -129,8 +129,8 @@ class IntervenantTest extends TestCase
     public function test_recherche_dans_le_repertoire(): void
     {
         $avocat = User::factory()->avocat()->create();
-        Intervenant::factory()->create(['nom' => 'Me Tremblay']);
-        Intervenant::factory()->create(['nom' => 'Me Gagnon']);
+        Intervenant::factory()->create(['nom' => 'Me Tremblay', 'organisation' => 'Cabinet A']);
+        Intervenant::factory()->create(['nom' => 'Me Gagnon', 'organisation' => 'Cabinet B']);
 
         $reponse = $this->actingAs($avocat, 'sanctum')
             ->getJson('/api/intervenants?recherche=Tremblay')

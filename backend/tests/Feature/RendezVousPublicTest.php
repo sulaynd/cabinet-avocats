@@ -73,10 +73,23 @@ class RendezVousPublicTest extends TestCase
             'email' => 'marie@test.com',
             'telephone' => '5145550001',
             'type_affaire' => 'immigration_mobilite',
+            'sous_categories_affaire' => ['permis_etudes'],
             'motif' => 'Demande de renseignements sur un dossier d\'immigration.',
             'date_heure' => now()->addDays(3)->setTime(10, 0)->toDateTimeString(),
         ])->assertCreated();
 
         $this->assertDatabaseHas('clients', ['email' => 'marie@test.com']);
+    }
+
+    public function test_refuse_immigration_sans_sous_categorie(): void
+    {
+        $this->postJson('/api/public/rendez-vous', [
+            'nom' => 'Paul Client',
+            'email' => 'paul@test.com',
+            'telephone' => '5145550002',
+            'type_affaire' => 'immigration_mobilite',
+            'motif' => 'Question sur un permis.',
+            'date_heure' => now()->addDays(3)->setTime(10, 0)->toDateTimeString(),
+        ])->assertStatus(422);
     }
 }

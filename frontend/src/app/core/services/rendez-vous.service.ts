@@ -42,7 +42,7 @@ export class RendezVousService {
     });
   }
 
-  reserver(payload: { nom: string; email: string; telephone?: string; motif: string; type_affaire: string; date_heure: string }): Observable<RendezVous> {
+  reserver(payload: { nom: string; email: string; telephone?: string; motif: string; type_affaire: string; sous_categories_affaire?: string[]; date_heure: string }): Observable<RendezVous> {
     return this.http.post<RendezVous>(`${this.apiUrl}/public/rendez-vous`, payload);
   }
 }

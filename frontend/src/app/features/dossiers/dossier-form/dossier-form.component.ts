@@ -19,6 +19,8 @@ import { CabinetSettingService } from '../../../core/services/cabinet-setting.se
 import { Client } from '../../../core/models/client.model';
 import { Dossier } from '../../../core/models/dossier.model';
 import { Utilisateur } from '../../../core/models/user.model';
+import { TypeAffaireService } from '../../../core/services/type-affaire.service';
+import { TypeAffaire } from '../../../core/models/type-affaire.model';
 
 @Component({
   selector: 'app-dossier-form',
@@ -44,6 +46,24 @@ export class DossierFormComponent implements OnInit {
   private avocatModifieManuellement = false;
   suggestionAvocat: { nom: string; raison: string } | null = null;
 
+  /** Sous-catégories actives du type d'affaire actuellement sélectionné —
+   * peut être n'importe quel type (pas seulement immigration), selon ce qui
+   * est configuré dans "Types d'affaire" (menu admin). */
+  get sousCategoriesDuTypeChoisi(): { valeur: string; libelle: string }[] {
+    const type = this.typesAffaire.find((t) => t.slug === this.form.value.type_affaire);
+    return (type?.sous_categories ?? []).filter((sc) => sc.actif).map((sc) => ({ valeur: sc.slug, libelle: sc.libelle }));
+  }
+
+  estSousCategorieCochee(valeur: string): boolean {
+    return (this.form.value.sous_categories_affaire ?? []).includes(valeur);
+  }
+
+  basculerSousCategorie(valeur: string, coche: boolean): void {
+    const actuelles: string[] = this.form.value.sous_categories_affaire ?? [];
+    const nouvelles = coche ? [...actuelles, valeur] : actuelles.filter((v) => v !== valeur);
+    this.form.get('sous_categories_affaire')?.setValue(nouvelles);
+  }
+
   get estStagiaire(): boolean {
     return this.auth.currentUser()?.role === 'stagiaire';
   }
@@ -56,15 +76,9 @@ export class DossierFormComponent implements OnInit {
     return this.assistants.filter((a) => a.role === 'stagiaire');
   }
 
-  readonly typesAffaire: { valeur: string; libelle: string }[] = [
-    { valeur: 'immigration_mobilite', libelle: 'Immigration & mobilité internationale' },
-    { valeur: 'recrutement_international', libelle: 'Recrutement international' },
-    { valeur: 'cooperation_internationale', libelle: 'Coopération internationale' },
-    { valeur: 'developpement_international', libelle: 'Développement international' },
-    { valeur: 'action_humanitaire', libelle: 'Action humanitaire' },
-    { valeur: 'conseils_strategiques', libelle: 'Services-conseils stratégiques' },
-    { valeur: 'autre', libelle: 'Autre' },
-  ];
+  // Chargés dynamiquement depuis l'API (gérables dans "Types d'affaire",
+  // menu admin) plutôt que codés en dur — voir chargerTypesAffaire().
+  typesAffaire: TypeAffaire[] = [];
   readonly statuts = ['ouvert', 'en_cours', 'en_attente', 'clos', 'archive'];
 
   // Déclaré via inject() (et non par constructeur) car utilisé dans l'initialiseur
@@ -81,7 +95,8 @@ export class DossierFormComponent implements OnInit {
     assistant_id: this.fb.control(null as number | null),
     stagiaire_id: this.fb.control(null as number | null),
     titre: this.fb.nonNullable.control('', Validators.required),
-    type_affaire: this.fb.nonNullable.control('autre', Validators.required),
+    type_affaire: this.fb.nonNullable.control('', Validators.required),
+    sous_categories_affaire: this.fb.nonNullable.control([] as string[]),
     statut: this.fb.nonNullable.control('ouvert', Validators.required),
     mode_facturation: this.fb.nonNullable.control('horaire' as 'horaire' | 'forfait', Validators.required),
     taux_horaire: this.fb.control(null as number | null),
@@ -102,6 +117,7 @@ export class DossierFormComponent implements OnInit {
     public auth: AuthService,
     private notification: NotificationService,
     private cabinetSettingService: CabinetSettingService,
+    private typeAffaireService: TypeAffaireService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -119,6 +135,7 @@ export class DossierFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.cabinetSettingService.obtenir().subscribe((c) => (this.tauxHoraireCabinet = c.taux_horaire_defaut ?? null));
+    this.typeAffaireService.liste(true).subscribe((t) => (this.typesAffaire = t));
 
     this.clientService.liste({ per_page: 100 }).subscribe((res) => (this.clients = res.data));
     // Le champ "avocat responsable" ne propose que les utilisateurs de rôle avocat ;
@@ -182,6 +199,24 @@ export class DossierFormComponent implements OnInit {
         controleForfait?.clearValidators();
       }
       controleForfait?.updateValueAndValidity({ emitEvent: false });
+    });
+
+    // Sous-catégories : obligatoires (au moins une) uniquement quand le type
+    // d'affaire choisi a des sous-catégories actives configurées (n'importe
+    // quel type, pas seulement immigration — voir "Types d'affaire" en admin).
+    // S'applique en création comme en modification, contrairement à la
+    // suggestion d'assignation.
+    this.form.get('type_affaire')?.valueChanges.subscribe((type) => {
+      const controleSousCategories = this.form.get('sous_categories_affaire');
+      const typeChoisi = this.typesAffaire.find((t) => t.slug === type);
+      const possedeSousCategories = (typeChoisi?.sous_categories ?? []).some((sc) => sc.actif);
+      if (possedeSousCategories) {
+        controleSousCategories?.setValidators(Validators.required);
+      } else {
+        controleSousCategories?.clearValidators();
+        controleSousCategories?.setValue([], { emitEvent: false });
+      }
+      controleSousCategories?.updateValueAndValidity({ emitEvent: false });
     });
 
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -270,6 +305,7 @@ export class DossierFormComponent implements OnInit {
           stagiaire_id: dossier.stagiaire_id ?? null,
           titre: dossier.titre,
           type_affaire: dossier.type_affaire,
+          sous_categories_affaire: dossier.sous_categories_affaire ?? [],
           statut: dossier.statut,
           mode_facturation: dossier.mode_facturation,
           taux_horaire: dossier.taux_horaire ?? null,

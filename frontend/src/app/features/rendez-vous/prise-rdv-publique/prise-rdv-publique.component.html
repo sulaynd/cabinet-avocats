@@ -16,9 +16,23 @@
           Type de dossier<span class="requis">*</span>
           <select formControlName="type_affaire">
             <option value="" disabled>-- Sélectionner --</option>
-            <option *ngFor="let t of typesAffaire" [value]="t.valeur">{{ t.libelle }}</option>
+            <option *ngFor="let t of typesAffaire" [value]="t.slug">{{ t.libelle }}</option>
           </select>
         </label>
+
+        <div class="bloc-sous-categories" *ngIf="sousCategoriesDuTypeChoisi.length">
+          <p class="permission-note" style="margin-bottom: 8px;">
+            Sous-catégorie(s)<span class="requis">*</span> — cochez au moins une case
+          </p>
+          <label *ngFor="let s of sousCategoriesDuTypeChoisi" style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+            <input
+              type="checkbox"
+              [checked]="estSousCategorieCochee(s.valeur)"
+              (change)="basculerSousCategorie(s.valeur, $any($event.target).checked)"
+            />
+            {{ s.libelle }}
+          </label>
+        </div>
 
         <div class="chargement-creneaux" *ngIf="chargementCreneaux">Chargement des créneaux...</div>
 

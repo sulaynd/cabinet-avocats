@@ -13,11 +13,12 @@ class RendezVousEnLigne extends Model
     protected $table = 'rendezvous_en_ligne';
 
     protected $fillable = [
-        'nom', 'email', 'telephone', 'motif', 'type_affaire', 'avocat_id', 'client_id', 'date_heure', 'statut',
+        'nom', 'email', 'telephone', 'motif', 'type_affaire', 'sous_categories_affaire', 'avocat_id', 'client_id', 'date_heure', 'statut',
     ];
 
     protected $casts = [
         'date_heure' => 'datetime',
+        'sous_categories_affaire' => 'array',
     ];
 
     public function avocat(): BelongsTo

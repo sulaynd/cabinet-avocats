@@ -239,4 +239,45 @@ class DossierTest extends TestCase
         // Les deux ont 0 dossier ouvert — le premier de la liste (ordre naturel) est retourné.
         $this->assertContains($reponse->json('avocat_id'), [$chargeMaisClos->id, $libre->id]);
     }
+
+    public function test_creation_refusee_si_immigration_sans_sous_categorie(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $client = \App\Models\Client::factory()->create();
+        $avocat = User::factory()->avocat()->create();
+
+        $this->actingAs($admin, 'sanctum')->postJson('/api/dossiers', [
+            'client_id' => $client->id,
+            'avocat_id' => $avocat->id,
+            'titre' => 'Test immigration',
+            'type_affaire' => 'immigration_mobilite',
+            'mode_facturation' => 'horaire',
+        ])->assertStatus(422);
+    }
+
+    public function test_creation_autorisee_si_immigration_avec_sous_categorie(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $client = \App\Models\Client::factory()->create();
+        $avocat = User::factory()->avocat()->create();
+
+        $this->actingAs($admin, 'sanctum')->postJson('/api/dossiers', [
+            'client_id' => $client->id,
+            'avocat_id' => $avocat->id,
+            'titre' => 'Test immigration',
+            'type_affaire' => 'immigration_mobilite',
+            'sous_categories_affaire' => ['permis_travail', 'entree_express'],
+            'mode_facturation' => 'horaire',
+        ])->assertCreated();
+    }
+
+    public function test_modification_refusee_si_bascule_vers_immigration_sans_sous_categorie(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $dossier = Dossier::factory()->create(['type_affaire' => 'autre']);
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/dossiers/{$dossier->id}", ['type_affaire' => 'immigration_mobilite'])
+            ->assertStatus(422);
+    }
 }

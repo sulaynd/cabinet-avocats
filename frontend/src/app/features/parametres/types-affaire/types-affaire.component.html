@@ -1,0 +1,99 @@
+<div class="equipe-admin">
+  <div class="section-entete">
+    <div>
+      <h2>Types d'affaire</h2>
+      <p class="permission-note">
+        Gérez la liste des types d'affaire et leurs sous-catégories, utilisés dans les dossiers et la prise
+        de rendez-vous en ligne. Un type avec des sous-catégories actives exigera d'en cocher au moins une.
+      </p>
+    </div>
+    <a mat-button routerLink="/parametres-cabinet"><mat-icon>arrow_back</mat-icon> Coordonnées du cabinet</a>
+  </div>
+
+  <div class="carte-membre" style="margin-bottom: 20px;">
+    <div class="champs-membre" style="flex: 1;">
+      <label>
+        Nouveau type d'affaire
+        <input type="text" [(ngModel)]="nouveauTypeLibelle" placeholder="Ex: Droit des affaires" (keyup.enter)="ajouterType()" />
+      </label>
+    </div>
+    <button mat-raised-button color="primary" (click)="ajouterType()">
+      <mat-icon>add</mat-icon> Ajouter
+    </button>
+  </div>
+
+  <p *ngIf="chargement">Chargement...</p>
+
+  <div *ngFor="let type of types" class="carte-membre" style="flex-direction: column; align-items: stretch; margin-bottom: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" (click)="deplierType(type.id)">
+        <mat-icon>{{ typeDeplie === type.id ? 'expand_more' : 'chevron_right' }}</mat-icon>
+        <strong>{{ type.libelle }}</strong>
+        <span class="badge" [class.badge-payee]="type.actif" [class.badge-en_attente]="!type.actif">
+          {{ type.actif ? 'Actif' : 'Désactivé' }}
+        </span>
+        <span class="permission-note" *ngIf="type.sous_categories?.length">
+          {{ type.sous_categories?.length }} sous-catégorie(s)
+        </span>
+      </div>
+      <div>
+        <button mat-icon-button (click)="renommerType(type)" title="Renommer">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button (click)="basculerActifType(type)" [title]="type.actif ? 'Désactiver' : 'Activer'">
+          <mat-icon>{{ type.actif ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <button mat-icon-button (click)="supprimerType(type)" title="Supprimer">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="typeDeplie === type.id" style="margin-top: 14px; padding-left: 30px; border-left: 2px solid var(--line);">
+      <table *ngIf="type.sous_categories?.length">
+        <thead>
+          <tr><th>Sous-catégorie</th><th>Statut</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sc of type.sous_categories">
+            <td>{{ sc.libelle }}</td>
+            <td>
+              <span class="badge" [class.badge-payee]="sc.actif" [class.badge-en_attente]="!sc.actif">
+                {{ sc.actif ? 'Active' : 'Désactivée' }}
+              </span>
+            </td>
+            <td>
+              <button mat-icon-button (click)="renommerSousCategorie(sc)" title="Renommer">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="basculerActifSousCategorie(sc)" [title]="sc.actif ? 'Désactiver' : 'Activer'">
+                <mat-icon>{{ sc.actif ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <button mat-icon-button (click)="supprimerSousCategorie(sc)" title="Supprimer">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="vide" *ngIf="!type.sous_categories?.length">Aucune sous-catégorie pour ce type.</p>
+
+      <div class="ligne-champs-membre" style="margin-top: 12px;">
+        <label>
+          Nouvelle sous-catégorie
+          <input
+            type="text"
+            [(ngModel)]="nouvelleSousCategorieLibelle[type.id]"
+            placeholder="Ex: Permis de travail"
+            (keyup.enter)="ajouterSousCategorie(type)"
+          />
+        </label>
+        <button mat-stroked-button color="primary" (click)="ajouterSousCategorie(type)" style="align-self: flex-end; margin-bottom: 14px;">
+          <mat-icon>add</mat-icon> Ajouter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p class="vide" *ngIf="!chargement && !types.length">Aucun type d'affaire configuré.</p>
+</div>
