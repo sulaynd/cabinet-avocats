@@ -248,39 +248,50 @@ export class DossierFormComponent implements OnInit {
       });
     }
 
-    if (!this.peutAssigner) {
-      if (this.dossierId) {
-        // En modification, un non-admin ne peut de toute façon pas changer
-        // l'assignation (ignoré côté serveur) : les deux champs sont désactivés.
-        this.form.get('avocat_id')?.disable();
-        this.form.get('assistant_id')?.disable();
-        this.form.get('stagiaire_id')?.disable();
-      } else if (this.auth.hasRole('avocat')) {
-        // À la création, un avocat s'auto-assigne (champ non pertinent) mais
-        // peut librement choisir un assistant pour l'épauler sur ce dossier.
-        this.form.get('avocat_id')?.disable();
-      } else if (this.auth.hasRole('assistant')) {
-        // Un assistant doit désigner l'avocat sous la responsabilité duquel le
-        // dossier est ouvert ; il s'auto-assigne lui-même comme assistant traitant.
-        this.form.get('assistant_id')?.disable();
-      } else if (this.auth.hasRole('stagiaire')) {
-        // Un stagiaire s'auto-assigne lui-même comme stagiaire traitant.
-        this.form.get('stagiaire_id')?.disable();
-      }
+    // Enveloppé dans chargerUtilisateurCourant() : après un rechargement de
+    // page, l'utilisateur courant (nécessaire à hasRole()) peut ne pas encore
+    // être chargé au moment où ngOnInit s'exécute — sans cette attente, la
+    // désactivation/pré-remplissage ci-dessous pouvait silencieusement ne
+    // jamais s'appliquer (le champ restait actif et vide).
+    this.auth.chargerUtilisateurCourant().subscribe(() => {
+      if (!this.peutAssigner) {
+        if (this.dossierId) {
+          this.form.get('avocat_id')?.disable();
+          this.form.get('assistant_id')?.disable();
+          this.form.get('stagiaire_id')?.disable();
+        } else if (this.auth.hasRole('avocat')) {
+          this.form.get('avocat_id')?.setValue(this.auth.currentUser()?.id ?? null, { emitEvent: false });
+          this.form.get('avocat_id')?.disable();
+          // setValue ci-dessus utilise emitEvent:false (pour ne pas marquer
+          // avocatModifieManuellement) — donc la vérification du taux horaire
+          // obligatoire (normalement déclenchée par ce changement) ne se
+          // lance jamais : on la rejoue ici manuellement, une fois.
+          const tauxDeSoiMeme = this.auth.currentUser()?.taux_horaire_defaut;
+          const controleTauxAvocat = this.form.get('taux_horaire');
+          if (tauxDeSoiMeme || this.tauxHoraireCabinet) {
+            controleTauxAvocat?.clearValidators();
+            this.tauxHoraireObligatoire = false;
+          } else {
+            controleTauxAvocat?.setValidators(Validators.required);
+            this.tauxHoraireObligatoire = true;
+          }
+          controleTauxAvocat?.updateValueAndValidity({ emitEvent: false });
+        } else if (this.auth.hasRole('assistant')) {
+          this.form.get('assistant_id')?.disable();
+        } else if (this.auth.hasRole('stagiaire')) {
+          this.form.get('stagiaire_id')?.disable();
+        }
 
-      if (this.auth.hasRole('stagiaire')) {
-        // Accès en lecture seule aux factures : les réglages de facturation
-        // automatique (mode, taux, périodicité, facturation à la clôture)
-        // restent visibles mais non modifiables, pour cohérence avec cette
-        // restriction (ignorés côté serveur de toute façon).
-        this.form.get('mode_facturation')?.disable();
-        this.form.get('taux_horaire')?.disable();
-        this.form.get('montant_forfait')?.disable();
-        this.form.get('facturation_periodique')?.disable();
-        this.form.get('frequence_facturation')?.disable();
-        this.form.get('facturer_a_cloture')?.disable();
+        if (this.auth.hasRole('stagiaire')) {
+          this.form.get('mode_facturation')?.disable();
+          this.form.get('taux_horaire')?.disable();
+          this.form.get('montant_forfait')?.disable();
+          this.form.get('facturation_periodique')?.disable();
+          this.form.get('frequence_facturation')?.disable();
+          this.form.get('facturer_a_cloture')?.disable();
+        }
       }
-    }
+    });
 
     if (this.dossierId) {
       this.dossierService.obtenir(this.dossierId).subscribe((dossier) => {

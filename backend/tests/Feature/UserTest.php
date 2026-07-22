@@ -10,12 +10,28 @@ class UserTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seul_un_admin_peut_lister_les_utilisateurs(): void
+    public function test_tout_membre_du_personnel_peut_lister_les_utilisateurs(): void
     {
+        // Nécessaire pour les menus déroulants (avocat/assistant/stagiaire
+        // responsable) dans le formulaire de dossier, accessible à tout rôle.
         $avocat = User::factory()->avocat()->create();
 
         $this->actingAs($avocat, 'sanctum')
             ->getJson('/api/users')
+            ->assertStatus(200);
+    }
+
+    public function test_seul_un_admin_peut_creer_un_utilisateur(): void
+    {
+        $avocat = User::factory()->avocat()->create();
+
+        $this->actingAs($avocat, 'sanctum')
+            ->postJson('/api/users', [
+                'name' => 'Test',
+                'email' => 'test-non-admin@example.com',
+                'password' => 'password123',
+                'role' => 'avocat',
+            ])
             ->assertStatus(403);
     }
 

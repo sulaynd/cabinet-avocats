@@ -226,7 +226,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('documents/{document}/demander-signature', [DocumentController::class, 'demanderSignature']);
 
     // Gestion des utilisateurs du cabinet (avocats, assistants, admins) — réservée aux admins.
-    Route::apiResource('users', UserController::class)->middleware('role:admin');
+    Route::get('users', [UserController::class, 'index']);
+    Route::apiResource('users', UserController::class)->except('index')->middleware('role:admin');
     Route::post('users/{user}/photo', [UserController::class, 'televerserPhoto'])->middleware('role:admin');
     Route::apiResource('temoignages', TemoignageController::class)->only(['index', 'update', 'destroy']);
     Route::apiResource('offres-emploi', OffreEmploiController::class)->except(['show']);
