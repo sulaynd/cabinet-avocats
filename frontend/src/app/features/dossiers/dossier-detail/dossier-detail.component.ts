@@ -23,6 +23,8 @@ import { NotificationService } from '../../../core/services/notification.service
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Utilisateur } from '../../../core/models/user.model';
+import { TypeAffaireService } from '../../../core/services/type-affaire.service';
+import { TypeAffaire } from '../../../core/models/type-affaire.model';
 import { ReponseQuestionnaire } from '../../../core/models/reponse-questionnaire.model';
 import { Dossier } from '../../../core/models/dossier.model';
 import { TypeDocument } from '../../../core/models/document.model';
@@ -43,15 +45,21 @@ export class DossierDetailComponent implements OnInit {
   dossier: Dossier | null = null;
   chargement = false;
 
-  readonly libellesTypeAffaire: Record<string, string> = {
-    immigration_mobilite: 'Immigration & mobilité internationale',
-    recrutement_international: 'Recrutement international',
-    cooperation_internationale: 'Coopération internationale',
-    developpement_international: 'Développement international',
-    action_humanitaire: 'Action humanitaire',
-    conseils_strategiques: 'Services-conseils stratégiques',
-    autre: 'Autre',
-  };
+  // Chargés dynamiquement depuis l'API (gérables dans "Types d'affaire",
+  // menu admin) — évite d'afficher un libellé obsolète si un type est
+  // renommé après la création du dossier.
+  typesAffaire: TypeAffaire[] = [];
+
+  get libelleTypeAffaireActuel(): string {
+    const type = this.typesAffaire.find((t) => t.slug === this.dossier?.type_affaire);
+    return type?.libelle ?? this.dossier?.type_affaire ?? '';
+  }
+
+  get libellesSousCategoriesActuelles(): string[] {
+    const type = this.typesAffaire.find((t) => t.slug === this.dossier?.type_affaire);
+    const slugs = this.dossier?.sous_categories_affaire ?? [];
+    return slugs.map((slug) => type?.sous_categories?.find((sc) => sc.slug === slug)?.libelle ?? slug);
+  }
 
   readonly libellesStatutFacture: Record<string, string> = {
     brouillon: 'Non envoyée',
@@ -92,6 +100,7 @@ export class DossierDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private dossierService: DossierService,
+    private typeAffaireService: TypeAffaireService,
     private documentService: DocumentService,
     private intervenantService: IntervenantService,
     private debourseService: DebourseService,
@@ -109,6 +118,7 @@ export class DossierDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.charger();
+    this.typeAffaireService.liste().subscribe((t) => (this.typesAffaire = t));
     this.chargerTemps();
     this.tempsPasseService.enCours().subscribe((t) => (this.chronoEnCours = t));
     this.chargerReponsesQuestionnaires();
