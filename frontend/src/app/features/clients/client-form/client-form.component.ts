@@ -116,7 +116,7 @@ export class ClientFormComponent implements OnInit {
 
   activerPortail(): void {
     if (!this.clientId) return;
-    const email = this.form.value.email;
+    const email = this.form.get('email')?.value;
 
     this.confirmService
       .demander({
